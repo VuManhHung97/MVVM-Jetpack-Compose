@@ -30,6 +30,10 @@ dependencyResolutionManagement {
 rootProject.name = "MVVMJetpackCompose"
 include(":app")
 
+// ---------------------------------------- Library modules ----------------------------------------
+
+include(":library:flowext")
+
 plugins {
   id("org.gradle.toolchains.foojay-resolver-convention") version ("0.9.0")
 }
