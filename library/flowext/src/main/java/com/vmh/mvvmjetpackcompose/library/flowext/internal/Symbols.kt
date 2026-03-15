@@ -1,7 +1,7 @@
 package com.vmh.mvvmjetpackcompose.library.flowext.internal
 
-import kotlin.jvm.JvmField
 import com.vmh.mvvmjetpackcompose.library.flowext.utils.Symbol
+import kotlin.jvm.JvmField
 
 /**
  * Symbol used to indicate that the flow is complete.

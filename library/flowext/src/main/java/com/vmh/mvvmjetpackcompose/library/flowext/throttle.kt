@@ -2,6 +2,8 @@
 
 package com.vmh.mvvmjetpackcompose.library.flowext
 
+import com.vmh.mvvmjetpackcompose.library.flowext.internal.DONE_VALUE
+import com.vmh.mvvmjetpackcompose.library.flowext.internal.INTERNAL_NULL_VALUE
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,8 +18,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
-import com.vmh.mvvmjetpackcompose.library.flowext.internal.DONE_VALUE
-import com.vmh.mvvmjetpackcompose.library.flowext.internal.INTERNAL_NULL_VALUE
 
 /**
  * Define leading and trailing behavior.

@@ -1,13 +1,13 @@
 
 
-@file:Suppress("UNCHECKED_CAST", "ReplaceManualRangeWithIndicesCalls")
+@file:Suppress("UNCHECKED_CAST", "ReplaceManualRangeWithIndicesCalls", "MagicNumber")
 
 package com.vmh.mvvmjetpackcompose.library.flowext
 
+import com.vmh.mvvmjetpackcompose.library.flowext.internal.INTERNAL_NULL_VALUE
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
-import com.vmh.mvvmjetpackcompose.library.flowext.internal.INTERNAL_NULL_VALUE
 
 private typealias SubStateT = Any?
 

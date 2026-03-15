@@ -1,3 +1,7 @@
+import com.diffplug.gradle.spotless.SpotlessExtension
+import com.diffplug.gradle.spotless.SpotlessPlugin
+import org.gradle.kotlin.dsl.configure
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
   alias(libs.plugins.android.application) apply false
@@ -13,4 +17,60 @@ plugins {
   alias(libs.plugins.detekt) apply false
   alias(libs.plugins.google.protobuf) apply false
   alias(libs.plugins.jvm.library) apply false
+}
+
+subprojects {
+  apply<io.gitlab.arturbosch.detekt.DetektPlugin>()
+  configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
+    parallel = true
+    source.from(files("src/"))
+    config.from(files("${project.rootDir}/detekt.yml"))
+    buildUponDefaultConfig = true
+    allRules = true
+  }
+  dependencies {
+    "detektPlugins"(rootProject.libs.compose.rules.detekt)
+  }
+}
+
+allprojects {
+  apply<SpotlessPlugin>()
+
+  configure<SpotlessExtension> {
+    val ktlintVersion = rootProject.libs.versions.ktlint.get()
+
+    kotlin {
+      target("**/*.kt")
+      targetExclude(
+        "**/Res.kt", // Compose Multiplatform Res class
+        "**/build/**/*.kt", // Kotlin generated files
+      )
+
+      ktlint(ktlintVersion)
+
+      trimTrailingWhitespace()
+      leadingTabsToSpaces()
+      endWithNewline()
+    }
+
+    format("xml") {
+      target("**/res/**/*.xml")
+      targetExclude("**/build/**/*.xml")
+
+      trimTrailingWhitespace()
+      leadingTabsToSpaces()
+      endWithNewline()
+    }
+
+    kotlinGradle {
+      target("**/*.gradle.kts", "*.gradle.kts")
+      targetExclude("**/build/**/*.kts")
+
+      ktlint(ktlintVersion)
+
+      trimTrailingWhitespace()
+      leadingTabsToSpaces()
+      endWithNewline()
+    }
+  }
 }

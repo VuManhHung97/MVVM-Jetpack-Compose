@@ -1,0 +1,64 @@
+name: reviewdog-suggester
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+  CI: true
+
+concurrency:
+  group: 'ci-${{ github.head_ref }}-${{ github.workflow }}'
+  cancel-in-progress: true
+
+jobs:
+  kotlin:
+    name: runner / suggester / spotless / detekt
+    runs-on: [ 'self-hosted', 'linux', 'x64' ]
+    steps:
+      # When running on self-hosted GitHub Actions runners,
+      # NodeJS must be previously installed with the version specified in the action.yml.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check main branch
+        uses: actions/checkout@v4.2.1
+        with:
+          ref: main
+
+      - name: Checkout current branch
+        uses: actions/checkout@v4.2.1
+
+      - name: Setup Java
+        uses: actions/setup-java@v4.4.0
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Detekt
+        run: ./gradlew detekt --rerun-tasks --no-build-cache --stacktrace
+
+      - name: Spotless apply and git diff
+        run: |
+          ./gradlew spotlessApply --rerun-tasks --stacktrace
+          git diff
+
+      - name: Reviewdog
+        uses: reviewdog/action-suggester@v1.21.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tool_name: spotless
+          level: error
+          fail_level: error
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Spotless check
+        run: ./gradlew spotlessCheck --rerun-tasks --stacktrace
+

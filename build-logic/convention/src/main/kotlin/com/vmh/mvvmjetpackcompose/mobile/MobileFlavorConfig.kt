@@ -4,8 +4,8 @@ import com.android.build.api.dsl.ApplicationBuildType
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.ApplicationProductFlavor
 import com.android.build.api.dsl.CommonExtension
-import org.gradle.api.Project
 import com.vmh.mvvmjetpackcompose.utils.readPropertiesFile
+import org.gradle.api.Project
 
 @Suppress("EnumEntryName")
 enum class MobileBuildType {

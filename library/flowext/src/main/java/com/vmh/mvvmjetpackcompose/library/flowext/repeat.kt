@@ -1,4 +1,4 @@
-@file:Suppress("NOTHING_TO_INLINE", "TooManyFunctions")
+@file:Suppress("NOTHING_TO_INLINE", "TooManyFunctions", "MethodOverloading", "MagicNumber")
 
 package com.vmh.mvvmjetpackcompose.library.flowext
 

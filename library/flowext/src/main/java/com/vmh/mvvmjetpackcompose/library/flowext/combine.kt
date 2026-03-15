@@ -1,6 +1,6 @@
 
 
-@file:Suppress("UNCHECKED_CAST")
+@file:Suppress("UNCHECKED_CAST", "MethodOverloading", "MagicNumber")
 
 package com.vmh.mvvmjetpackcompose.library.flowext
 
