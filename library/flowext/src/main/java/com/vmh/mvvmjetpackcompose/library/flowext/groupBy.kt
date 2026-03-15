@@ -1,5 +1,8 @@
+@file:Suppress("TooGenericExceptionCaught")
+
 package com.vmh.mvvmjetpackcompose.library.flowext
 
+import com.vmh.mvvmjetpackcompose.library.flowext.internal.identitySuspendFunction
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -14,7 +17,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
-import com.vmh.mvvmjetpackcompose.library.flowext.internal.identitySuspendFunction
 
 /**
  * Represents a Flow of values that have a common key.

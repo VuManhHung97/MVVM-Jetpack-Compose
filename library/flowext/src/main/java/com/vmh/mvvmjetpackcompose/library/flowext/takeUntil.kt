@@ -1,5 +1,7 @@
 package com.vmh.mvvmjetpackcompose.library.flowext
 
+import com.vmh.mvvmjetpackcompose.library.flowext.internal.ClosedException
+import com.vmh.mvvmjetpackcompose.library.flowext.internal.checkOwnership
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -7,8 +9,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
-import com.vmh.mvvmjetpackcompose.library.flowext.internal.ClosedException
-import com.vmh.mvvmjetpackcompose.library.flowext.internal.checkOwnership
 
 /**
  * Emits the values emitted by the source [Flow] until a [notifier] [Flow] emits a value or completes.

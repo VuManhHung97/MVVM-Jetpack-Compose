@@ -1,0 +1,22 @@
+name: Delete branch on closed PR
+on:
+  pull_request:
+    types: [ closed ]
+
+jobs:
+  delete-branch:
+    # if: ${{ (github.event.pull_request.merged == true) }}
+    if: ${{ false }} # Always skip
+    runs-on: [ 'self-hosted', 'linux', 'x64' ]
+    permissions:
+      contents: write
+    steps:
+      - name: delete branch
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.git.deleteRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `heads/${context.payload.pull_request.head.ref}`,
+            })

@@ -4,10 +4,10 @@ import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.BuildConfigField
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.api.variant.Variant
-import java.util.Properties
-import org.gradle.api.Project
 import com.vmh.mvvmjetpackcompose.utils.isCiBuild
 import com.vmh.mvvmjetpackcompose.utils.readPropertiesFile
+import java.util.Properties
+import org.gradle.api.Project
 
 internal fun Project.configureBuildConfigFieldsForMobileApplication(
   extension: ApplicationAndroidComponentsExtension,

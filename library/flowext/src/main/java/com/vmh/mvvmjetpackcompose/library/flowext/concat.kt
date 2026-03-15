@@ -1,4 +1,4 @@
-@file:Suppress("TooManyFunctions")
+@file:Suppress("TooManyFunctions", "MethodOverloading", "TooGenericExceptionCaught", "MagicNumber")
 
 package com.vmh.mvvmjetpackcompose.library.flowext
 

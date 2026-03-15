@@ -1,7 +1,7 @@
 package com.vmh.mvvmjetpackcompose.library.flowext.utils
 
-import kotlin.jvm.JvmField
 import com.vmh.mvvmjetpackcompose.library.flowext.DelicateFlowExtApi
+import kotlin.jvm.JvmField
 
 /**
  * A symbol class that is used to define unique constants that are self-explanatory in debugger.

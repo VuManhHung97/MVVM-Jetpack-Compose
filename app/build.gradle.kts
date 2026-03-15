@@ -16,7 +16,6 @@ android {
     versionName = MobileFlavor.base.versionName
   }
 
-
 //  androidResources {
 //    ignoreAssetsPatterns += listOf(
 //      "!PublicSuffixDatabase.list", // OkHttp

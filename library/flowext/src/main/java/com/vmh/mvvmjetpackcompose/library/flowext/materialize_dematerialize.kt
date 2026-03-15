@@ -1,12 +1,12 @@
 package com.vmh.mvvmjetpackcompose.library.flowext
 
+import com.vmh.mvvmjetpackcompose.library.flowext.internal.ClosedException
+import com.vmh.mvvmjetpackcompose.library.flowext.internal.checkOwnership
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
-import com.vmh.mvvmjetpackcompose.library.flowext.internal.ClosedException
-import com.vmh.mvvmjetpackcompose.library.flowext.internal.checkOwnership
 
 /**
  * Represents all of the notifications from the source [Flow] as `value` emissions marked with their original types within [Event] objects.
