@@ -67,6 +67,9 @@ dependencies {
   implementation(libs.moshi)
   implementation(libs.moshix.sealed.reflect)
 
+  implementation(projects.feature.main)
+
   // Core Modules
   implementation(projects.core.ui)
+  implementation(projects.core.resource)
 }

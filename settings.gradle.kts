@@ -30,13 +30,21 @@ dependencyResolutionManagement {
 rootProject.name = "MVVMJetpackCompose"
 include(":app")
 
+// ---------------------------------------- Core modules ----------------------------------------
+
 include(":core:ui")
+include(":core:resource")
 
 // ---------------------------------------- Library modules ----------------------------------------
 
 include(":library:flowext")
 
+// ---------------------------------------- Feature modules ----------------------------------------
+
+include(":feature:main")
+include(":feature:home")
+include(":feature:profile")
+
 plugins {
   id("org.gradle.toolchains.foojay-resolver-convention") version ("0.9.0")
 }
-include(":ui")

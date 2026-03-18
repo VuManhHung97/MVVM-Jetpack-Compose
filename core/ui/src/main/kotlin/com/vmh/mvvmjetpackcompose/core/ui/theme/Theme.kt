@@ -97,7 +97,10 @@ fun MVVMJetpackComposeTheme(useDarkTheme: Boolean = true, content: @Composable (
     colorScheme = colors,
     shapes = Shapes,
     content = {
-      CompositionLocalProvider(content = content)
+      CompositionLocalProvider(
+        LocalTypography provides DefaultTypography,
+        content = content,
+      )
     },
   )
 }

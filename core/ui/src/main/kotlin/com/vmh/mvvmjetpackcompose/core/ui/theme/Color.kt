@@ -51,7 +51,7 @@ val tertiaryDark = Color(0xFF99CCF9)
 val onTertiaryDark = Color(0xFF003351)
 val tertiaryContainerDark = Color(0xFF064B72)
 val onTertiaryContainerDark = Color(0xFFCCE5FF)
-val errorDark = OttCloudsColors.red40
+val errorDark = MVVMJetPackComposeColors.red40
 val onErrorDark = Color(0xFF561E18)
 val errorContainerDark = Color(0xFF73342C)
 val onErrorContainerDark = Color(0xFFFFDAD5)
@@ -75,7 +75,7 @@ val surfaceContainerDark = Color(0xFF1C2024)
 val surfaceContainerHighDark = Color(0xFF272A2E)
 val surfaceContainerHighestDark = Color(0xFF313539)
 
-object OttCloudsColors {
+object MVVMJetPackComposeColors {
   val Primary10 = Color(0x1AE7F1FC)
   val Primary20 = Color(0xFFCEE2F8)
   val Primary30 = Color(0xFF9AC6F1)

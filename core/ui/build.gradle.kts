@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-  namespace = "com.vmh.core.ui"
+  namespace = "com.vmh.mvvmjetpackcompose.core.ui"
 }
 
 dependencies {
@@ -16,4 +16,6 @@ dependencies {
   implementation(libs.androidx.media3.common)
   api(libs.moshi)
   implementation(libs.timber)
+
+  implementation(projects.core.resource)
 }
