@@ -2,4 +2,29 @@
 <resources>
     <string name="tab_home_title">Home</string>
     <string name="tab_profile_title">Profile</string>
+
+    <!-- Authentication -->
+    <string name="sign_in_email">Continue with Email</string>
+    <string name="sign_in_title">Sign in</string>
+
+    <!-- Sign In -->
+    <string name="sign_up_email">Email</string>
+    <string name="sign_up_your_email">Your email</string>
+    <string name="sign_up_password">Password</string>
+    <string name="sign_up_your_password">Your password</string>
+    <string name="sign_in_forgot_password">Forgot password?</string>
+    <string name="sign_in_have_account">Don\'t have an account?</string>
+    <string name="sign_up_title">Sign up</string>
+    <string name="validation_empty_email">Email cannot be empty</string>
+    <string name="validation_empty_password">Password cannot be empty</string>
+
+    <!-- Sign Up -->
+    <string name="sign_up_content">Looks like you don\'t have an account. Let\'s create an account with us.</string>
+    <string name="validation_invalid_email">Email is invalid</string>
+    <string name="validation_invalid_password_must_be_in_6_to_32_characters">Password must be between 6 and 32 characters</string>
+    <string name="validation_invalid_password_cannot_include_space">Password cannot include space character</string>
+    <string name="validation_password_does_not_match">Password does not match</string>
+    <string name="sign_up_confirm_your_password">Confirm your password</string>
+    <string name="sign_up_confirm_password">Confirm password</string>
+
 </resources>

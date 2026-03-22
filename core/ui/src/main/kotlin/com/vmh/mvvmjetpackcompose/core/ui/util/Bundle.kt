@@ -1,0 +1,9 @@
+package com.vmh.mvvmjetpackcompose.core.ui.util
+
+import android.os.Bundle
+import android.os.Parcelable
+import androidx.core.os.BundleCompat
+import kotlin.jvm.java
+
+inline fun <reified T : Parcelable> Bundle.getParcelableCompat(key: String): T? =
+  BundleCompat.getParcelable(this, key, T::class.java)

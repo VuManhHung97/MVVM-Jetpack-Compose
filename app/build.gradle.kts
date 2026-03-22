@@ -68,6 +68,7 @@ dependencies {
   implementation(libs.moshix.sealed.reflect)
 
   implementation(projects.feature.main)
+  implementation(projects.feature.authentication)
 
   // Core Modules
   implementation(projects.core.ui)

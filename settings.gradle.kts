@@ -34,6 +34,7 @@ include(":app")
 
 include(":core:ui")
 include(":core:resource")
+include(":core:common")
 
 // ---------------------------------------- Library modules ----------------------------------------
 
@@ -44,7 +45,7 @@ include(":library:flowext")
 include(":feature:main")
 include(":feature:home")
 include(":feature:profile")
-
+include(":feature:authentication")
 plugins {
   id("org.gradle.toolchains.foojay-resolver-convention") version ("0.9.0")
 }
