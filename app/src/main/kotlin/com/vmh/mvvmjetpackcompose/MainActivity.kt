@@ -26,9 +26,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetpackComposeTheme
+import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.AuthenticationRoutePattern
+import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.authenticationScreen
+import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.navigation.navigateToSignInScreen
+import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.navigation.signInScreen
+import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.navigateToSignUpScreen
+import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.signUpScreen
 import com.vmh.mvvmjetpackcompose.feature.main.ui.MainNavigationBar
 import com.vmh.mvvmjetpackcompose.feature.main.ui.MainState
-import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainGraphRoutePattern
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainTopScreenTopLevelDestination
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.mainGraph
 import com.vmh.mvvmjetpackcompose.feature.main.ui.rememberMainState
@@ -117,9 +122,22 @@ private fun MVVMJetpackComposeApp(
         .consumeWindowInsets(innerPadding)
         .fillMaxSize(),
       navController = navController,
-      startDestination = MainGraphRoutePattern,
+      startDestination = AuthenticationRoutePattern,
     ) {
       mainGraph()
+
+      authenticationScreen(
+        onNavigateToSignInScreen = navController::navigateToSignInScreen,
+      )
+
+      signInScreen(
+        onNavigateBack = navController::popBackStack,
+        onNavigateToSignUpScreen = navController::navigateToSignUpScreen,
+      )
+
+      signUpScreen(
+        onNavigateBack = navController::popBackStack,
+      )
     }
   }
 }
