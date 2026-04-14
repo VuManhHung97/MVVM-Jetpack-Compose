@@ -3,6 +3,18 @@
     <string name="tab_home_title">Home</string>
     <string name="tab_profile_title">Profile</string>
 
+    <!-- App error -->
+    <string name="app_error_some_thing_went_wrong">Something went wrong</string>
+    <string name="app_error_please_try_again">Please try again.</string>
+    <string name="app_error_no_internet_connection_title">No internet connection</string>
+    <string name="app_error_no_internet_connection_message">Please check the connection status and try again.</string>
+    <string name="app_error_not_found_title">Data not found</string>
+    <string name="app_error_internal_server_title">Server error</string>
+    <string name="app_error_service_unauthorized_title">Session Expired</string>
+    <string name="app_error_service_unauthorized_message">Your session has expired. Please sign in again to continue.</string>
+    <string name="app_error_dialog_positive_button">OK</string>
+    <string name="app_error_inline_positive_button">Try again</string>
+
     <!-- Authentication -->
     <string name="sign_in_email">Continue with Email</string>
     <string name="sign_in_title">Sign in</string>

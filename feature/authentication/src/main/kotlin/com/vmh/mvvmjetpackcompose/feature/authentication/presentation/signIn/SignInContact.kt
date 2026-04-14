@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.Parcelable
 import androidx.compose.runtime.Immutable
 import androidx.core.os.bundleOf
+import com.vmh.mvvmjetpackcompose.core.model.error.AppError
 import com.vmh.mvvmjetpackcompose.core.ui.util.getParcelableCompat
 import kotlinx.parcelize.Parcelize
 
@@ -59,4 +60,12 @@ sealed interface ValidationStatus : Parcelable {
       data object Empty : Password
     }
   }
+}
+
+@Immutable
+sealed interface SignInSingleEvent {
+  data object SignInSuccess : SignInSingleEvent
+
+  @JvmInline
+  value class SignInFailure(val error: AppError) : SignInSingleEvent
 }

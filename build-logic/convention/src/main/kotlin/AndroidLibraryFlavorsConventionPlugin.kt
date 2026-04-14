@@ -1,5 +1,6 @@
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
+import com.vmh.mvvmjetpackcompose.mobile.configureBuildConfigFieldsForMobileFeatureLibrary
 import com.vmh.mvvmjetpackcompose.mobile.configureFlavorsForMobile
 import com.vmh.mvvmjetpackcompose.mobile.createFlavorsForMobile
 import org.gradle.api.Plugin
@@ -18,6 +19,14 @@ class AndroidLibraryFlavorsConventionPlugin : Plugin<Project> {
       extensions.configure<LibraryExtension> {
         configureFlavorsForMobile(project = target, shouldCreateFlavors = false)
       }
+
+      configureBuildConfigFieldsForMobileFeatureLibrary(
+        extension = extensions.getByType<LibraryAndroidComponentsExtension>(),
+        keys = listOf(
+          "BASE_URL",
+          "WEB_VIEW_BASE_URL",
+        ),
+      )
 
       val flavorsExtension = extensions.create(
         "androidLibraryFlavors",

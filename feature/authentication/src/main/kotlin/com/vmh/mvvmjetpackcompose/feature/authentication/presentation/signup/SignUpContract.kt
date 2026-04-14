@@ -5,6 +5,7 @@ import android.os.Parcelable
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import androidx.core.os.bundleOf
+import com.vmh.mvvmjetpackcompose.core.model.error.AppError
 import com.vmh.mvvmjetpackcompose.core.resource.R as CoreResourceR
 import com.vmh.mvvmjetpackcompose.core.ui.util.getParcelableCompat
 import kotlinx.parcelize.Parcelize
@@ -93,4 +94,12 @@ fun ValidationStatus.Error.getErrorMessageResId(): Int = when (this) {
 
   ValidationStatus.Error.Password.NotMatchWithConfirmPassword ->
     CoreResourceR.string.validation_password_does_not_match
+}
+
+@Immutable
+sealed interface SignUpSingleEvent {
+  data object SignUpSuccess : SignUpSingleEvent
+
+  @JvmInline
+  value class SignUpFailure(val error: AppError) : SignUpSingleEvent
 }
