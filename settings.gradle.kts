@@ -35,6 +35,12 @@ include(":app")
 include(":core:ui")
 include(":core:resource")
 include(":core:common")
+include(":core:model")
+include(":core:domain")
+include(":core:network")
+include(":core:data")
+include(":core:local")
+include(":core:domain")
 
 // ---------------------------------------- Library modules ----------------------------------------
 

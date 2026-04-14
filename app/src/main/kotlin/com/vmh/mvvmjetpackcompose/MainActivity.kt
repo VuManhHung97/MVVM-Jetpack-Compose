@@ -1,9 +1,9 @@
 package com.vmh.mvvmjetpackcompose
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -41,7 +41,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.collections.immutable.toPersistentList
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 //  private val viewModel: MainViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,7 +63,8 @@ class MainActivity : ComponentActivity() {
           modifier = Modifier.fillMaxSize(),
           color = MaterialTheme.colorScheme.surface,
         ) {
-          MVVMJetpackComposeApp()
+          val startDestination = AuthenticationRoutePattern
+          MVVMJetpackComposeApp(startDestination = startDestination)
         }
       }
     }
@@ -74,6 +75,7 @@ private const val MainNavigationBarAnimationDurationMillis = 300
 
 @Composable
 private fun MVVMJetpackComposeApp(
+  startDestination: String,
   modifier: Modifier = Modifier,
   navController: NavHostController = rememberNavController(),
   mainState: MainState = rememberMainState(navController = navController),
@@ -122,9 +124,13 @@ private fun MVVMJetpackComposeApp(
         .consumeWindowInsets(innerPadding)
         .fillMaxSize(),
       navController = navController,
-      startDestination = AuthenticationRoutePattern,
+      startDestination = startDestination,
     ) {
-      mainGraph()
+      mainGraph(
+        onNavigateToSearchScreen = {
+          // TODO: handle later
+        },
+      )
 
       authenticationScreen(
         onNavigateToSignInScreen = navController::navigateToSignInScreen,
@@ -133,10 +139,16 @@ private fun MVVMJetpackComposeApp(
       signInScreen(
         onNavigateBack = navController::popBackStack,
         onNavigateToSignUpScreen = navController::navigateToSignUpScreen,
+        navigateToAuthenticationScreen = {
+          // TODO: handle later
+        },
       )
 
       signUpScreen(
         onNavigateBack = navController::popBackStack,
+        navigateToAuthenticationScreen = {
+          // TODO: handle later
+        },
       )
     }
   }

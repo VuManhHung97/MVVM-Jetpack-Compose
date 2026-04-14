@@ -3,6 +3,10 @@ package com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.michaelbull.result.fold
+import com.vmh.mvvmjetpackcompose.core.domain.repository.AuthRepository
+import com.vmh.mvvmjetpackcompose.lifecycle.EventChannel
+import com.vmh.mvvmjetpackcompose.lifecycle.HasEventFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,9 +14,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @HiltViewModel
-internal class SignInViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : ViewModel() {
+internal class SignInViewModel @Inject constructor(
+  private val authRepository: AuthRepository,
+  private val eventChannel: EventChannel<SignInSingleEvent>,
+  savedStateHandle: SavedStateHandle,
+) : ViewModel(eventChannel),
+  HasEventFlow<SignInSingleEvent> by eventChannel {
   private val stateSaver = SignInUiState.StateSaver()
 
   private val _uiStateFlow = MutableStateFlow(
@@ -78,8 +88,23 @@ internal class SignInViewModel @Inject constructor(savedStateHandle: SavedStateH
     emitState { it.copy(isLoading = true) }
 
     viewModelScope.launch {
-      // TODO:
-      emitState { it.copy(isLoading = false) }
+      val state = uiStateFlow.value
+      authRepository
+        .signIn(
+          email = state.email,
+          password = state.password,
+        )
+        .fold(
+          success = {
+            emitState { it.copy(isLoading = false) }
+            eventChannel.send(SignInSingleEvent.SignInSuccess)
+          },
+          failure = { error ->
+            Timber.e(error, "signInWithEmail failure")
+            emitState { it.copy(isLoading = false) }
+            eventChannel.send(SignInSingleEvent.SignInFailure(error = error))
+          },
+        )
     }
   }
 
