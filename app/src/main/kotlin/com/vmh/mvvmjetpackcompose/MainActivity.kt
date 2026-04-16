@@ -1,8 +1,10 @@
 package com.vmh.mvvmjetpackcompose
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -19,6 +21,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -34,15 +38,17 @@ import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.nav
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.signUpScreen
 import com.vmh.mvvmjetpackcompose.feature.main.ui.MainNavigationBar
 import com.vmh.mvvmjetpackcompose.feature.main.ui.MainState
+import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainGraphRoutePattern
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainTopScreenTopLevelDestination
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.mainGraph
 import com.vmh.mvvmjetpackcompose.feature.main.ui.rememberMainState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.first
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-//  private val viewModel: MainViewModel by viewModels()
+  private val viewModel: MainViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     // Call installSplashScreen in the starting activity before calling super.onCreate().
@@ -53,9 +59,7 @@ class MainActivity : AppCompatActivity() {
     enableEdgeToEdge()
     super.onCreate(savedInstanceState)
 
-    splashScreen.setKeepOnScreenCondition {
-      false // TODO: handle loading state
-    }
+    splashScreen.setKeepOnScreenCondition { viewModel.startDestinationStateFlow.value is StartDestinationState.Loading }
 
     setContent {
       MVVMJetpackComposeTheme {
@@ -63,7 +67,22 @@ class MainActivity : AppCompatActivity() {
           modifier = Modifier.fillMaxSize(),
           color = MaterialTheme.colorScheme.surface,
         ) {
-          val startDestination = AuthenticationRoutePattern
+          @SuppressLint("StateFlowValueCalledInComposition")
+          val startDestinationState by produceState(initialValue = viewModel.startDestinationStateFlow.value) {
+            value = viewModel.startDestinationStateFlow.first { it !is StartDestinationState.Loading }
+          }
+
+          val startDestination = when (startDestinationState) {
+            StartDestinationState.AuthenticationScreen ->
+              AuthenticationRoutePattern
+
+            StartDestinationState.MainScreen ->
+              MainGraphRoutePattern
+
+            StartDestinationState.Loading ->
+              return@Surface
+          }
+
           MVVMJetpackComposeApp(startDestination = startDestination)
         }
       }

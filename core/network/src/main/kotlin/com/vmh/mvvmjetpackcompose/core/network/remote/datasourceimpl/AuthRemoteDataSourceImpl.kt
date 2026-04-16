@@ -33,7 +33,7 @@ internal class AuthRemoteDataSourceImpl @Inject constructor(
           email = email,
           password = password,
         ),
-      )
+      ).data
     }
   }
 }
