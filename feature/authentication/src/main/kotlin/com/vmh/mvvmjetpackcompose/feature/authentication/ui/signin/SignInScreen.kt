@@ -82,7 +82,7 @@ internal fun SignInRoute(
         appErrorToDisplay = event.error
 
       SignInSingleEvent.SignInSuccess ->
-        currentNavigateToAuthenticationScreen
+        currentNavigateToAuthenticationScreen()
     }
   }
 
