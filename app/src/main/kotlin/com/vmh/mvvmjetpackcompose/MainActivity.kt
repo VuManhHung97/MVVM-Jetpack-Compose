@@ -29,9 +29,11 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navOptions
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetpackComposeTheme
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.AuthenticationRoutePattern
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.authenticationScreen
+import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.navigateToAuthenticationScreen
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.navigation.navigateToSignInScreen
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.navigation.signInScreen
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.navigateToSignUpScreen
@@ -41,6 +43,7 @@ import com.vmh.mvvmjetpackcompose.feature.main.ui.MainState
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainGraphRoutePattern
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainTopScreenTopLevelDestination
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.mainGraph
+import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.navigateToMainGraph
 import com.vmh.mvvmjetpackcompose.feature.main.ui.rememberMainState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.collections.immutable.toPersistentList
@@ -153,20 +156,41 @@ private fun MVVMJetpackComposeApp(
 
       authenticationScreen(
         onNavigateToSignInScreen = navController::navigateToSignInScreen,
+        onNavigateToHomeScreen = {
+          navController.navigateToMainGraph(
+            navOptions {
+              popUpTo(navController.graph.id) { inclusive = true }
+
+              launchSingleTop = true
+            },
+          )
+        },
       )
 
       signInScreen(
         onNavigateBack = navController::popBackStack,
         onNavigateToSignUpScreen = navController::navigateToSignUpScreen,
         navigateToAuthenticationScreen = {
-          // TODO: handle later
+          navController.navigateToAuthenticationScreen(
+            navOptions = navOptions {
+              popUpTo(navController.graph.id) { inclusive = true }
+
+              launchSingleTop = true
+            },
+          )
         },
       )
 
       signUpScreen(
         onNavigateBack = navController::popBackStack,
         navigateToAuthenticationScreen = {
-          // TODO: handle later
+          navController.navigateToAuthenticationScreen(
+            navOptions = navOptions {
+              popUpTo(id = navController.graph.id) { inclusive = true }
+
+              launchSingleTop = true
+            },
+          )
         },
       )
     }
