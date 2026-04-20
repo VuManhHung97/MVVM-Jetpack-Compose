@@ -15,13 +15,13 @@ fun NavController.navigateToMainGraph(navOptions: NavOptions? = null) = navigate
   navOptions,
 )
 
-fun NavGraphBuilder.mainGraph(onNavigateToSearchScreen: () -> Unit) {
+fun NavGraphBuilder.mainGraph(onNavigateToSearchScreen: () -> Unit, onNavigateToAuthenticationScreen: () -> Unit) {
   navigation(
     route = MainGraphRoutePattern,
     startDestination = HomeGraphRoutePattern,
   ) {
     homeGraph(onNavigateToSearchScreen = onNavigateToSearchScreen)
 
-    profileGraph()
+    profileGraph(onNavigateToAuthenticationScreen = onNavigateToAuthenticationScreen)
   }
 }

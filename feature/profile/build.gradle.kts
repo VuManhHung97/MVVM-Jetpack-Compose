@@ -7,6 +7,11 @@ android {
 }
 
 dependencies {
-  implementation(projects.core.ui)
-  implementation(projects.core.resource)
+  api(projects.core.ui)
+  api(projects.core.domain)
+  api(projects.core.common)
+  api(projects.core.resource)
+
+  // Libraries
+  api(libs.kotlinx.collections.immutable)
 }

@@ -152,6 +152,15 @@ private fun MVVMJetpackComposeApp(
         onNavigateToSearchScreen = {
           // TODO: handle later
         },
+        onNavigateToAuthenticationScreen = {
+          navController.navigateToAuthenticationScreen(
+            navOptions = navOptions {
+              popUpTo(id = navController.graph.id) { inclusive = true }
+
+              launchSingleTop = true
+            },
+          )
+        },
       )
 
       authenticationScreen(

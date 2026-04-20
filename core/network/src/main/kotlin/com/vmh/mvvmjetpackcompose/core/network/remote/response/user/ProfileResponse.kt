@@ -7,8 +7,8 @@ import com.squareup.moshi.Json
 data class ProfileResponse(
   @param:Json(name = "id") val id: Long,
   @param:Json(name = "email") val email: String,
-  @param:Json(name = "full_name") val fullName: String?,
+  @param:Json(name = "fullname") val fullName: String?,
   @param:Json(name = "avatar") val avatar: String?,
   @param:Json(name = "date_of_birth") val dateOfBirth: String?,
-  @param:Json(name = "phone_number") val phoneNumber: String?,
+  @param:Json(name = "phone") val phoneNumber: String?,
 )

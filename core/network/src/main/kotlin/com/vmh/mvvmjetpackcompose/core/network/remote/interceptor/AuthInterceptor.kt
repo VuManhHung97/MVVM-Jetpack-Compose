@@ -1,88 +1,135 @@
 package com.vmh.mvvmjetpackcompose.core.network.remote.interceptor
 
 import android.content.Context
+import com.github.michaelbull.result.get
 import com.vmh.mvvmjetpackcompose.core.common.BuildConfig
 import com.vmh.mvvmjetpackcompose.core.common.coroutine.AppCoroutineDispatchers
-import com.vmh.mvvmjetpackcompose.core.network.remote.datasource.UnauthorizedErrorEventEmit
+import com.vmh.mvvmjetpackcompose.core.local.LocalUser
+import com.vmh.mvvmjetpackcompose.core.local.datasource.AuthLocalDataSource
+import com.vmh.mvvmjetpackcompose.core.local.extention.toProtoStringValue
+import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.ApiConstants.Headers.CHECK_ACCESS_TOKEN
+import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.ApiConstants.Headers.CUSTOM_HEADER
+import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.ApiConstants.Headers.NO_AUTH
+import com.vmh.mvvmjetpackcompose.core.network.remote.service.RefreshTokenApiService
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.net.HttpURLConnection.HTTP_OK
 import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlin.also
 import kotlin.let
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
 import timber.log.Timber
 
 internal class AuthInterceptor @Inject internal constructor(
+  private val authLocalDataSource: AuthLocalDataSource,
   private val appCoroutineDispatchers: AppCoroutineDispatchers,
-  private val unauthorizedErrorEventEmit: UnauthorizedErrorEventEmit,
+  private val refreshTokenApiService: Provider<RefreshTokenApiService>,
   @param:ApplicationContext private val context: Context,
 ) : Interceptor {
+  private val mutex = Mutex()
 
+  @Suppress("ReturnCount")
   override fun intercept(chain: Interceptor.Chain): Response {
     val request = chain.request()
+    val customHeaderValue = request.headers.values(CUSTOM_HEADER)
 
-    val accessToken: String? = runBlocking(appCoroutineDispatchers.io) {
-      null
+    if (NO_AUTH in customHeaderValue) {
+      return chain.proceedWithHeader(request, null)
     }
 
-    val userAgent: String? = getUserAgent()
-    val devicePlatform: String? = getDevicePlatform(context = context)
-
-    if (BuildConfig.DEBUG) {
-      Timber.d("accessToken=$accessToken")
-      Timber.d("userAgent=$userAgent")
-      Timber.d("devicePlatform=$devicePlatform")
+    val localUser = getCurrentLocalUser()
+    if (CHECK_ACCESS_TOKEN in customHeaderValue && localUser?.accessToken == null) {
+      return unauthorizedResponse(request)
     }
 
-    val response = chain.proceedWithHeader(
-      request = request,
-      token = accessToken,
-      userAgent = userAgent,
-      devicePlatform = devicePlatform,
-    )
-    if (response.code != HTTP_UNAUTHORIZED) {
-      return response
+    val res = chain.proceedWithHeader(request, localUser?.accessToken?.value)
+    if (res.code != HTTP_UNAUTHORIZED || localUser?.accessToken == null) {
+      // Forward HTTP_UNAUTHORIZED error
+      return res
     }
 
-    val refreshedAccessToken = runBlocking(appCoroutineDispatchers.io) {
-      ""
+    val newAccessToken = runBlocking(appCoroutineDispatchers.io) {
+      mutex.withLock { executeRefreshTokenIfNeeded(localUser = localUser) }
     }
 
     if (BuildConfig.DEBUG) {
-      Timber.d("refreshedAccessToken=$refreshedAccessToken")
+      Timber.d("refreshedAccessToken=$newAccessToken")
     }
 
-    return if (refreshedAccessToken != null) {
-      response.close()
+    return if (newAccessToken !== null) {
+      res.close()
       chain.proceedWithHeader(
         request = request,
-        token = refreshedAccessToken,
-        userAgent = userAgent,
-        devicePlatform = devicePlatform,
-      ).also {
-        if (it.code == HTTP_UNAUTHORIZED) {
-          unauthorizedErrorEventEmit.emitEvent()
-        }
-      }
+        token = newAccessToken,
+      )
     } else {
-      unauthorizedErrorEventEmit.emitEvent()
-      response
+      // Forward HTTP_UNAUTHORIZED error
+      res
     }
   }
 
-  private fun Interceptor.Chain.proceedWithHeader(
-    request: Request,
-    token: String?,
-    userAgent: String?,
-    devicePlatform: String?,
-  ): Response = request.newBuilder()
+  private suspend fun executeRefreshTokenIfNeeded(localUser: LocalUser): String? {
+    val currentToken = getCurrentLocalUser()
+      ?.accessToken
+      ?.value
+
+    return when {
+      currentToken == null -> {
+        null
+      }
+      currentToken != localUser.accessToken.value -> currentToken
+      else -> {
+        val refreshTokenRes = refreshTokenApiService
+          .get()
+          .refreshToken()
+
+        when (refreshTokenRes.code()) {
+          HTTP_OK -> {
+            refreshTokenRes.body()!!.data
+              .accessToken
+              .also { accessToken ->
+                authLocalDataSource.update {
+                  it
+                    ?.toBuilder()
+                    ?.setAccessToken(accessToken.toProtoStringValue())
+                    ?.build()
+                }
+              }
+          }
+
+          HTTP_UNAUTHORIZED -> {
+            // clear user local
+            authLocalDataSource.update { null }
+            null
+          }
+
+          else -> {
+            // clear user local
+            authLocalDataSource.update { null }
+            null
+          }
+        }
+      }
+    }
+  }
+
+  private fun getCurrentLocalUser(): LocalUser? = runBlocking(appCoroutineDispatchers.io) {
+    authLocalDataSource
+      .readLocalUser()
+      .get()
+  }
+
+  private fun Interceptor.Chain.proceedWithHeader(request: Request, token: String?): Response = request.newBuilder()
     .addCommonHeaders(
       token = token,
-      userAgent = userAgent,
-      devicePlatform = devicePlatform,
+      userAgent = getUserAgent(),
+      devicePlatform = getDevicePlatform(context = context),
       appVersion = context.getApplicationVersionNameOrNull(),
     )
     .build()

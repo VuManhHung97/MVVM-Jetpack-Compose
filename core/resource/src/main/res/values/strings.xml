@@ -39,4 +39,17 @@
     <string name="sign_up_confirm_your_password">Confirm your password</string>
     <string name="sign_up_confirm_password">Confirm password</string>
 
+    <!-- profile -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_preferences">App Preferences</string>
+    <string name="profile_language">Language</string>
+    <string name="profile_download_settings">Download settings</string>
+    <string name="profile_support">Support</string>
+    <string name="profile_faq">FAQ</string>
+    <string name="profile_contact_us">Contact Us</string>
+    <string name="profile_other">Others</string>
+    <string name="profile_terms_of_use">Terms of Use</string>
+    <string name="profile_privacy_policy">Privacy Policy</string>
+    <string name="profile_sign_out">Sign Out</string>
+
 </resources>

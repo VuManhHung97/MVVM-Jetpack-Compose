@@ -10,7 +10,8 @@ import com.vmh.mvvmjetpackcompose.core.network.remote.di.DataRemoteModule.Compan
 import com.vmh.mvvmjetpackcompose.core.network.remote.di.DataRemoteModule.Companion.OkHttpClientConfig.OK_HTTP_CLIENT_WRITE_TIMEOUT
 import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.AuthInterceptor
 import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.ForceUpdateInterceptor
-import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.NoAuthInterceptor
+import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.RefreshTokenInterceptor
+import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.UnauthorizedErrorHandlerInterceptor
 import com.vmh.mvvmjetpackcompose.core.network.remote.response.ErrorResponse
 import dagger.Binds
 import dagger.Module
@@ -53,12 +54,12 @@ internal interface DataRemoteModule {
       ),
     )
 
-    // ------------------------------ Auth ------------------------------
+    // ------------------------------ Refresh ------------------------------
 
     @Provides
     @Singleton
-    @AuthApiRetrofit
-    fun authApiRetrofit(@AuthOkHttpClient okHttpClient: OkHttpClient, moshi: Moshi): Retrofit = Retrofit.Builder()
+    @RefreshApiRetrofit
+    fun authApiRetrofit(@RefreshOkHttpClient okHttpClient: OkHttpClient, moshi: Moshi): Retrofit = Retrofit.Builder()
       .baseUrl(BuildConfig.BASE_URL)
       .client(okHttpClient)
       .addConverterFactory(MoshiConverterFactory.create(moshi))
@@ -66,21 +67,18 @@ internal interface DataRemoteModule {
 
     @Singleton
     @Provides
-    @AuthOkHttpClient
+    @RefreshOkHttpClient
     fun provideAuthOkHttpClient(
       httpLoggingInterceptor: HttpLoggingInterceptor,
-      noAuthInterceptor: NoAuthInterceptor,
+      refreshTokenInterceptor: RefreshTokenInterceptor,
       forceUpdateInterceptor: ForceUpdateInterceptor,
     ): OkHttpClient = OkHttpClient.Builder()
       .readTimeout(OK_HTTP_CLIENT_READ_TIMEOUT, TimeUnit.SECONDS)
       .writeTimeout(OK_HTTP_CLIENT_WRITE_TIMEOUT, TimeUnit.SECONDS)
       .connectTimeout(OK_HTTP_CLIENT_CONNECT_TIMEOUT, TimeUnit.SECONDS)
-      // 2. NoAuth interceptor
-      .addInterceptor(noAuthInterceptor)
-      // 3. Force update interceptor
       .addInterceptor(forceUpdateInterceptor)
-      // 5. Http logging interceptor
       .addNetworkInterceptor(httpLoggingInterceptor)
+      .addInterceptor(refreshTokenInterceptor)
       .build()
 
     // ------------------------------ Shared ------------------------------
@@ -101,16 +99,15 @@ internal interface DataRemoteModule {
       httpLoggingInterceptor: HttpLoggingInterceptor,
       authInterceptor: AuthInterceptor,
       forceUpdateInterceptor: ForceUpdateInterceptor,
+      unauthorizedErrorHandlerInterceptor: UnauthorizedErrorHandlerInterceptor,
     ): OkHttpClient = OkHttpClient.Builder()
       .readTimeout(OK_HTTP_CLIENT_READ_TIMEOUT, TimeUnit.SECONDS)
       .writeTimeout(OK_HTTP_CLIENT_WRITE_TIMEOUT, TimeUnit.SECONDS)
       .connectTimeout(OK_HTTP_CLIENT_CONNECT_TIMEOUT, TimeUnit.SECONDS)
-      // 2. Auth interceptor
-      .addInterceptor(authInterceptor)
-      // 3. Force update interceptor
-      .addInterceptor(forceUpdateInterceptor)
-      // 5. Http logging interceptor
       .addNetworkInterceptor(httpLoggingInterceptor)
+      .addInterceptor(unauthorizedErrorHandlerInterceptor)
+      .addInterceptor(forceUpdateInterceptor)
+      .addInterceptor(authInterceptor)
       .build()
 
     @Provides

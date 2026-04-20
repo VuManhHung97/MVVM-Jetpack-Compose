@@ -2,16 +2,16 @@ package com.vmh.mvvmjetpackcompose.core.network.remote.di
 
 import javax.inject.Qualifier
 
-// --------------------------------- Auth ---------------------------------
+// --------------------------------- Refresh ---------------------------------
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 @MustBeDocumented
-internal annotation class AuthApiRetrofit
+internal annotation class RefreshApiRetrofit
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 @MustBeDocumented
-internal annotation class AuthOkHttpClient
+internal annotation class RefreshOkHttpClient
 
 // --------------------------------- Shared ---------------------------------
 

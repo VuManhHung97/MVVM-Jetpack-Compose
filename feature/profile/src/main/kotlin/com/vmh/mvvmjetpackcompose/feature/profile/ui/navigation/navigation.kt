@@ -16,13 +16,15 @@ fun NavController.navigateToProfileScreen(navOptions: NavOptions? = null) = navi
   navOptions = navOptions,
 )
 
-fun NavGraphBuilder.profileGraph() {
+fun NavGraphBuilder.profileGraph(onNavigateToAuthenticationScreen: () -> Unit) {
   navigation(
     route = ProfileGraphRoutePattern,
     startDestination = ProfileRoutePattern,
   ) {
     composable(route = ProfileRoutePattern) {
-      ProfileRoute()
+      ProfileRoute(
+        onNavigateToAuthenticationScreen = onNavigateToAuthenticationScreen,
+      )
     }
   }
 }

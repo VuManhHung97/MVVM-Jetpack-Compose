@@ -7,6 +7,7 @@ import com.github.michaelbull.result.map
 import com.vmh.mvvmjetpackcompose.core.common.coroutine.AppCoroutineDispatchers
 import com.vmh.mvvmjetpackcompose.core.data.mapper.auth.toUser
 import com.vmh.mvvmjetpackcompose.core.data.mapper.user.toLocalUser
+import com.vmh.mvvmjetpackcompose.core.data.mapper.user.updateProfile
 import com.vmh.mvvmjetpackcompose.core.domain.repository.AuthRepository
 import com.vmh.mvvmjetpackcompose.core.local.datasource.AuthLocalDataSource
 import com.vmh.mvvmjetpackcompose.core.model.auth.AuthenticationState
@@ -68,6 +69,8 @@ internal class DefaultAuthRepository @Inject constructor(
 
   private suspend fun CoroutineBindingScope<AppError>.fetchUserProfileAndUpdateLocal() {
     val profileResponse = userRemoteDataSource.getProfile().bind()
-    authLocalDataSource.update { profileResponse.toLocalUser() }.bind()
+    authLocalDataSource.update { localUser ->
+      localUser?.updateProfile(profile = profileResponse)
+    }.bind()
   }
 }

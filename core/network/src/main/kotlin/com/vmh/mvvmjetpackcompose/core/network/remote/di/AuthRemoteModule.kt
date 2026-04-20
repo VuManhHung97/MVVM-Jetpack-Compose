@@ -20,6 +20,6 @@ internal interface AuthRemoteModule {
   companion object {
     @Provides
     @Singleton
-    fun authService(@AuthApiRetrofit retrofit: Retrofit): AuthApiService = AuthApiService(retrofit)
+    fun authService(@SharedRetrofit retrofit: Retrofit): AuthApiService = AuthApiService(retrofit)
   }
 }
