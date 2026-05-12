@@ -36,12 +36,14 @@ import com.vmh.mvvmjetpackcompose.feature.profile.ui.component.HeaderTitleConten
 import com.vmh.mvvmjetpackcompose.feature.profile.ui.component.OptionContent
 import com.vmh.mvvmjetpackcompose.feature.profile.ui.component.ProfileInfoContent
 import com.vmh.mvvmjetpackcompose.feature.profile.ui.component.SignOutButton
+import com.vmh.mvvmjetpackcompose.feature.profile.ui.navigation.WebViewDestination
 import com.vmh.mvvmjetpackcompose.lifecycle.collectInLaunchedEffectWithLifecycle
 import com.vmh.mvvmjetpackcompose.ui.widget.common.CommonAppErrorContent
 
 @Composable
 internal fun ProfileRoute(
   onNavigateToAuthenticationScreen: () -> Unit,
+  onNavigateToWebViewScreen: (destination: WebViewDestination) -> Unit,
   modifier: Modifier = Modifier,
   viewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -74,7 +76,20 @@ internal fun ProfileRoute(
           ProfileContent(
             profilesContent = profilesContent,
             onItemClick = { item ->
-              // TODO: hande later
+              when (item) {
+                ProfileUiItem.Option.FAQ ->
+                  onNavigateToWebViewScreen(WebViewDestination.FAQ)
+
+                ProfileUiItem.Option.PrivacyPolicy ->
+                  onNavigateToWebViewScreen(WebViewDestination.PrivacyPolicy)
+
+                ProfileUiItem.Option.TermsOfUse ->
+                  onNavigateToWebViewScreen(WebViewDestination.TermsOfUse)
+
+                else -> {
+                  // TODO: handle late
+                }
+              }
             },
           )
 
@@ -191,6 +206,7 @@ private fun SettingsRoutePreview() {
   MVVMJetpackComposeTheme {
     ProfileRoute(
       onNavigateToAuthenticationScreen = {},
+      onNavigateToWebViewScreen = {},
     )
   }
 }

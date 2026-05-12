@@ -51,5 +51,8 @@
     <string name="profile_terms_of_use">Terms of Use</string>
     <string name="profile_privacy_policy">Privacy Policy</string>
     <string name="profile_sign_out">Sign Out</string>
+    <string name="web_view_faq_title">Frequently Asked Questions</string>
+    <string name="web_view_term_of_use_title">Terms of Use</string>
+    <string name="web_view_privacy_policy_title">Privacy Policy</string>
 
 </resources>

@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
@@ -45,13 +46,20 @@ import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainTopScreenTopLev
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.mainGraph
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.navigateToMainGraph
 import com.vmh.mvvmjetpackcompose.feature.main.ui.rememberMainState
+import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.WebViewArgs
+import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.navigateToWebViewScreen
+import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.webViewScreen
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
   private val viewModel: MainViewModel by viewModels()
+
+  @Inject
+  internal lateinit var navTypeContainer: NavTypeContainer
 
   override fun onCreate(savedInstanceState: Bundle?) {
     // Call installSplashScreen in the starting activity before calling super.onCreate().
@@ -86,7 +94,10 @@ class MainActivity : AppCompatActivity() {
               return@Surface
           }
 
-          MVVMJetpackComposeApp(startDestination = startDestination)
+          MVVMJetpackComposeApp(
+            startDestination = startDestination,
+            navTypeContainer = navTypeContainer,
+          )
         }
       }
     }
@@ -98,11 +109,13 @@ private const val MainNavigationBarAnimationDurationMillis = 300
 @Composable
 private fun MVVMJetpackComposeApp(
   startDestination: String,
+  navTypeContainer: NavTypeContainer,
   modifier: Modifier = Modifier,
   navController: NavHostController = rememberNavController(),
   mainState: MainState = rememberMainState(navController = navController),
 ) {
   val mainTopScreenTopLevelDestinations = MainTopScreenTopLevelDestination.entries.toPersistentList()
+  val context = LocalContext.current
 
   Scaffold(
     modifier = modifier,
@@ -161,6 +174,15 @@ private fun MVVMJetpackComposeApp(
             },
           )
         },
+        onNavigateToWebViewScreen = { webViewDestination ->
+          navController.navigateToWebViewScreen(
+            navType = navTypeContainer.webViewArgsNavType,
+            args = WebViewArgs(
+              path = webViewDestination.path,
+              title = context.getString(webViewDestination.titleResId),
+            ),
+          )
+        },
       )
 
       authenticationScreen(
@@ -201,6 +223,11 @@ private fun MVVMJetpackComposeApp(
             },
           )
         },
+      )
+
+      webViewScreen(
+        navType = navTypeContainer.webViewArgsNavType,
+        onNavigateBack = navController::popBackStack,
       )
     }
   }
