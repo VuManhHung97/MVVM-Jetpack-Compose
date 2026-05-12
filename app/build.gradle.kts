@@ -70,6 +70,8 @@ dependencies {
   implementation(projects.feature.main)
   implementation(projects.feature.authentication)
   implementation(projects.feature.home)
+  implementation(projects.feature.profile)
+  implementation(projects.feature.webview)
 
   // Core Modules
   implementation(projects.core.ui)

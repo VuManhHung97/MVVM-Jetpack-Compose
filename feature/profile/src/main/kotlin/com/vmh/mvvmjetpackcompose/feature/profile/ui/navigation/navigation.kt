@@ -16,7 +16,10 @@ fun NavController.navigateToProfileScreen(navOptions: NavOptions? = null) = navi
   navOptions = navOptions,
 )
 
-fun NavGraphBuilder.profileGraph(onNavigateToAuthenticationScreen: () -> Unit) {
+fun NavGraphBuilder.profileGraph(
+  onNavigateToAuthenticationScreen: () -> Unit,
+  onNavigateToWebViewScreen: (destination: WebViewDestination) -> Unit,
+) {
   navigation(
     route = ProfileGraphRoutePattern,
     startDestination = ProfileRoutePattern,
@@ -24,6 +27,7 @@ fun NavGraphBuilder.profileGraph(onNavigateToAuthenticationScreen: () -> Unit) {
     composable(route = ProfileRoutePattern) {
       ProfileRoute(
         onNavigateToAuthenticationScreen = onNavigateToAuthenticationScreen,
+        onNavigateToWebViewScreen = onNavigateToWebViewScreen,
       )
     }
   }
