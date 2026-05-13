@@ -19,6 +19,8 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,12 +31,29 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.vmh.mvvmjetpackcompose.core.resource.R as CoreResourceR
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetPackComposeColors
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetpackComposeTheme
+import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.AuthenticationSingleEvent
+import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.AuthenticationViewModel
+import com.vmh.mvvmjetpackcompose.lifecycle.collectInLaunchedEffectWithLifecycle
 
 @Composable
-internal fun AuthenticationRoute(onNavigateToSignInScreen: () -> Unit, modifier: Modifier = Modifier) {
+internal fun AuthenticationRoute(
+  onNavigateToSignInScreen: () -> Unit,
+  onNavigateToHomeScreen: () -> Unit,
+  modifier: Modifier = Modifier,
+  viewModel: AuthenticationViewModel = hiltViewModel(),
+) {
+  val currentOnNavigateToHomeScreen by rememberUpdatedState(onNavigateToHomeScreen)
+
+  viewModel.eventFlow.collectInLaunchedEffectWithLifecycle { event ->
+    when (event) {
+      AuthenticationSingleEvent.NavigateToHome ->
+        currentOnNavigateToHomeScreen()
+    }
+  }
   Surface(
     modifier = modifier.fillMaxSize(),
     color = MVVMJetPackComposeColors.NeutralBlack,

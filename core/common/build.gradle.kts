@@ -1,6 +1,6 @@
 plugins {
-  id(libs.plugins.android.core.get().pluginId)
-  id(libs.plugins.android.library.compose.get().pluginId)
+  id(libs.plugins.android.library.core.get().pluginId)
+  id(libs.plugins.android.hilt.get().pluginId)
 }
 
 android {
@@ -13,16 +13,17 @@ dependencies {
   implementation(libs.androidx.appcompat)
   implementation(libs.material)
 
-  // Moshi
-  api(libs.moshi)
-  implementation(libs.moshix.sealed.reflect)
-  implementation(libs.moshix.sealed.runtime)
-
   // Core modules
+  implementation(projects.core.model)
   implementation(projects.core.resource)
 
   // Kotlinx Collections Immutable
   api(libs.kotlinx.collections.immutable)
+
+  // Moshi
+  api(libs.moshi)
+  implementation(libs.moshix.sealed.reflect)
+  implementation(libs.moshix.sealed.runtime)
 
   // Kotlinx Coroutines
   api(libs.kotlinx.coroutines.core)

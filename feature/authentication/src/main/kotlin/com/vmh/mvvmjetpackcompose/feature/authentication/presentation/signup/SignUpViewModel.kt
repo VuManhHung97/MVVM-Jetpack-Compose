@@ -3,8 +3,12 @@ package com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.michaelbull.result.fold
 import com.vmh.mvvmjetpackcompose.core.common.util.isValidEmail
 import com.vmh.mvvmjetpackcompose.core.common.util.isValidPassword
+import com.vmh.mvvmjetpackcompose.core.domain.repository.AuthRepository
+import com.vmh.mvvmjetpackcompose.lifecycle.EventChannel
+import com.vmh.mvvmjetpackcompose.lifecycle.HasEventFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,9 +16,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @HiltViewModel
-internal class SignUpViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : ViewModel() {
+internal class SignUpViewModel @Inject constructor(
+  private val authRepository: AuthRepository,
+  private val eventChannel: EventChannel<SignUpSingleEvent>,
+  savedStateHandle: SavedStateHandle,
+) : ViewModel(eventChannel),
+  HasEventFlow<SignUpSingleEvent> by eventChannel {
   private val stateSaver = SignUpUiState.StateSaver()
   private val _uiStateFlow = MutableStateFlow(
     stateSaver.restore(savedStateHandle[VIEW_STATE_BUNDLE_KEY]) {
@@ -110,7 +120,24 @@ internal class SignUpViewModel @Inject constructor(savedStateHandle: SavedStateH
     emitState { it.copy(isLoading = true) }
 
     viewModelScope.launch {
-      emitState { it.copy(isLoading = false) }
+      val state = uiStateFlow.value
+
+      authRepository.signUp(
+        email = state.email,
+        password = state.password,
+      )
+        .fold(
+          success = {
+            Timber.d("signUpWithEmail success")
+            emitState { it.copy(isLoading = false) }
+            eventChannel.send(SignUpSingleEvent.SignUpSuccess)
+          },
+          failure = { error ->
+            emitState { it.copy(isLoading = false) }
+            Timber.e(error, "signUpWithEmail failure")
+            eventChannel.send(SignUpSingleEvent.SignUpFailure(error = error))
+          },
+        )
     }
   }
 

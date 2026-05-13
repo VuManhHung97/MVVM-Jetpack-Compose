@@ -6,7 +6,7 @@
         </trust-anchors>
     </base-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">media.cdn.lunativi.com</domain>
+        <domain includeSubdomains="true">192.168.200.1</domain>
     </domain-config>
     <debug-overrides>
         <trust-anchors>

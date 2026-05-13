@@ -35,6 +35,12 @@ include(":app")
 include(":core:ui")
 include(":core:resource")
 include(":core:common")
+include(":core:model")
+include(":core:domain")
+include(":core:network")
+include(":core:data")
+include(":core:local")
+include(":core:domain")
 
 // ---------------------------------------- Library modules ----------------------------------------
 
@@ -46,6 +52,9 @@ include(":feature:main")
 include(":feature:home")
 include(":feature:profile")
 include(":feature:authentication")
+include(":feature:webview")
+include(":feature:search")
+
 plugins {
   id("org.gradle.toolchains.foojay-resolver-convention") version ("0.9.0")
 }

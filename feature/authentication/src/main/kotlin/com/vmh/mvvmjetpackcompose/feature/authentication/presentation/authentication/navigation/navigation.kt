@@ -13,10 +13,11 @@ fun NavController.navigateToAuthenticationScreen(navOptions: NavOptions? = null)
   navOptions = navOptions,
 )
 
-fun NavGraphBuilder.authenticationScreen(onNavigateToSignInScreen: () -> Unit) {
+fun NavGraphBuilder.authenticationScreen(onNavigateToSignInScreen: () -> Unit, onNavigateToHomeScreen: () -> Unit) {
   composable(route = AuthenticationRoutePattern) {
     AuthenticationRoute(
       onNavigateToSignInScreen = onNavigateToSignInScreen,
+      onNavigateToHomeScreen = onNavigateToHomeScreen,
     )
   }
 }

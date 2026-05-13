@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -24,27 +25,45 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vmh.mvvmjetpackcompose.core.model.error.AppError
 import com.vmh.mvvmjetpackcompose.core.resource.R as CoreResourceR
 import com.vmh.mvvmjetpackcompose.core.ui.common.DebouncedClickable
+import com.vmh.mvvmjetpackcompose.core.ui.common.DefaultGetAppErrorMessageForDialog
 import com.vmh.mvvmjetpackcompose.core.ui.common.LoadingIndicator
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetPackComposeColors
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetpackComposeTheme
+import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.SignUpSingleEvent
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.SignUpUiState
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.SignUpViewModel
 import com.vmh.mvvmjetpackcompose.feature.authentication.ui.signup.component.ConfirmPasswordTextField
 import com.vmh.mvvmjetpackcompose.feature.authentication.ui.signup.component.EmailTextField
 import com.vmh.mvvmjetpackcompose.feature.authentication.ui.signup.component.PasswordTextField
 import com.vmh.mvvmjetpackcompose.feature.authentication.ui.signup.component.SignUpButton
+import com.vmh.mvvmjetpackcompose.lifecycle.collectInLaunchedEffectWithLifecycle
 import com.vmh.mvvmjetpackcompose.ui.widget.common.BackIconButton
+import com.vmh.mvvmjetpackcompose.ui.widget.common.CommonAppErrorContent
 
 @Composable
 internal fun SignUpScreen(
   onNavigateBack: () -> Unit,
+  navigateToAuthenticationScreen: () -> Unit,
   modifier: Modifier = Modifier,
   viewModel: SignUpViewModel = hiltViewModel(),
 ) {
   val focusManager = LocalFocusManager.current
   val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
+  var appErrorToDisplay by rememberSaveable { mutableStateOf<AppError?>(null) }
+  val currentNavigateToAuthenticationScreen by rememberUpdatedState(navigateToAuthenticationScreen)
+
+  viewModel.eventFlow.collectInLaunchedEffectWithLifecycle { event ->
+    when (event) {
+      is SignUpSingleEvent.SignUpFailure ->
+        appErrorToDisplay = event.error
+
+      SignUpSingleEvent.SignUpSuccess ->
+        currentNavigateToAuthenticationScreen()
+    }
+  }
 
   Scaffold(
     modifier = modifier.pointerInput(Unit) {
@@ -80,6 +99,15 @@ internal fun SignUpScreen(
 
         if (uiState.isLoading) {
           LoadingIndicator(modifier = Modifier.align(Alignment.Center))
+        }
+
+        appErrorToDisplay?.let {
+          CommonAppErrorContent(
+            appError = it,
+            getAppErrorMessage = DefaultGetAppErrorMessageForDialog,
+            onDismiss = { appErrorToDisplay = null },
+            onConfirm = { appErrorToDisplay = null },
+          )
         }
       }
     },

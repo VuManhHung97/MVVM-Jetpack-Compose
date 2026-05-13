@@ -69,8 +69,18 @@ dependencies {
 
   implementation(projects.feature.main)
   implementation(projects.feature.authentication)
+  implementation(projects.feature.home)
+  implementation(projects.feature.profile)
+  implementation(projects.feature.webview)
+  implementation(projects.feature.search)
 
   // Core Modules
   implementation(projects.core.ui)
+  implementation(projects.core.data)
+  implementation(projects.core.domain)
+  implementation(projects.core.common)
   implementation(projects.core.resource)
+  implementation(projects.core.network)
+  implementation(projects.core.local)
+  implementation(projects.core.model)
 }

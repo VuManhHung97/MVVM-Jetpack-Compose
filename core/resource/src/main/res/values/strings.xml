@@ -3,6 +3,18 @@
     <string name="tab_home_title">Home</string>
     <string name="tab_profile_title">Profile</string>
 
+    <!-- App error -->
+    <string name="app_error_some_thing_went_wrong">Something went wrong</string>
+    <string name="app_error_please_try_again">Please try again.</string>
+    <string name="app_error_no_internet_connection_title">No internet connection</string>
+    <string name="app_error_no_internet_connection_message">Please check the connection status and try again.</string>
+    <string name="app_error_not_found_title">Data not found</string>
+    <string name="app_error_internal_server_title">Server error</string>
+    <string name="app_error_service_unauthorized_title">Session Expired</string>
+    <string name="app_error_service_unauthorized_message">Your session has expired. Please sign in again to continue.</string>
+    <string name="app_error_dialog_positive_button">OK</string>
+    <string name="app_error_inline_positive_button">Try again</string>
+
     <!-- Authentication -->
     <string name="sign_in_email">Continue with Email</string>
     <string name="sign_in_title">Sign in</string>
@@ -27,4 +39,26 @@
     <string name="sign_up_confirm_your_password">Confirm your password</string>
     <string name="sign_up_confirm_password">Confirm password</string>
 
+    <!-- profile -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_preferences">App Preferences</string>
+    <string name="profile_language">Language</string>
+    <string name="profile_download_settings">Download settings</string>
+    <string name="profile_support">Support</string>
+    <string name="profile_faq">FAQ</string>
+    <string name="profile_contact_us">Contact Us</string>
+    <string name="profile_other">Others</string>
+    <string name="profile_terms_of_use">Terms of Use</string>
+    <string name="profile_privacy_policy">Privacy Policy</string>
+    <string name="profile_sign_out">Sign Out</string>
+    <string name="web_view_faq_title">Frequently Asked Questions</string>
+    <string name="web_view_term_of_use_title">Terms of Use</string>
+    <string name="web_view_privacy_policy_title">Privacy Policy</string>
+    <string name="profile_sign_out_are_you_leaving">Are you leaving?</string>
+    <string name="profile_sign_out_confirmation">Are you sure you want to sign out?</string>
+    <string name="profile_sign_out_cancel">Cancel</string>
+
+    <!-- search -->
+    <string name="search_hint">Search content</string>
+    <string name="search_result_empty_content">No results found for \"%s\"</string>
 </resources>

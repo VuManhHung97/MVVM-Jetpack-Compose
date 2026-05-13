@@ -16,13 +16,13 @@ fun NavController.navigateToHomeScreen(navOptions: NavOptions? = null) = navigat
   navOptions = navOptions,
 )
 
-fun NavGraphBuilder.homeGraph() {
+fun NavGraphBuilder.homeGraph(onNavigateToSearchScreen: () -> Unit) {
   navigation(
     route = HomeGraphRoutePattern,
     startDestination = HomeRoutePattern,
   ) {
     composable(route = HomeRoutePattern) {
-      HomeRoute()
+      HomeRoute(onNavigateToSearchScreen = onNavigateToSearchScreen)
     }
   }
 }

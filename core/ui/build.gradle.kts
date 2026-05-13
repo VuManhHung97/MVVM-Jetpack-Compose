@@ -18,6 +18,8 @@ dependencies {
   implementation(libs.timber)
 
   implementation(projects.core.resource)
+  implementation(projects.core.model)
+  implementation(projects.core.common)
 
   // FlowExt
   api(projects.library.flowext)

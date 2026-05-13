@@ -13,10 +13,11 @@ fun NavController.navigateToSignUpScreen(navOptions: NavOptions? = null) = navig
   navOptions = navOptions,
 )
 
-fun NavGraphBuilder.signUpScreen(onNavigateBack: () -> Unit) {
+fun NavGraphBuilder.signUpScreen(onNavigateBack: () -> Unit, navigateToAuthenticationScreen: () -> Unit) {
   composable(route = SignUpRoutePattern) {
     SignUpScreen(
       onNavigateBack = onNavigateBack,
+      navigateToAuthenticationScreen = navigateToAuthenticationScreen,
     )
   }
 }
