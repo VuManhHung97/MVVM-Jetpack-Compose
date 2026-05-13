@@ -110,6 +110,21 @@ internal class ProfileViewModel @Inject constructor(
       )
     }
   }
+
+  internal fun logout() {
+    viewModelScope.launch {
+      authRepository.logout()
+        .fold(
+          success = {
+            eventChannel.send(ProfileSingleEvent.LogoutSuccess)
+          },
+          failure = { error ->
+            Timber.e(error, "Failed to logout")
+            eventChannel.send(ProfileSingleEvent.LogoutFailure(error = error))
+          },
+        )
+    }
+  }
 }
 
 private fun User.toSettingItems(): PersistentList<ProfileUiState.ProfileUiItem> =

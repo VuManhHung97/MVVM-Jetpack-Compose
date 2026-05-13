@@ -36,6 +36,7 @@ import com.vmh.mvvmjetpackcompose.feature.profile.ui.component.HeaderTitleConten
 import com.vmh.mvvmjetpackcompose.feature.profile.ui.component.OptionContent
 import com.vmh.mvvmjetpackcompose.feature.profile.ui.component.ProfileInfoContent
 import com.vmh.mvvmjetpackcompose.feature.profile.ui.component.SignOutButton
+import com.vmh.mvvmjetpackcompose.feature.profile.ui.component.SignOutDialog
 import com.vmh.mvvmjetpackcompose.feature.profile.ui.navigation.WebViewDestination
 import com.vmh.mvvmjetpackcompose.lifecycle.collectInLaunchedEffectWithLifecycle
 import com.vmh.mvvmjetpackcompose.ui.widget.common.CommonAppErrorContent
@@ -50,6 +51,7 @@ internal fun ProfileRoute(
   val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
   var logoutError by rememberSaveable { mutableStateOf<AppError?>(null) }
   val currentOnNavigateToAuthenticationScreen by rememberUpdatedState(onNavigateToAuthenticationScreen)
+  var isProfileSignOutDialogVisible by rememberSaveable { mutableStateOf(false) }
 
   viewModel.eventFlow.collectInLaunchedEffectWithLifecycle { event ->
     when (event) {
@@ -86,6 +88,10 @@ internal fun ProfileRoute(
                 ProfileUiItem.Option.TermsOfUse ->
                   onNavigateToWebViewScreen(WebViewDestination.TermsOfUse)
 
+                ProfileUiItem.SignOut -> {
+                  isProfileSignOutDialogVisible = true
+                }
+
                 else -> {
                   // TODO: handle late
                 }
@@ -102,6 +108,16 @@ internal fun ProfileRoute(
             modifier = Modifier.align(Alignment.Center),
           )
       }
+    }
+
+    if (isProfileSignOutDialogVisible) {
+      SignOutDialog(
+        onLogout = {
+          isProfileSignOutDialogVisible = false
+          viewModel.logout()
+        },
+        onDismiss = { isProfileSignOutDialogVisible = false },
+      )
     }
 
     logoutError?.let {

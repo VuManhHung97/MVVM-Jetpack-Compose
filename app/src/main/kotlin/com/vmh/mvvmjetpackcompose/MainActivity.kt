@@ -46,6 +46,8 @@ import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainTopScreenTopLev
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.mainGraph
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.navigateToMainGraph
 import com.vmh.mvvmjetpackcompose.feature.main.ui.rememberMainState
+import com.vmh.mvvmjetpackcompose.feature.search.ui.navigation.navigateToSearchScreen
+import com.vmh.mvvmjetpackcompose.feature.search.ui.navigation.searchScreen
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.WebViewArgs
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.navigateToWebViewScreen
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.webViewScreen
@@ -162,9 +164,7 @@ private fun MVVMJetpackComposeApp(
       startDestination = startDestination,
     ) {
       mainGraph(
-        onNavigateToSearchScreen = {
-          // TODO: handle later
-        },
+        onNavigateToSearchScreen = navController::navigateToSearchScreen,
         onNavigateToAuthenticationScreen = {
           navController.navigateToAuthenticationScreen(
             navOptions = navOptions {
@@ -183,6 +183,10 @@ private fun MVVMJetpackComposeApp(
             ),
           )
         },
+      )
+
+      searchScreen(
+        onNavigateBack = navController::popBackStack,
       )
 
       authenticationScreen(

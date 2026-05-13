@@ -73,4 +73,8 @@ internal class DefaultAuthRepository @Inject constructor(
       localUser?.updateProfile(profile = profileResponse)
     }.bind()
   }
+
+  override suspend fun logout() = withContext(appCoroutineDispatchers.io) {
+    authLocalDataSource.update { null }
+  }
 }
