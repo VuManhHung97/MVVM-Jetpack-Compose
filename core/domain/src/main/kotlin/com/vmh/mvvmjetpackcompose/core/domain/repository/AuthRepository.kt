@@ -14,4 +14,6 @@ interface AuthRepository {
   fun observeAuthenticationState(): Flow<Result<AuthenticationState, AppError.LocalStorageException>>
 
   suspend fun refreshCurrentUser(): Result<Unit, AppError>
+
+  suspend fun logout(): Result<Unit, AppError>
 }

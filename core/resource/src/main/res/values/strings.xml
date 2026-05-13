@@ -54,5 +54,11 @@
     <string name="web_view_faq_title">Frequently Asked Questions</string>
     <string name="web_view_term_of_use_title">Terms of Use</string>
     <string name="web_view_privacy_policy_title">Privacy Policy</string>
+    <string name="profile_sign_out_are_you_leaving">Are you leaving?</string>
+    <string name="profile_sign_out_confirmation">Are you sure you want to sign out?</string>
+    <string name="profile_sign_out_cancel">Cancel</string>
 
+    <!-- search -->
+    <string name="search_hint">Search content</string>
+    <string name="search_result_empty_content">No results found for \"%s\"</string>
 </resources>

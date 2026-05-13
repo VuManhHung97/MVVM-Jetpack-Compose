@@ -53,6 +53,7 @@ include(":feature:home")
 include(":feature:profile")
 include(":feature:authentication")
 include(":feature:webview")
+include(":feature:search")
 
 plugins {
   id("org.gradle.toolchains.foojay-resolver-convention") version ("0.9.0")
