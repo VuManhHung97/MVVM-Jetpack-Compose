@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"e:\\\\AndroidBase\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(xargs -I {} sh -c 'echo \"=== {} ===\" && find {} -type d | head -8')",
+      "Bash(Get-ChildItem -Path \"e:\\\\AndroidBase\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(mkdir -p \"e:/AndroidBase/.claude/agents\")",
+      "Bash(Get-ChildItem -Path \"e:\\\\AndroidBase\" -Recurse -Filter \"build.gradle.kts\")",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(./gradlew spotlessApply)",
+      "Bash(where java *)"
+    ],
+    "additionalDirectories": [
+      "e:\\AndroidBase\\.claude"
+    ]
+  }
+}

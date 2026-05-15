@@ -91,3 +91,13 @@ sealed interface SearchSingleEvent {
   @Immutable
   data class RemoveSearchHistoryFailure(val error: AppError) : SearchSingleEvent
 }
+
+fun String.toHistorySuggestionUiItem(): SearchUiState.SuggestionUiItem = SearchUiState.SuggestionUiItem(
+  keyword = this,
+  type = SearchUiState.SuggestionUiType.History,
+)
+
+fun String.toAutocompleteSuggestionUiItem(): SearchUiState.SuggestionUiItem = SearchUiState.SuggestionUiItem(
+  keyword = this,
+  type = SearchUiState.SuggestionUiType.Autocomplete,
+)

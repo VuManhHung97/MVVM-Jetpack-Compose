@@ -3,11 +3,20 @@ package com.vmh.mvvmjetpackcompose.feature.search.ui
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.michaelbull.result.getOrElse
+import com.github.michaelbull.result.onFailure
+import com.vmh.mvvmjetpackcompose.core.common.extension.buildPersistentList
+import com.vmh.mvvmjetpackcompose.core.domain.repository.SearchRepository
 import com.vmh.mvvmjetpackcompose.lifecycle.EventChannel
 import com.vmh.mvvmjetpackcompose.lifecycle.HasEventFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,12 +30,15 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
-@Suppress("UnusedParameter", "UnusedPrivateMember", "TooManyFunctions", "EmptyFunctionBlock")
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+@Suppress("TooManyFunctions", "EmptyFunctionBlock", "UnusedParameter", "UnusedPrivateMember")
 @HiltViewModel
 internal class SearchViewModel @Inject constructor(
   private val savedStateHandle: SavedStateHandle,
   private val eventChannel: EventChannel<SearchSingleEvent>,
+  private val searchRepository: SearchRepository,
 ) : ViewModel(eventChannel),
   HasEventFlow<SearchSingleEvent> by eventChannel {
   private val _uiStateFlow: MutableStateFlow<SearchUiState> = MutableStateFlow(SearchUiState.Initial)
@@ -75,9 +87,45 @@ internal class SearchViewModel @Inject constructor(
   }
 
   private suspend fun getSuggestions(keyword: String?) {
+    if (keyword == null) return
+
+    emitState { it.copy(suggestionUiState = SearchUiState.SuggestionUiState.Visible.Loading) }
+
+    coroutineScope {
+      val historyDeferred = async {
+        searchRepository
+          .getSearchHistory(
+            keyword = keyword,
+            limit = SEARCH_SEARCH_HISTORY_LIMIT,
+          )
+          .onFailure {
+            Timber.e(it, "Failed to fetch search history for keyword: $keyword")
+          }
+          .getOrElse { emptyList() }
+      }
+      val autocompleteDeferred = async {
+        searchRepository
+          .getSearchAutocomplete(
+            keyword = keyword,
+            limit = SEARCH_SEARCH_SUGGESTIONS_LIMIT,
+          )
+          .onFailure {
+            Timber.e(it, "Failed to fetch search autocomplete for keyword: $keyword")
+          }
+          .getOrElse { emptyList() }
+      }
+      val (historyTexts, autocompleteTexts) = awaitAll(historyDeferred, autocompleteDeferred)
+
+      val items = buildPersistentList {
+        addAll(historyTexts.map { it.toHistorySuggestionUiItem() })
+        addAll(autocompleteTexts.map { it.toAutocompleteSuggestionUiItem() })
+      }
+      emitState { it.copy(suggestionUiState = SearchUiState.SuggestionUiState.Visible.Content(items)) }
+    }
   }
 
   private suspend fun searchByKeyword(keyword: String) {
+    emitState { it.copy(searchResultUiState = SearchUiState.SearchResultUiState.Loading) }
   }
 
   fun onSubmit() {
@@ -107,8 +155,6 @@ internal class SearchViewModel @Inject constructor(
   }
 
   fun onSuggestionItemRemoved(keyword: String) {
-    viewModelScope.launch {
-    }
   }
 
   fun onKeywordCleared() {
@@ -123,7 +169,8 @@ internal class SearchViewModel @Inject constructor(
   private companion object {
     const val KEYWORD_KEY = "SearchViewModel#keyword"
     const val SEARCH_LIMIT = 12
-    const val SEARCH_SUGGESTIONS_LIMIT = 10
+    const val SEARCH_SEARCH_SUGGESTIONS_LIMIT = 10
+    const val SEARCH_SEARCH_HISTORY_LIMIT = 10
     val SEARCH_DEBOUNCE_DURATION = 500.milliseconds
 
     private fun determineLoadMoreState(nextPageSize: Int): SearchUiState.LoadMoreState = if (nextPageSize <
