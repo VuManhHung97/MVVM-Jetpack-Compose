@@ -3,9 +3,11 @@ package com.vmh.mvvmjetpackcompose.feature.search.ui
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.michaelbull.result.fold
 import com.github.michaelbull.result.getOrElse
 import com.github.michaelbull.result.onFailure
 import com.vmh.mvvmjetpackcompose.core.common.extension.buildPersistentList
+import com.vmh.mvvmjetpackcompose.core.common.extension.mapToPersistentList
 import com.vmh.mvvmjetpackcompose.core.domain.repository.SearchRepository
 import com.vmh.mvvmjetpackcompose.lifecycle.EventChannel
 import com.vmh.mvvmjetpackcompose.lifecycle.HasEventFlow
@@ -33,7 +35,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-@Suppress("TooManyFunctions", "EmptyFunctionBlock", "UnusedParameter", "UnusedPrivateMember")
+@Suppress("TooManyFunctions", "EmptyFunctionBlock", "UnusedParameter")
 @HiltViewModel
 internal class SearchViewModel @Inject constructor(
   private val savedStateHandle: SavedStateHandle,
@@ -126,6 +128,31 @@ internal class SearchViewModel @Inject constructor(
 
   private suspend fun searchByKeyword(keyword: String) {
     emitState { it.copy(searchResultUiState = SearchUiState.SearchResultUiState.Loading) }
+
+    searchRepository
+      .searchByKeyword(
+        keyword = keyword,
+        limit = SEARCH_LIMIT,
+        offset = 0,
+      )
+      .fold(
+        success = { items ->
+          emitState { state ->
+            state.copy(
+              searchResultUiState = SearchUiState.SearchResultUiState.Content(
+                keyword = keyword,
+                contents = items.mapToPersistentList { it.toSearchResultContentUiItem() },
+                loadMoreState = determineLoadMoreState(items.size),
+              ),
+            )
+          }
+          eventChannel.send(SearchSingleEvent.ScrollToTop)
+        },
+        failure = { error ->
+          Timber.e(error, "Failed to search for keyword: $keyword")
+          emitState { it.copy(searchResultUiState = SearchUiState.SearchResultUiState.Error(error)) }
+        },
+      )
   }
 
   fun onSubmit() {

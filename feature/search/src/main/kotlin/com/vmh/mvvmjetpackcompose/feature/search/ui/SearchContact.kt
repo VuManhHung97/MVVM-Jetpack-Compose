@@ -2,6 +2,7 @@ package com.vmh.mvvmjetpackcompose.feature.search.ui
 
 import androidx.compose.runtime.Immutable
 import com.vmh.mvvmjetpackcompose.core.model.error.AppError
+import com.vmh.mvvmjetpackcompose.core.model.search.SearchResult
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 
@@ -91,6 +92,11 @@ sealed interface SearchSingleEvent {
   @Immutable
   data class RemoveSearchHistoryFailure(val error: AppError) : SearchSingleEvent
 }
+
+fun SearchResult.toSearchResultContentUiItem(): SearchUiState.ResultContentUiItem = SearchUiState.ResultContentUiItem(
+  id = id,
+  title = title,
+)
 
 fun String.toHistorySuggestionUiItem(): SearchUiState.SuggestionUiItem = SearchUiState.SuggestionUiItem(
   keyword = this,

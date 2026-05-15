@@ -94,6 +94,43 @@ Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.bac
 Surface(modifier.fillMaxSize())
 ```
 
+Quy tắc xuống dòng (áp dụng cho mọi function call, không chỉ Composable):
+
+- **1 arg**: có thể viết trên 1 dòng.
+- **> 1 arg**: mỗi arg xuống 1 dòng riêng, dấu `)` xuống dòng mới.
+
+```kotlin
+// Đúng — > 1 arg, mỗi arg 1 dòng
+searchRepository.searchByKeyword(
+    keyword = keyword,
+    limit = SEARCH_LIMIT,
+    offset = 0,
+)
+
+// Sai — > 1 arg nhưng viết gộp
+searchRepository.searchByKeyword(keyword = keyword, limit = SEARCH_LIMIT, offset = 0)
+```
+
+## Error Logging
+
+Luôn log với `Timber.e()` trong failure branch của `fold` / `onFailure`, kể cả khi lỗi đã được surface lên UI:
+
+```kotlin
+// Đúng
+.fold(
+    success = { ... },
+    failure = { error ->
+        Timber.e(error, "Failed to search for keyword: $keyword")
+        emitState { it.copy(searchResultUiState = Error(error)) }
+    },
+)
+
+// Sai — không có log
+failure = { error ->
+    emitState { it.copy(searchResultUiState = Error(error)) }
+}
+```
+
 ## Dependencies & Imports
 
 - Chỉ import/inject dependency thật sự được dùng.
