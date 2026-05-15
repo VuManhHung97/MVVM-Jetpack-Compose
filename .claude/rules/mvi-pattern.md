@@ -140,3 +140,25 @@ fun SignInScreen(viewModel: SignInViewModel = hiltViewModel()) {
 
 - Không dùng `remember { }` bọc quanh `collectAsStateWithLifecycle()`.
 - `LaunchedEffect(viewModel)` với key là ViewModel instance (stable).
+
+## UiState Mapper Convention
+
+Khi map domain model sang UiState item, luôn tạo **extension function riêng** — không inline trong `.map { }` trong ViewModel.
+
+**Naming:** `to + {DomainModelName} + {UiItemType}`
+
+```kotlin
+// Đúng — mapper riêng trong SearchContact.kt, cùng file với SearchUiState
+fun SearchResult.toSearchResultContentUiItem(): SearchUiState.ResultContentUiItem =
+    SearchUiState.ResultContentUiItem(id = id, title = title)
+
+// Đúng — dùng trong ViewModel
+contents = items.mapToPersistentList { it.toSearchResultContentUiItem() }
+
+// Sai — inline trong ViewModel
+contents = items.mapToPersistentList { SearchUiState.ResultContentUiItem(id = it.id, title = it.title) }
+```
+
+Đặt mapper function trong file Contract (`*Contact.kt` / `*Contract.kt`) cùng với UiState definition — cùng pattern với `toHistorySuggestionUiItem()`, `toAutocompleteSuggestionUiItem()`.
+
+Dùng `mapToPersistentList { }` từ `core.common.extension.ImmutableList` thay vì `.map { }.toPersistentList()` để tránh intermediate list allocation.

@@ -11,7 +11,13 @@
       "Bash(Get-ChildItem -Path \"e:\\\\AndroidBase\" -Recurse -Filter \"build.gradle.kts\")",
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(./gradlew spotlessApply)",
-      "Bash(where java *)"
+      "Bash(where java *)",
+      "Bash(Get-ChildItem -Path \"e:\\\\AndroidBase\\\\feature\\\\search\" -Recurse -Force)",
+      "Bash(Select-Object -Property FullName, PSIsContainer)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Get-ChildItem -Path \"e:\\\\AndroidBase\" -Recurse -Directory)",
+      "Skill(update-config)",
+      "Skill(update-config:*)"
     ],
     "additionalDirectories": [
       "e:\\AndroidBase\\.claude"
