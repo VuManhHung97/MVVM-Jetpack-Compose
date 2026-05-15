@@ -9,6 +9,7 @@ android {
 dependencies {
   implementation(projects.core.ui)
   implementation(projects.core.resource)
+  implementation(projects.core.common)
   api(projects.core.domain)
 
   // Libraries
