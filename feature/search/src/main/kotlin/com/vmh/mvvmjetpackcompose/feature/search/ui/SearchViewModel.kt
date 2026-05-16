@@ -179,13 +179,13 @@ internal class SearchViewModel @Inject constructor(
     val keyword = currentContent.keyword
     val offset = currentContent.contents.size
 
-    viewModelScope.launch {
-      emitState { state ->
-        state.updateSearchResultContent { existingContent ->
-          existingContent.copy(loadMoreState = SearchUiState.LoadMoreState.Loading)
-        }
+    emitState { state ->
+      state.updateSearchResultContent { existingContent ->
+        existingContent.copy(loadMoreState = SearchUiState.LoadMoreState.Loading)
       }
+    }
 
+    viewModelScope.launch {
       searchRepository
         .searchByKeyword(
           keyword = keyword,
