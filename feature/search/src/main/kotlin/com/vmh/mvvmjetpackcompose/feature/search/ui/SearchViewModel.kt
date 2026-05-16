@@ -7,6 +7,7 @@ import com.github.michaelbull.result.fold
 import com.github.michaelbull.result.getOrElse
 import com.github.michaelbull.result.onFailure
 import com.vmh.mvvmjetpackcompose.core.common.extension.buildPersistentList
+import com.vmh.mvvmjetpackcompose.core.common.extension.filterDuplicatesAndAddAll
 import com.vmh.mvvmjetpackcompose.core.common.extension.mapToPersistentList
 import com.vmh.mvvmjetpackcompose.core.domain.repository.SearchRepository
 import com.vmh.mvvmjetpackcompose.lifecycle.EventChannel
@@ -161,6 +162,59 @@ internal class SearchViewModel @Inject constructor(
   }
 
   fun onLoadMore() {
+    val currentContent = uiStateFlow.value.searchResultUiState
+    if (currentContent !is SearchUiState.SearchResultUiState.Content) return
+
+    when (currentContent.loadMoreState) {
+      SearchUiState.LoadMoreState.None,
+      is SearchUiState.LoadMoreState.Error,
+      -> Unit
+
+      SearchUiState.LoadMoreState.Loading,
+      SearchUiState.LoadMoreState.EndOfList,
+      -> return
+    }
+
+    val keyword = currentContent.keyword
+    val offset = currentContent.contents.size
+
+    viewModelScope.launch {
+      emitState { state ->
+        state.updateSearchResultContent { existingContent ->
+          existingContent.copy(loadMoreState = SearchUiState.LoadMoreState.Loading)
+        }
+      }
+
+      searchRepository
+        .searchByKeyword(
+          keyword = keyword,
+          limit = SEARCH_LIMIT,
+          offset = offset,
+        )
+        .fold(
+          success = { items ->
+            emitState { state ->
+              state.updateSearchResultContent { existingContent ->
+                existingContent.copy(
+                  contents = existingContent.contents.filterDuplicatesAndAddAll(
+                    items = items.mapToPersistentList { it.toSearchResultContentUiItem() },
+                    keySelector = { it.id },
+                  ),
+                  loadMoreState = determineLoadMoreState(items.size),
+                )
+              }
+            }
+          },
+          failure = { error ->
+            Timber.e(error, "Failed to load more for keyword: $keyword, offset: $offset")
+            emitState { state ->
+              state.updateSearchResultContent { existingContent ->
+                existingContent.copy(loadMoreState = SearchUiState.LoadMoreState.Error(error))
+              }
+            }
+          },
+        )
+    }
   }
 
   fun onSuggestionItemClicked(keyword: String) {
@@ -208,4 +262,17 @@ internal class SearchViewModel @Inject constructor(
       SearchUiState.LoadMoreState.None
     }
   }
+}
+
+private inline fun SearchUiState.updateSearchResultContent(
+  transform: (SearchUiState.SearchResultUiState.Content) -> SearchUiState.SearchResultUiState.Content,
+): SearchUiState = when (val currentResult = searchResultUiState) {
+  is SearchUiState.SearchResultUiState.Content -> copy(
+    searchResultUiState = transform(currentResult),
+  )
+
+  is SearchUiState.SearchResultUiState.Empty,
+  is SearchUiState.SearchResultUiState.Loading,
+  is SearchUiState.SearchResultUiState.Error,
+  -> this
 }
