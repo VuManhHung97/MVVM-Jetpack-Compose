@@ -21,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
@@ -31,6 +32,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
+import com.vmh.mvvmjetpackcompose.core.ui.common.CustomSnackbarHost
+import com.vmh.mvvmjetpackcompose.core.ui.common.LocalSnackbarManager
+import com.vmh.mvvmjetpackcompose.core.ui.common.SnackbarManager
+import com.vmh.mvvmjetpackcompose.core.ui.common.rememberSnackbarManager
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetpackComposeTheme
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.AuthenticationRoutePattern
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.authenticationScreen
@@ -75,31 +80,37 @@ class MainActivity : AppCompatActivity() {
     splashScreen.setKeepOnScreenCondition { viewModel.startDestinationStateFlow.value is StartDestinationState.Loading }
 
     setContent {
-      MVVMJetpackComposeTheme {
-        Surface(
-          modifier = Modifier.fillMaxSize(),
-          color = MaterialTheme.colorScheme.surface,
-        ) {
-          @SuppressLint("StateFlowValueCalledInComposition")
-          val startDestinationState by produceState(initialValue = viewModel.startDestinationStateFlow.value) {
-            value = viewModel.startDestinationStateFlow.first { it !is StartDestinationState.Loading }
+      val snackbarManager = rememberSnackbarManager()
+
+      CompositionLocalProvider(
+        LocalSnackbarManager provides snackbarManager,
+      ) {
+        MVVMJetpackComposeTheme {
+          Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.surface,
+          ) {
+            @SuppressLint("StateFlowValueCalledInComposition")
+            val startDestinationState by produceState(initialValue = viewModel.startDestinationStateFlow.value) {
+              value = viewModel.startDestinationStateFlow.first { it !is StartDestinationState.Loading }
+            }
+
+            val startDestination = when (startDestinationState) {
+              StartDestinationState.AuthenticationScreen ->
+                AuthenticationRoutePattern
+
+              StartDestinationState.MainScreen ->
+                MainGraphRoutePattern
+
+              StartDestinationState.Loading ->
+                return@Surface
+            }
+
+            MVVMJetpackComposeApp(
+              startDestination = startDestination,
+              navTypeContainer = navTypeContainer,
+            )
           }
-
-          val startDestination = when (startDestinationState) {
-            StartDestinationState.AuthenticationScreen ->
-              AuthenticationRoutePattern
-
-            StartDestinationState.MainScreen ->
-              MainGraphRoutePattern
-
-            StartDestinationState.Loading ->
-              return@Surface
-          }
-
-          MVVMJetpackComposeApp(
-            startDestination = startDestination,
-            navTypeContainer = navTypeContainer,
-          )
         }
       }
     }
@@ -115,6 +126,7 @@ private fun MVVMJetpackComposeApp(
   modifier: Modifier = Modifier,
   navController: NavHostController = rememberNavController(),
   mainState: MainState = rememberMainState(navController = navController),
+  localSnackbarManager: SnackbarManager = LocalSnackbarManager.current,
 ) {
   val mainTopScreenTopLevelDestinations = MainTopScreenTopLevelDestination.entries.toPersistentList()
   val context = LocalContext.current
@@ -154,6 +166,7 @@ private fun MVVMJetpackComposeApp(
         )
       }
     },
+    snackbarHost = { CustomSnackbarHost(snackbarState = localSnackbarManager.snackbarHostState) },
   ) { innerPadding ->
     NavHost(
       modifier = Modifier

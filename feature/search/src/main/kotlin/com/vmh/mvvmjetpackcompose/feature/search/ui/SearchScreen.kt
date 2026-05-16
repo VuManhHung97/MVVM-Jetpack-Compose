@@ -41,6 +41,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.vmh.mvvmjetpackcompose.core.resource.R as CoreResourceR
 import com.vmh.mvvmjetpackcompose.core.ui.common.DebouncedClickable
+import com.vmh.mvvmjetpackcompose.core.ui.common.LocalSnackbarManager
+import com.vmh.mvvmjetpackcompose.core.ui.common.SnackbarManager
+import com.vmh.mvvmjetpackcompose.core.ui.common.SnackbarMessage
 import com.vmh.mvvmjetpackcompose.core.ui.common.isScrolledToEnd
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetPackComposeColors
 import com.vmh.mvvmjetpackcompose.feature.search.ui.component.SearchKeywordTextField
@@ -54,6 +57,7 @@ internal fun SearchRoute(
   onNavigateBack: () -> Unit,
   modifier: Modifier = Modifier,
   viewModel: SearchViewModel = hiltViewModel(),
+  snackbarManager: SnackbarManager = LocalSnackbarManager.current,
 ) {
   val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
   val keyword by viewModel.keywordStateFlow.collectAsStateWithLifecycle(
@@ -68,9 +72,18 @@ internal fun SearchRoute(
       SearchSingleEvent.ScrollToTop ->
         scope.launch { lazyGridState.scrollToItem(index = 0) }
 
-      is SearchSingleEvent.RemoveSearchHistoryFailure -> {
-        // TODO: handle later
-      }
+      is SearchSingleEvent.RemoveSearchHistoryFailure ->
+        scope.launch {
+          snackbarManager.show(
+            snackbarMessage = SnackbarMessage.IconAndLabel(
+              message = context.getString(CoreResourceR.string.app_error_some_thing_went_wrong),
+              icon = SnackbarMessage.Icon(
+                iconResId = CoreResourceR.drawable.ic_error_filled_24,
+                tintColor = MVVMJetPackComposeColors.red40,
+              ),
+            ),
+          )
+        }
     }
   }
 
