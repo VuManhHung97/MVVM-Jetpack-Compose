@@ -8,6 +8,7 @@ import com.github.michaelbull.result.getOrElse
 import com.github.michaelbull.result.onFailure
 import com.vmh.mvvmjetpackcompose.core.common.extension.buildPersistentList
 import com.vmh.mvvmjetpackcompose.core.common.extension.filterDuplicatesAndAddAll
+import com.vmh.mvvmjetpackcompose.core.common.extension.filterToPersistentList
 import com.vmh.mvvmjetpackcompose.core.common.extension.mapToPersistentList
 import com.vmh.mvvmjetpackcompose.core.domain.repository.SearchRepository
 import com.vmh.mvvmjetpackcompose.lifecycle.EventChannel
@@ -36,7 +37,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-@Suppress("TooManyFunctions", "EmptyFunctionBlock", "UnusedParameter")
+@Suppress("TooManyFunctions")
 @HiltViewModel
 internal class SearchViewModel @Inject constructor(
   private val savedStateHandle: SavedStateHandle,
@@ -83,7 +84,7 @@ internal class SearchViewModel @Inject constructor(
     }
   }
 
-  fun retrySearchByKeyword() {
+  internal fun retrySearchByKeyword() {
     if (uiStateFlow.value.searchResultUiState is SearchUiState.SearchResultUiState.Error) {
       viewModelScope.launch { submitFlow.emit(keywordStateFlow.value) }
     }
@@ -156,12 +157,12 @@ internal class SearchViewModel @Inject constructor(
       )
   }
 
-  fun onSubmit() {
+  internal fun onSubmit() {
     setSuggestionVisible(isVisible = false)
     viewModelScope.launch { submitFlow.emit(keywordStateFlow.value) }
   }
 
-  fun onLoadMore() {
+  internal fun onLoadMore() {
     val currentContent = uiStateFlow.value.searchResultUiState
     if (currentContent !is SearchUiState.SearchResultUiState.Content) return
 
@@ -217,13 +218,13 @@ internal class SearchViewModel @Inject constructor(
     }
   }
 
-  fun onSuggestionItemClicked(keyword: String) {
+  internal fun onSuggestionItemClicked(keyword: String) {
     setSuggestionVisible(isVisible = false)
     onKeywordChanged(keyword)
     onSubmit()
   }
 
-  fun setSuggestionVisible(isVisible: Boolean) {
+  internal fun setSuggestionVisible(isVisible: Boolean) {
     emitState { state ->
       state.copy(
         suggestionUiState = if (isVisible) {
@@ -235,15 +236,35 @@ internal class SearchViewModel @Inject constructor(
     }
   }
 
-  fun onSuggestionItemRemoved(keyword: String) {
+  internal fun onSuggestionItemRemoved(keyword: String) {
+    viewModelScope.launch {
+      searchRepository.deleteSearchHistory(keyword = keyword)
+        .fold(
+          success = {
+            emitState { state ->
+              state.updateSuggestionContent { content ->
+                content.copy(
+                  suggestions = content.suggestions.filterToPersistentList {
+                    !(it.keyword == keyword && it.type == SearchUiState.SuggestionUiType.History)
+                  },
+                )
+              }
+            }
+          },
+          failure = { error ->
+            Timber.e(error, "Failed to delete search history: $keyword")
+            eventChannel.send(SearchSingleEvent.RemoveSearchHistoryFailure(error))
+          },
+        )
+    }
   }
 
-  fun onKeywordCleared() {
+  internal fun onKeywordCleared() {
     setSuggestionVisible(isVisible = true)
     savedStateHandle[KEYWORD_KEY] = ""
   }
 
-  fun onKeywordChanged(keyword: String) {
+  internal fun onKeywordChanged(keyword: String) {
     savedStateHandle[KEYWORD_KEY] = keyword
   }
 
@@ -275,4 +296,14 @@ private inline fun SearchUiState.updateSearchResultContent(
   is SearchUiState.SearchResultUiState.Loading,
   is SearchUiState.SearchResultUiState.Error,
   -> this
+}
+
+private inline fun SearchUiState.updateSuggestionContent(
+  transform: (SearchUiState.SuggestionUiState.Visible.Content) -> SearchUiState.SuggestionUiState.Visible.Content,
+): SearchUiState = when (val current = suggestionUiState) {
+  is SearchUiState.SuggestionUiState.Visible.Content -> copy(
+    suggestionUiState = transform(current),
+  )
+
+  else -> this
 }

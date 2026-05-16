@@ -14,4 +14,6 @@ interface SearchRemoteDataSource {
     limit: Int,
     offset: Int,
   ): Result<List<SearchResultResponse>, AppError.ApiException>
+
+  suspend fun deleteSearchHistory(keyword: String): Result<Unit, AppError.ApiException>
 }
