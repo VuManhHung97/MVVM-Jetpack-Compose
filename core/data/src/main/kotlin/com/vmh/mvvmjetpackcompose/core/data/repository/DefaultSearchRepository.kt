@@ -28,4 +28,8 @@ internal class DefaultSearchRepository @Inject constructor(
         offset = offset,
       ).map { items -> items.map { it.toSearchResult() } }
     }
+
+  override suspend fun deleteSearchHistory(keyword: String) = withContext(appCoroutineDispatchers.io) {
+    searchRemoteDataSource.deleteSearchHistory(keyword = keyword)
+  }
 }
