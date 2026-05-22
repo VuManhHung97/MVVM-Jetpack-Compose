@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-@Suppress("UnusedPrivateMember")
+@Suppress("EmptyFunctionBlock", "UnusedParameter", "UnusedPrivateMember")
 @HiltViewModel
 internal class LanguageViewModel @Inject constructor() : ViewModel() {
 
@@ -17,4 +17,10 @@ internal class LanguageViewModel @Inject constructor() : ViewModel() {
   val uiStateFlow: StateFlow<LanguageUiState> = _uiStateFlow.asStateFlow()
 
   private inline fun emitState(f: (LanguageUiState) -> LanguageUiState) = _uiStateFlow.update(f)
+
+  fun onLanguageSelect(languageId: String) {
+  }
+
+  fun onSaveClick() {
+  }
 }

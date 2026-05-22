@@ -45,6 +45,7 @@ import com.vmh.mvvmjetpackcompose.ui.widget.common.CommonAppErrorContent
 internal fun ProfileRoute(
   onNavigateToAuthenticationScreen: () -> Unit,
   onNavigateToWebViewScreen: (destination: WebViewDestination) -> Unit,
+  onNavigateToLanguageScreen: () -> Unit,
   modifier: Modifier = Modifier,
   viewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -91,6 +92,9 @@ internal fun ProfileRoute(
                 ProfileUiItem.SignOut -> {
                   isProfileSignOutDialogVisible = true
                 }
+
+                ProfileUiItem.Option.Language ->
+                  onNavigateToLanguageScreen()
 
                 else -> {
                   // TODO: handle late
@@ -221,6 +225,7 @@ private fun Modifier.defaultSettingItemStyle(): Modifier = this
 private fun SettingsRoutePreview() {
   MVVMJetpackComposeTheme {
     ProfileRoute(
+      onNavigateToLanguageScreen = {},
       onNavigateToAuthenticationScreen = {},
       onNavigateToWebViewScreen = {},
     )
