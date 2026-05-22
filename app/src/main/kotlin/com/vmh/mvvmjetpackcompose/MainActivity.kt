@@ -45,6 +45,7 @@ import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.nav
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.navigateToSignUpScreen
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.signUpScreen
 import com.vmh.mvvmjetpackcompose.feature.language.presentation.language.navigation.languageScreen
+import com.vmh.mvvmjetpackcompose.feature.language.presentation.language.navigation.navigateToLanguageScreen
 import com.vmh.mvvmjetpackcompose.feature.main.ui.MainNavigationBar
 import com.vmh.mvvmjetpackcompose.feature.main.ui.MainState
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainGraphRoutePattern
@@ -197,6 +198,7 @@ private fun MVVMJetpackComposeApp(
             ),
           )
         },
+        onNavigateToLanguageScreen = navController::navigateToLanguageScreen,
       )
 
       searchScreen(

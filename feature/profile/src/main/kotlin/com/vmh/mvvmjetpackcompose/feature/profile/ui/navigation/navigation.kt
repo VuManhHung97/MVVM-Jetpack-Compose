@@ -17,6 +17,7 @@ fun NavController.navigateToProfileScreen(navOptions: NavOptions? = null) = navi
 )
 
 fun NavGraphBuilder.profileGraph(
+  onNavigateToLanguageScreen: () -> Unit,
   onNavigateToAuthenticationScreen: () -> Unit,
   onNavigateToWebViewScreen: (destination: WebViewDestination) -> Unit,
 ) {
@@ -26,6 +27,7 @@ fun NavGraphBuilder.profileGraph(
   ) {
     composable(route = ProfileRoutePattern) {
       ProfileRoute(
+        onNavigateToLanguageScreen = onNavigateToLanguageScreen,
         onNavigateToAuthenticationScreen = onNavigateToAuthenticationScreen,
         onNavigateToWebViewScreen = onNavigateToWebViewScreen,
       )
