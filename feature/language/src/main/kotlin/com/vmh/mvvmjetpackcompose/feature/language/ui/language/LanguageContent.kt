@@ -38,7 +38,7 @@ internal fun LanguageRoute(
 ) {
   val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
 
-  LanguageScreen(
+  LanguageContent(
     modifier = modifier,
     uiState = uiState,
     onNavigateBack = onNavigateBack,
@@ -49,7 +49,7 @@ internal fun LanguageRoute(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun LanguageScreen(
+private fun LanguageContent(
   uiState: LanguageUiState,
   onNavigateBack: () -> Unit,
   onLanguageItemClick: (languageId: String) -> Unit,
@@ -135,9 +135,9 @@ internal fun LanguageScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
-private fun LanguageScreenPreview() {
+private fun LanguageContentPreview() {
   MVVMJetpackComposeTheme {
-    LanguageScreen(
+    LanguageContent(
       uiState = LanguageUiState.Content.initial,
       onNavigateBack = {},
       onLanguageItemClick = {},
