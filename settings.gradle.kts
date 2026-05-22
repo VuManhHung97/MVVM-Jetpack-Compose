@@ -54,6 +54,7 @@ include(":feature:profile")
 include(":feature:authentication")
 include(":feature:webview")
 include(":feature:search")
+include(":feature:language")
 
 plugins {
   id("org.gradle.toolchains.foojay-resolver-convention") version ("0.9.0")

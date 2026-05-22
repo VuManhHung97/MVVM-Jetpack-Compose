@@ -73,6 +73,7 @@ dependencies {
   implementation(projects.feature.profile)
   implementation(projects.feature.webview)
   implementation(projects.feature.search)
+  implementation(projects.feature.language)
 
   // Core Modules
   implementation(projects.core.ui)
