@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_home_title">ホーム</string>
+    <string name="tab_profile_title">プロフィール</string>
+
+    <!-- App error -->
+    <string name="app_error_some_thing_went_wrong">問題が発生しました</string>
+    <string name="app_error_please_try_again">もう一度お試しください。</string>
+    <string name="app_error_no_internet_connection_title">インターネット接続がありません</string>
+    <string name="app_error_no_internet_connection_message">接続状況を確認して、もう一度お試しください。</string>
+    <string name="app_error_not_found_title">データが見つかりません</string>
+    <string name="app_error_internal_server_title">サーバーエラー</string>
+    <string name="app_error_service_unauthorized_title">セッションの有効期限が切れました</string>
+    <string name="app_error_service_unauthorized_message">セッションの有効期限が切れました。続行するには再度サインインしてください。</string>
+    <string name="app_error_dialog_positive_button">OK</string>
+    <string name="app_error_inline_positive_button">再試行</string>
+
+    <!-- Authentication -->
+    <string name="sign_in_email">メールで続行</string>
+    <string name="sign_in_title">サインイン</string>
+
+    <!-- Sign In -->
+    <string name="sign_up_email">メールアドレス</string>
+    <string name="sign_up_your_email">メールアドレスを入力</string>
+    <string name="sign_up_password">パスワード</string>
+    <string name="sign_up_your_password">パスワードを入力</string>
+    <string name="sign_in_forgot_password">パスワードをお忘れですか？</string>
+    <string name="sign_in_have_account">アカウントをお持ちではありませんか？</string>
+    <string name="sign_up_title">サインアップ</string>
+    <string name="validation_empty_email">メールアドレスを入力してください</string>
+    <string name="validation_empty_password">パスワードを入力してください</string>
+
+    <!-- Sign Up -->
+    <string name="sign_up_content">アカウントをお持ちでないようです。アカウントを作成しましょう。</string>
+    <string name="validation_invalid_email">メールアドレスが正しくありません</string>
+    <string name="validation_invalid_password_must_be_in_6_to_32_characters">パスワードは6〜32文字で入力してください</string>
+    <string name="validation_invalid_password_cannot_include_space">パスワードにスペースを含めることはできません</string>
+    <string name="validation_password_does_not_match">パスワードが一致しません</string>
+    <string name="sign_up_confirm_your_password">パスワードを再入力</string>
+    <string name="sign_up_confirm_password">パスワード確認</string>
+
+    <!-- profile -->
+    <string name="profile_title">プロフィール</string>
+    <string name="profile_preferences">アプリ設定</string>
+    <string name="profile_language">言語</string>
+    <string name="profile_download_settings">ダウンロード設定</string>
+    <string name="profile_support">サポート</string>
+    <string name="profile_faq">FAQ</string>
+    <string name="profile_contact_us">お問い合わせ</string>
+    <string name="profile_other">その他</string>
+    <string name="profile_terms_of_use">利用規約</string>
+    <string name="profile_privacy_policy">プライバシーポリシー</string>
+    <string name="profile_sign_out">サインアウト</string>
+    <string name="web_view_faq_title">よくある質問</string>
+    <string name="web_view_term_of_use_title">利用規約</string>
+    <string name="web_view_privacy_policy_title">プライバシーポリシー</string>
+    <string name="profile_sign_out_are_you_leaving">サインアウトしますか？</string>
+    <string name="profile_sign_out_confirmation">本当にサインアウトしますか？</string>
+    <string name="profile_sign_out_cancel">キャンセル</string>
+
+    <!-- Language -->
+    <string name="language_title">言語</string>
+    <string name="language_save">保存</string>
+
+    <!-- search -->
+    <string name="search_hint">コンテンツを検索</string>
+    <string name="search_result_empty_content">「%s」の検索結果が見つかりません</string>
+</resources>
