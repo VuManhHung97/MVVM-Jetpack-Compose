@@ -10,4 +10,8 @@ interface LanguageRepository {
   suspend fun getLanguages(): Result<List<Language>, AppError>
   fun observeCurrentLocale(): Flow<Result<Locale?, AppError.LocalStorageException>>
   suspend fun setCurrentLocale(locale: Locale): Result<Unit, AppError.LocalStorageException>
+
+  companion object {
+    val DEFAULT_LOCALE: Locale get() = Locale.ENGLISH
+  }
 }

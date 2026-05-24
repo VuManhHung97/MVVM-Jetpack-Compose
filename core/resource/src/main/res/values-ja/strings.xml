@@ -61,6 +61,8 @@
     <!-- Language -->
     <string name="language_title">言語</string>
     <string name="language_save">保存</string>
+    <string name="language_english">英語</string>
+    <string name="language_japanese">日本語</string>
 
     <!-- search -->
     <string name="search_hint">コンテンツを検索</string>

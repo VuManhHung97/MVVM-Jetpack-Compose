@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vmh.mvvmjetpackcompose.core.model.language.Language
 import com.vmh.mvvmjetpackcompose.core.resource.R as CoreResourceR
 import com.vmh.mvvmjetpackcompose.core.ui.common.DefaultGetAppErrorMessageForInline
 import com.vmh.mvvmjetpackcompose.core.ui.common.LoadingIndicator
@@ -42,8 +43,8 @@ internal fun LanguageRoute(
     modifier = modifier,
     uiState = uiState,
     onNavigateBack = onNavigateBack,
-    onLanguageItemClick = viewModel::onLanguageSelect,
-    onSaveClick = viewModel::onSaveClick,
+    onLanguageItemSelect = viewModel::selectLanguage,
+    onLanguageChange = viewModel::languageChanges,
   )
 }
 
@@ -52,8 +53,8 @@ internal fun LanguageRoute(
 private fun LanguageContent(
   uiState: LanguageUiState,
   onNavigateBack: () -> Unit,
-  onLanguageItemClick: (languageId: String) -> Unit,
-  onSaveClick: () -> Unit,
+  onLanguageItemSelect: (languageId: Long) -> Unit,
+  onLanguageChange: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Scaffold(
@@ -71,7 +72,7 @@ private fun LanguageContent(
         },
         actions = {
           TextButton(
-            onClick = onSaveClick,
+            onClick = onLanguageChange,
             enabled = uiState is LanguageUiState.Content && uiState.isSaveButtonEnabled,
           ) {
             Text(
@@ -108,11 +109,21 @@ private fun LanguageContent(
               key = { language -> language.id },
               contentType = { "LanguageItem" },
             ) { language ->
+              val languageName = when (language.languageCode) {
+                Language.LanguageCode.En ->
+                  stringResource(CoreResourceR.string.language_save)
+
+                Language.LanguageCode.Ja ->
+                  stringResource(CoreResourceR.string.language_japanese)
+
+                Language.LanguageCode.Unknown -> return@items
+              }
+
               LanguageItem(
-                name = language.name,
-                localName = language.localName,
+                name = languageName,
+                localName = language.originalName,
                 isSelected = language.isSelected,
-                onLanguageItemClick = { onLanguageItemClick(language.id) },
+                onLanguageItemClick = { onLanguageItemSelect(language.id) },
               )
             }
           }
@@ -140,8 +151,8 @@ private fun LanguageContentPreview() {
     LanguageContent(
       uiState = LanguageUiState.Content.initial,
       onNavigateBack = {},
-      onLanguageItemClick = {},
-      onSaveClick = {},
+      onLanguageItemSelect = {},
+      onLanguageChange = {},
     )
   }
 }
