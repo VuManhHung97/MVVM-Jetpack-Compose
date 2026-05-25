@@ -82,8 +82,9 @@ class MainActivity : AppCompatActivity() {
 
     val localeController = LocaleController.fromApplication(application)
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+      localeController.initBelow33()
       super.onCreate(savedInstanceState)
-      // TODO: handle initBefore33 later
+      localeController.observeCurrentLocaleBelow33(this)
     } else {
       super.onCreate(savedInstanceState)
       localeController.initSince33(this)
