@@ -5,9 +5,14 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
 import com.vmh.mvvmjetpackcompose.core.common.coroutine.AppCoroutineScope
+import com.vmh.mvvmjetpackcompose.core.local.LocalLocale
 import com.vmh.mvvmjetpackcompose.core.local.LocalUser
 import com.vmh.mvvmjetpackcompose.core.local.datasource.AuthLocalDataSource
+import com.vmh.mvvmjetpackcompose.core.local.datasource.LanguageLocalDataSource
+import com.vmh.mvvmjetpackcompose.core.local.datasource.LocaleLocalDataSource
 import com.vmh.mvvmjetpackcompose.core.local.datasourceimpl.AuthLocalDataSourceImpl
+import com.vmh.mvvmjetpackcompose.core.local.datasourceimpl.LanguageLocalDataSourceImpl
+import com.vmh.mvvmjetpackcompose.core.local.datasourceimpl.LocaleLocalDataSourceImpl
 import com.vmh.mvvmjetpackcompose.core.local.mapper.LocalErrorMapper
 import com.vmh.mvvmjetpackcompose.core.local.mapper.LocalErrorMapperImpl
 import com.vmh.mvvmjetpackcompose.core.local.model.serializer.getDefaultSerializer
@@ -31,8 +36,17 @@ internal interface DataLocalModule {
   @Singleton
   fun authLocalDataSource(impl: AuthLocalDataSourceImpl): AuthLocalDataSource
 
+  @Binds
+  @Singleton
+  fun localeLocalDataSource(impl: LocaleLocalDataSourceImpl): LocaleLocalDataSource
+
+  @Binds
+  @Singleton
+  fun languageLocalDataSource(impl: LanguageLocalDataSourceImpl): LanguageLocalDataSource
+
   companion object {
     private const val LOCAL_USER_DATA_STORE_FILE_NAME = "local_user_data_store"
+    private const val LOCAL_LOCALE_DATA_STORE_FILE_NAME = "local_locale_data_store"
 
     @Provides
     @Singleton
@@ -42,6 +56,17 @@ internal interface DataLocalModule {
     ): DataStore<LocalUser> = DataStoreFactory.create(
       serializer = getDefaultSerializer<LocalUser>(),
       produceFile = { context.dataStoreFile(LOCAL_USER_DATA_STORE_FILE_NAME) },
+      scope = appCoroutineScope,
+    )
+
+    @Provides
+    @Singleton
+    fun localLocaleDataStore(
+      @ApplicationContext context: Context,
+      appCoroutineScope: AppCoroutineScope,
+    ): DataStore<LocalLocale> = DataStoreFactory.create(
+      serializer = getDefaultSerializer<LocalLocale>(),
+      produceFile = { context.dataStoreFile(LOCAL_LOCALE_DATA_STORE_FILE_NAME) },
       scope = appCoroutineScope,
     )
   }

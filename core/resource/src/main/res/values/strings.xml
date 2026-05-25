@@ -61,6 +61,8 @@
     <!-- Language -->
     <string name="language_title">Language</string>
     <string name="language_save">Save</string>
+    <string name="language_english">English</string>
+    <string name="language_japanese">Japanese</string>
 
     <!-- search -->
     <string name="search_hint">Search content</string>
