@@ -24,10 +24,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -59,7 +63,9 @@ import com.vmh.mvvmjetpackcompose.feature.search.ui.navigation.searchScreen
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.WebViewArgs
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.navigateToWebViewScreen
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.webViewScreen
+import com.vmh.mvvmjetpackcompose.lifecycle.collectInLaunchedEffectWithLifecycle
 import com.vmh.mvvmjetpackcompose.locale.LocaleController
+import com.vmh.mvvmjetpackcompose.ui.widget.common.UnauthorizedErrorDialog
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.collections.immutable.toPersistentList
@@ -132,17 +138,39 @@ class MainActivity : AppCompatActivity() {
 
 private const val MainNavigationBarAnimationDurationMillis = 300
 
+@Suppress("LongMethod")
 @Composable
 private fun MVVMJetpackComposeApp(
   startDestination: String,
   navTypeContainer: NavTypeContainer,
   modifier: Modifier = Modifier,
+  viewModel: MainViewModel = hiltViewModel(),
   navController: NavHostController = rememberNavController(),
   mainState: MainState = rememberMainState(navController = navController),
   localSnackbarManager: SnackbarManager = LocalSnackbarManager.current,
 ) {
   val mainTopScreenTopLevelDestinations = MainTopScreenTopLevelDestination.entries.toPersistentList()
   val context = LocalContext.current
+  var isUnauthorizedErrorDialogVisible by rememberSaveable { mutableStateOf(false) }
+
+  viewModel.unauthorizedErrorEventFlow.collectInLaunchedEffectWithLifecycle {
+    isUnauthorizedErrorDialogVisible = true
+  }
+
+  viewModel.eventFlow.collectInLaunchedEffectWithLifecycle { event ->
+    when (event) {
+      MainSingleEvent.NavigateToAuthentication -> {
+        isUnauthorizedErrorDialogVisible = false
+        navController.navigateToAuthenticationScreen(
+          navOptions = navOptions {
+            popUpTo(navController.graph.id) { inclusive = true }
+
+            launchSingleTop = true
+          },
+        )
+      }
+    }
+  }
 
   Scaffold(
     modifier = modifier,
@@ -263,6 +291,13 @@ private fun MVVMJetpackComposeApp(
 
       languageScreen(
         onNavigateBack = navController::popBackStack,
+      )
+    }
+
+    if (isUnauthorizedErrorDialogVisible) {
+      UnauthorizedErrorDialog(
+        onDismiss = { isUnauthorizedErrorDialogVisible = false },
+        onConfirm = viewModel::logout,
       )
     }
   }
