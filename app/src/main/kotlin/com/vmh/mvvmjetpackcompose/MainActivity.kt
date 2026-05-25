@@ -1,6 +1,7 @@
 package com.vmh.mvvmjetpackcompose
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -58,6 +59,7 @@ import com.vmh.mvvmjetpackcompose.feature.search.ui.navigation.searchScreen
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.WebViewArgs
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.navigateToWebViewScreen
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.webViewScreen
+import com.vmh.mvvmjetpackcompose.locale.LocaleController
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.collections.immutable.toPersistentList
@@ -77,7 +79,15 @@ class MainActivity : AppCompatActivity() {
     // Manually enable edge-to-edge by calling enableEdgeToEdge in onCreate of your Activity.
     // It should be called before setContentView.
     enableEdgeToEdge()
-    super.onCreate(savedInstanceState)
+
+    val localeController = LocaleController.fromApplication(application)
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+      super.onCreate(savedInstanceState)
+      // TODO: handle initBefore33 later
+    } else {
+      super.onCreate(savedInstanceState)
+      localeController.initSince33(this)
+    }
 
     splashScreen.setKeepOnScreenCondition { viewModel.startDestinationStateFlow.value is StartDestinationState.Loading }
 

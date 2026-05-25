@@ -2,8 +2,8 @@ package com.vmh.mvvmjetpackcompose.feature.language.presentation.language
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.michaelbull.result.coroutines.parZip
 import com.github.michaelbull.result.fold
+import com.github.michaelbull.result.getOrElse
 import com.vmh.mvvmjetpackcompose.core.common.extension.mapToPersistentList
 import com.vmh.mvvmjetpackcompose.core.domain.repository.LanguageRepository
 import com.vmh.mvvmjetpackcompose.lifecycle.EventChannel
@@ -14,7 +14,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -40,32 +41,27 @@ internal class LanguageViewModel @Inject constructor(
     emitState { LanguageUiState.Loading }
 
     viewModelScope.launch {
-      val result = parZip(
-        { languageRepository.getLanguages() },
-        { languageRepository.observeCurrentLocale().first() },
-      ) { languages, currentLocale ->
-        val storedLocaleTag = (currentLocale ?: LanguageRepository.DEFAULT_LOCALE).toLanguageTag()
-        val selectedId = languages.find { it.languageCode.tag == storedLocaleTag }?.id
-        val items = languages.mapToPersistentList { language ->
-          val isSelected = language.id == selectedId
-          language.toLanguageUiItem(isSelected = isSelected)
+      val languages = languageRepository.getLanguages()
+        .getOrElse { error ->
+          Timber.e(error, "GetLanguages failure")
+          emitState { LanguageUiState.Error(error = error) }
+          return@launch
         }
 
-        LanguageUiState.Content(
-          languages = items,
-          isSaveButtonEnabled = items.any { it.isSelected },
-        )
-      }
-
-      emitState {
-        result.fold(
-          success = { it },
-          failure = { error ->
-            Timber.e(error, "GetLanguages failure")
-            LanguageUiState.Error(error = error)
-          },
-        )
-      }
+      languageRepository.observeCurrentLocale()
+        .map { it.getOrElse { null }?.toLanguageTag() ?: LanguageRepository.DEFAULT_LOCALE.toLanguageTag() }
+        .distinctUntilChanged()
+        .collect { localeTag ->
+          val selectedId = languages.find { it.languageCode.tag == localeTag }?.id
+          emitState {
+            LanguageUiState.Content(
+              languages = languages.mapToPersistentList { language ->
+                language.toLanguageUiItem(isSelected = language.id == selectedId)
+              },
+              isSaveButtonEnabled = false,
+            )
+          }
+        }
     }
   }
 
@@ -79,7 +75,7 @@ internal class LanguageViewModel @Inject constructor(
           }
         state.copy(
           languages = updateLanguages,
-          isSaveButtonEnabled = updateLanguages.any { it.id == languageId },
+          isSaveButtonEnabled = true,
         )
       } else {
         state

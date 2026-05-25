@@ -2,6 +2,7 @@ package com.vmh.mvvmjetpackcompose.core.data.repository
 
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.coroutines.runSuspendCatching
+import com.github.michaelbull.result.fold
 import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.map
 import com.github.michaelbull.result.mapError
@@ -50,3 +51,10 @@ internal class DefaultLanguageRepository @Inject constructor(
     localeLocalDataSource.update(locale.toLocalLocale())
   }
 }
+
+suspend fun LanguageRepository.getCurrentLocale(): Locale = observeCurrentLocale()
+  .first()
+  .fold(
+    success = { it ?: LanguageRepository.DEFAULT_LOCALE },
+    failure = { LanguageRepository.DEFAULT_LOCALE },
+  )
