@@ -3,9 +3,11 @@ package com.vmh.mvvmjetpackcompose.core.data.di
 import com.vmh.mvvmjetpackcompose.core.data.repository.DefaultAuthRepository
 import com.vmh.mvvmjetpackcompose.core.data.repository.DefaultLanguageRepository
 import com.vmh.mvvmjetpackcompose.core.data.repository.DefaultSearchRepository
+import com.vmh.mvvmjetpackcompose.core.data.repository.RealUnauthorizedErrorEventRepository
 import com.vmh.mvvmjetpackcompose.core.domain.repository.AuthRepository
 import com.vmh.mvvmjetpackcompose.core.domain.repository.LanguageRepository
 import com.vmh.mvvmjetpackcompose.core.domain.repository.SearchRepository
+import com.vmh.mvvmjetpackcompose.core.domain.repository.UnauthorizedErrorEventRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -22,4 +24,7 @@ internal interface DataModule {
 
   @Binds
   fun languageRepository(impl: DefaultLanguageRepository): LanguageRepository
+
+  @Binds
+  fun bindUnauthorizedErrorEventRepository(impl: RealUnauthorizedErrorEventRepository): UnauthorizedErrorEventRepository
 }
