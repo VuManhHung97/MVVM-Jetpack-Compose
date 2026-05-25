@@ -1,6 +1,7 @@
 package com.vmh.mvvmjetpackcompose
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -44,6 +45,8 @@ import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.nav
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.navigation.signInScreen
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.navigateToSignUpScreen
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.signUpScreen
+import com.vmh.mvvmjetpackcompose.feature.language.presentation.language.navigation.languageScreen
+import com.vmh.mvvmjetpackcompose.feature.language.presentation.language.navigation.navigateToLanguageScreen
 import com.vmh.mvvmjetpackcompose.feature.main.ui.MainNavigationBar
 import com.vmh.mvvmjetpackcompose.feature.main.ui.MainState
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainGraphRoutePattern
@@ -56,6 +59,7 @@ import com.vmh.mvvmjetpackcompose.feature.search.ui.navigation.searchScreen
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.WebViewArgs
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.navigateToWebViewScreen
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.webViewScreen
+import com.vmh.mvvmjetpackcompose.locale.LocaleController
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.collections.immutable.toPersistentList
@@ -75,7 +79,16 @@ class MainActivity : AppCompatActivity() {
     // Manually enable edge-to-edge by calling enableEdgeToEdge in onCreate of your Activity.
     // It should be called before setContentView.
     enableEdgeToEdge()
-    super.onCreate(savedInstanceState)
+
+    val localeController = LocaleController.fromApplication(application)
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+      localeController.initBelow33()
+      super.onCreate(savedInstanceState)
+      localeController.observeCurrentLocaleBelow33(this)
+    } else {
+      super.onCreate(savedInstanceState)
+      localeController.initSince33(this)
+    }
 
     splashScreen.setKeepOnScreenCondition { viewModel.startDestinationStateFlow.value is StartDestinationState.Loading }
 
@@ -196,6 +209,7 @@ private fun MVVMJetpackComposeApp(
             ),
           )
         },
+        onNavigateToLanguageScreen = navController::navigateToLanguageScreen,
       )
 
       searchScreen(
@@ -244,6 +258,10 @@ private fun MVVMJetpackComposeApp(
 
       webViewScreen(
         navType = navTypeContainer.webViewArgsNavType,
+        onNavigateBack = navController::popBackStack,
+      )
+
+      languageScreen(
         onNavigateBack = navController::popBackStack,
       )
     }

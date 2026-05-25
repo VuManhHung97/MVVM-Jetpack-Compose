@@ -18,6 +18,7 @@ fun NavController.navigateToMainGraph(navOptions: NavOptions? = null) = navigate
 
 fun NavGraphBuilder.mainGraph(
   onNavigateToSearchScreen: () -> Unit,
+  onNavigateToLanguageScreen: () -> Unit,
   onNavigateToAuthenticationScreen: () -> Unit,
   onNavigateToWebViewScreen: (destination: WebViewDestination) -> Unit,
 ) {
@@ -28,6 +29,7 @@ fun NavGraphBuilder.mainGraph(
     homeGraph(onNavigateToSearchScreen = onNavigateToSearchScreen)
 
     profileGraph(
+      onNavigateToLanguageScreen = onNavigateToLanguageScreen,
       onNavigateToAuthenticationScreen = onNavigateToAuthenticationScreen,
       onNavigateToWebViewScreen = onNavigateToWebViewScreen,
     )

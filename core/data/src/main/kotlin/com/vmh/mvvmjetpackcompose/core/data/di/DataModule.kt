@@ -1,8 +1,10 @@
 package com.vmh.mvvmjetpackcompose.core.data.di
 
 import com.vmh.mvvmjetpackcompose.core.data.repository.DefaultAuthRepository
+import com.vmh.mvvmjetpackcompose.core.data.repository.DefaultLanguageRepository
 import com.vmh.mvvmjetpackcompose.core.data.repository.DefaultSearchRepository
 import com.vmh.mvvmjetpackcompose.core.domain.repository.AuthRepository
+import com.vmh.mvvmjetpackcompose.core.domain.repository.LanguageRepository
 import com.vmh.mvvmjetpackcompose.core.domain.repository.SearchRepository
 import dagger.Binds
 import dagger.Module
@@ -17,4 +19,7 @@ internal interface DataModule {
 
   @Binds
   fun searchRepository(impl: DefaultSearchRepository): SearchRepository
+
+  @Binds
+  fun languageRepository(impl: DefaultLanguageRepository): LanguageRepository
 }
