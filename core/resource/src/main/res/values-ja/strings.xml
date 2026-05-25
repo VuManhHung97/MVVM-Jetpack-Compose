@@ -67,4 +67,9 @@
     <!-- search -->
     <string name="search_hint">コンテンツを検索</string>
     <string name="search_result_empty_content">「%s」の検索結果が見つかりません</string>
+
+    <!-- Force Update -->
+    <string name="app_error_force_update_title">更新が必要です</string>
+    <string name="app_error_force_update_message">アプリの新しいバージョンが利用可能です。引き続きアプリケーションをご利用いただくには、アップデートしてください。</string>
+    <string name="app_error_force_update_positive_button">今すぐ更新</string>
 </resources>

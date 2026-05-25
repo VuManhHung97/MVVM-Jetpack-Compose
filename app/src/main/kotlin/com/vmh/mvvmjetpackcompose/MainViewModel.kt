@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.fold
 import com.vmh.mvvmjetpackcompose.core.domain.repository.AuthRepository
+import com.vmh.mvvmjetpackcompose.core.domain.repository.ForceUpdateErrorEventRepository
 import com.vmh.mvvmjetpackcompose.core.domain.repository.UnauthorizedErrorEventRepository
 import com.vmh.mvvmjetpackcompose.core.model.auth.AuthenticationState
 import com.vmh.mvvmjetpackcompose.core.model.error.AppError
@@ -33,12 +34,18 @@ internal class MainViewModel @Inject constructor(
   private val authRepository: AuthRepository,
   private val eventChannel: EventChannel<MainSingleEvent>,
   unauthorizedErrorEventRepository: UnauthorizedErrorEventRepository,
+  forceUpdateErrorEventRepository: ForceUpdateErrorEventRepository,
 ) : ViewModel(eventChannel),
   HasEventFlow<MainSingleEvent> by eventChannel {
 
   internal val unauthorizedErrorEventFlow = unauthorizedErrorEventRepository
     .events
     .buffer(capacity = Channel.UNLIMITED)
+    .produceIn(viewModelScope)
+    .receiveAsFlow()
+
+  internal val forceUpdateErrorEventFlow = forceUpdateErrorEventRepository.events
+    .buffer(Channel.UNLIMITED)
     .produceIn(viewModelScope)
     .receiveAsFlow()
 

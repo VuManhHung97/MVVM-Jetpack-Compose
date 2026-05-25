@@ -30,6 +30,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -37,11 +38,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
+import com.vmh.mvvmjetpackcompose.core.resource.R as CoreResourceR
 import com.vmh.mvvmjetpackcompose.core.ui.common.CustomSnackbarHost
 import com.vmh.mvvmjetpackcompose.core.ui.common.LocalSnackbarManager
 import com.vmh.mvvmjetpackcompose.core.ui.common.SnackbarManager
 import com.vmh.mvvmjetpackcompose.core.ui.common.rememberSnackbarManager
+import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetPackComposeColors
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetpackComposeTheme
+import com.vmh.mvvmjetpackcompose.core.ui.util.openAppInPlayStore
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.AuthenticationRoutePattern
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.authenticationScreen
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.navigateToAuthenticationScreen
@@ -65,6 +69,7 @@ import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.navigateToWebVie
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.webViewScreen
 import com.vmh.mvvmjetpackcompose.lifecycle.collectInLaunchedEffectWithLifecycle
 import com.vmh.mvvmjetpackcompose.locale.LocaleController
+import com.vmh.mvvmjetpackcompose.ui.widget.common.DialogCommon
 import com.vmh.mvvmjetpackcompose.ui.widget.common.UnauthorizedErrorDialog
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -152,9 +157,14 @@ private fun MVVMJetpackComposeApp(
   val mainTopScreenTopLevelDestinations = MainTopScreenTopLevelDestination.entries.toPersistentList()
   val context = LocalContext.current
   var isUnauthorizedErrorDialogVisible by rememberSaveable { mutableStateOf(false) }
+  var isForceUpdateDialogVisible by rememberSaveable { mutableStateOf(false) }
 
   viewModel.unauthorizedErrorEventFlow.collectInLaunchedEffectWithLifecycle {
     isUnauthorizedErrorDialogVisible = true
+  }
+
+  viewModel.forceUpdateErrorEventFlow.collectInLaunchedEffectWithLifecycle {
+    isForceUpdateDialogVisible = true
   }
 
   viewModel.eventFlow.collectInLaunchedEffectWithLifecycle { event ->
@@ -298,6 +308,20 @@ private fun MVVMJetpackComposeApp(
       UnauthorizedErrorDialog(
         onDismiss = { isUnauthorizedErrorDialogVisible = false },
         onConfirm = viewModel::logout,
+      )
+    }
+
+    if (isForceUpdateDialogVisible) {
+      DialogCommon(
+        title = stringResource(CoreResourceR.string.app_error_force_update_title),
+        content = stringResource(CoreResourceR.string.app_error_force_update_message),
+        confirm = stringResource(CoreResourceR.string.app_error_force_update_positive_button),
+        iconIdRes = CoreResourceR.drawable.ic_warning_filled,
+        iconTint = MVVMJetPackComposeColors.yellow40,
+        dismissOnBackPress = false,
+        dismissOnClickOutside = false,
+        onDismiss = {},
+        onClick = context::openAppInPlayStore,
       )
     }
   }
