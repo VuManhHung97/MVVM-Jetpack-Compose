@@ -30,4 +30,21 @@ internal class RealSearchRemoteDataSourceImpl @Inject constructor(
       ).data
     }
   }
+
+  override suspend fun searchByKeyword(keyword: String, limit: Int, offset: Int) =
+    withContext(appCoroutineDispatchers.io) {
+      catchingApiException(remoteErrorMapper) {
+        searchApiService.searchByKeyword(
+          keyword = keyword,
+          limit = limit,
+          offset = offset,
+        ).data
+      }
+    }
+
+  override suspend fun deleteSearchHistory(keyword: String) = withContext(appCoroutineDispatchers.io) {
+    catchingApiException(remoteErrorMapper) {
+      searchApiService.deleteSearchHistory(keyword = keyword)
+    }
+  }
 }

@@ -140,3 +140,65 @@ fun SignInScreen(viewModel: SignInViewModel = hiltViewModel()) {
 
 - Không dùng `remember { }` bọc quanh `collectAsStateWithLifecycle()`.
 - `LaunchedEffect(viewModel)` với key là ViewModel instance (stable).
+
+## UiState Mapper Convention
+
+Khi map domain model sang UiState item, luôn tạo **extension function riêng** — không inline trong `.map { }` trong ViewModel.
+
+**Naming:** `to + {DomainModelName} + {UiItemType}`
+
+```kotlin
+// Đúng — mapper riêng trong SearchContact.kt, cùng file với SearchUiState
+fun SearchResult.toSearchResultContentUiItem(): SearchUiState.ResultContentUiItem =
+    SearchUiState.ResultContentUiItem(id = id, title = title)
+
+// Đúng — dùng trong ViewModel
+contents = items.mapToPersistentList { it.toSearchResultContentUiItem() }
+
+// Sai — inline trong ViewModel
+contents = items.mapToPersistentList { SearchUiState.ResultContentUiItem(id = it.id, title = it.title) }
+```
+
+Đặt mapper function trong file Contract (`*Contact.kt` / `*Contract.kt`) cùng với UiState definition — cùng pattern với `toHistorySuggestionUiItem()`, `toAutocompleteSuggestionUiItem()`.
+
+Dùng `mapToPersistentList { }` từ `core.common.extension.ImmutableList` thay vì `.map { }.toPersistentList()` để tránh intermediate list allocation.
+
+## Inline State Update Functions
+
+Mọi hàm update một sub-state cụ thể trong UiState phải được tách thành private inline extension function riêng — không inline trực tiếp logic vào trong `emitState { }`.
+
+Pattern bắt buộc:
+- Extension trên UiState (file-level private, đặt ở cuối file ViewModel sau closing brace của class)
+- Nhận lambda `transform` với kiểu input/output tường minh
+- Return type luôn là `UiState` (outer state)
+- Tên function: action + substate (ví dụ: `updateSearchResultContent`, `updateSuggestionContent`)
+- Nếu substate không đúng loại → return `this` không đổi gì
+
+```kotlin
+// Đúng
+private inline fun SearchUiState.updateSuggestionContent(
+    transform: (SearchUiState.SuggestionUiState.Visible.Content) -> SearchUiState.SuggestionUiState.Visible.Content,
+): SearchUiState = when (val current = suggestionUiState) {
+    is SearchUiState.SuggestionUiState.Visible.Content -> copy(suggestionUiState = transform(current))
+    else -> this
+}
+
+// Sai — inline logic trực tiếp trong emitState
+emitState { state ->
+    val current = state.suggestionUiState as? SearchUiState.SuggestionUiState.Visible.Content ?: return@emitState state
+    state.copy(suggestionUiState = current.copy(suggestions = ...))
+}
+```
+
+## List Operations in UiState
+
+Khi thao tác với list bên trong UiState, luôn dùng extension functions từ `core.common.extension.ImmutableList` — không dùng standard Kotlin operators rồi chuyển đổi thủ công.
+
+| Operation | Dùng | Không dùng |
+|---|---|---|
+| Map sang PersistentList | `mapToPersistentList { }` | `.map { }.toPersistentList()` |
+| Filter sang PersistentList | `filterToPersistentList { }` | `.filter { }.toPersistentList()` |
+| Map nullable | `mapNotNullToPersistentList { }` | `.mapNotNull { }.toPersistentList()` |
+| Build từ đầu | `buildPersistentList { add(...) }` | `persistentListOf(...).mutate { }` |
+| Upsert theo key | `upsertByKey(items) { it.id }` | thủ công indexOf + removeAt + add |
+| Thêm tránh trùng | `filterDuplicatesAndAddAll(items) { it.id }` | `.plus(items).distinctBy { it.id }` |

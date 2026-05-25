@@ -11,7 +11,20 @@
       "Bash(Get-ChildItem -Path \"e:\\\\AndroidBase\" -Recurse -Filter \"build.gradle.kts\")",
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(./gradlew spotlessApply)",
-      "Bash(where java *)"
+      "Bash(where java *)",
+      "Bash(Get-ChildItem -Path \"e:\\\\AndroidBase\\\\feature\\\\search\" -Recurse -Force)",
+      "Bash(Select-Object -Property FullName, PSIsContainer)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Get-ChildItem -Path \"e:\\\\AndroidBase\" -Recurse -Directory)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "PowerShell(Get-ChildItem -Path \"e:\\\\AndroidBase\\\\feature\\\\language\\\\\" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })",
+      "PowerShell(Get-ChildItem -Path \"e:\\\\AndroidBase\\\\core\\\\model\\\\src\\\\main\\\\kotlin\\\\\" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })",
+      "PowerShell(Get-ChildItem -Path \"e:\\\\AndroidBase\\\\feature\\\\language\\\\src\\\\main\" | ForEach-Object { \"$\\($_.Name\\)\" })",
+      "Bash(Remove-Item -Path \"e:\\\\AndroidBase\\\\feature\\\\language\\\\src\\\\main\\\\kotlin\\\\com\\\\vmh\\\\mvvmjetpackcompose\\\\feature\\\\language\\\\ui\\\\language\\\\component\\\\LanguageTopBar.kt\" -Force)",
+      "Bash(cd /d e:/AndroidBase)",
+      "Bash(./gradlew assembleDebug)",
+      "PowerShell(.\\\\gradlew assembleDebug 2>&1)"
     ],
     "additionalDirectories": [
       "e:\\AndroidBase\\.claude"

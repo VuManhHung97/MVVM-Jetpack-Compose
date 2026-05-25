@@ -28,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vmh.mvvmjetpackcompose.core.model.error.AppError
 import com.vmh.mvvmjetpackcompose.core.ui.common.DefaultGetAppErrorMessageForDialog
+import com.vmh.mvvmjetpackcompose.core.ui.common.DefaultGetAppErrorMessageForInline
 import com.vmh.mvvmjetpackcompose.core.ui.common.LoadingIndicator
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetPackComposeColors
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetpackComposeTheme
@@ -45,6 +46,7 @@ import com.vmh.mvvmjetpackcompose.ui.widget.common.CommonAppErrorContent
 internal fun ProfileRoute(
   onNavigateToAuthenticationScreen: () -> Unit,
   onNavigateToWebViewScreen: (destination: WebViewDestination) -> Unit,
+  onNavigateToLanguageScreen: () -> Unit,
   modifier: Modifier = Modifier,
   viewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -92,6 +94,9 @@ internal fun ProfileRoute(
                   isProfileSignOutDialogVisible = true
                 }
 
+                ProfileUiItem.Option.Language ->
+                  onNavigateToLanguageScreen()
+
                 else -> {
                   // TODO: handle late
                 }
@@ -100,7 +105,12 @@ internal fun ProfileRoute(
           )
 
         is ProfileUiState.ProfilesContentUiState.Error -> {
-          // This screen does not handle errors before transitioning to the LCE state
+          CommonAppErrorContent(
+            appError = profilesContent.error,
+            getAppErrorMessage = DefaultGetAppErrorMessageForInline,
+            onDismiss = {},
+            onConfirm = {},
+          )
         }
 
         ProfileUiState.ProfilesContentUiState.Loading ->
@@ -221,6 +231,7 @@ private fun Modifier.defaultSettingItemStyle(): Modifier = this
 private fun SettingsRoutePreview() {
   MVVMJetpackComposeTheme {
     ProfileRoute(
+      onNavigateToLanguageScreen = {},
       onNavigateToAuthenticationScreen = {},
       onNavigateToWebViewScreen = {},
     )

@@ -56,11 +56,11 @@ internal fun SearchSuggestionOverlay(
   ) {
     when (suggestionUiState) {
       SuggestionUiState.Visible.Idle -> {
-        // TODO(st-sangha): Implement idle state UI.
+        // TODO: Implement idle state UI.
       }
 
       SuggestionUiState.Visible.Loading -> {
-        // TODO(st-sangha): Implement loading state for suggestion overlay
+        // TODO(: Implement loading state for suggestion overlay
       }
 
       is SuggestionUiState.Visible.Content -> SuggestionContent(
@@ -72,7 +72,7 @@ internal fun SearchSuggestionOverlay(
       )
 
       is SuggestionUiState.Visible.Error -> {
-        // TODO(st-sangha): Implement error state for suggestion overlay
+        // TODO: Implement error state for suggestion overlay
       }
     }
   }

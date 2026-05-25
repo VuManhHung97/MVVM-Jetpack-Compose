@@ -16,22 +16,20 @@ android {
     versionName = MobileFlavor.base.versionName
   }
 
-//  androidResources {
-//    ignoreAssetsPatterns += listOf(
-//      "!PublicSuffixDatabase.list", // OkHttp
-//      "!composepreference.preference.generated.resources",
-//    )
-//    generateLocaleConfig = true
-//    localeFilters += mutableSetOf(
-//      "en",
-//      "en-rUS",
-//      "en-rGB",
-//      "es",
-//      "es-rES",
-//      "ja",
-//      "ja-rJP",
-//    )
-//  }
+  androidResources {
+    ignoreAssetsPatterns += listOf(
+      "!PublicSuffixDatabase.list", // OkHttp
+      "!composepreference.preference.generated.resources",
+    )
+    generateLocaleConfig = true
+    localeFilters += mutableSetOf(
+      "en",
+      "en-rUS",
+      "en-rGB",
+      "ja",
+      "ja-rJP",
+    )
+  }
 
   buildTypes {
     release {
@@ -73,6 +71,7 @@ dependencies {
   implementation(projects.feature.profile)
   implementation(projects.feature.webview)
   implementation(projects.feature.search)
+  implementation(projects.feature.language)
 
   // Core Modules
   implementation(projects.core.ui)

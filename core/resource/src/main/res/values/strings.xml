@@ -58,7 +58,18 @@
     <string name="profile_sign_out_confirmation">Are you sure you want to sign out?</string>
     <string name="profile_sign_out_cancel">Cancel</string>
 
+    <!-- Language -->
+    <string name="language_title">Language</string>
+    <string name="language_save">Save</string>
+    <string name="language_english">English</string>
+    <string name="language_japanese">Japanese</string>
+
     <!-- search -->
     <string name="search_hint">Search content</string>
     <string name="search_result_empty_content">No results found for \"%s\"</string>
+
+    <!-- Force Update -->
+    <string name="app_error_force_update_title">Update require</string>
+    <string name="app_error_force_update_message">A new version of the app is available. Please update to continue using the application.</string>
+    <string name="app_error_force_update_positive_button">Update now</string>
 </resources>
