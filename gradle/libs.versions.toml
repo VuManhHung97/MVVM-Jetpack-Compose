@@ -25,6 +25,7 @@ libphonenumber = "8.13.45"
 spotless = "8.1.0"
 ksp = "2.2.0-2.0.2"
 gms = "4.4.2"
+scanditBarcode = "6.18.0"
 
 # Desugar jdk
 desugar_jdk_libs = "2.1.3"
@@ -220,6 +221,10 @@ play-services-ads = { module = "com.google.android.gms:play-services-ads", versi
 
 # Google Libphonenumber
 google-libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", version.ref = "libphonenumber" }
+
+# Scandit
+scandit-barCode = { module = "com.scandit.datacapture:barcode", version.ref = "scanditBarcode" }
+scandit-core =  { module = "com.scandit.datacapture:core", version.ref = "scanditBarcode" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

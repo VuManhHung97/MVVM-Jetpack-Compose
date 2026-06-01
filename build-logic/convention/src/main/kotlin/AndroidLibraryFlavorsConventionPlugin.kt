@@ -25,6 +25,7 @@ class AndroidLibraryFlavorsConventionPlugin : Plugin<Project> {
         keys = listOf(
           "BASE_URL",
           "WEB_VIEW_BASE_URL",
+          "SCANDIT_LICENSE_KEY",
         ),
       )
 

@@ -1,8 +1,11 @@
+@file:Suppress("TooManyFunctions")
+
 package com.vmh.mvvmjetpackcompose.core.ui.util
 
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -10,6 +13,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.annotation.ChecksSdkIntAtLeast
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import timber.log.Timber
 
@@ -91,3 +95,19 @@ fun Context.openAppInPlayStore() {
   )
   startActivity(intent)
 }
+
+/**
+ * Find the closest Activity in a given Context.
+ * @throws IllegalStateException if not found
+ */
+inline fun <reified T : Activity> Context.findActivity(): T {
+  var context = this
+  while (context is ContextWrapper) {
+    if (context is T) return context
+    context = context.baseContext
+  }
+  error("Cannot find activity from context: $this")
+}
+
+fun Context.isPermissionGranted(permission: String): Boolean = ContextCompat.checkSelfPermission(this, permission) ==
+  PackageManager.PERMISSION_GRANTED
