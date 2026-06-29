@@ -16,8 +16,14 @@
     <string name="app_error_inline_positive_button">再試行</string>
 
     <!-- Authentication -->
-    <string name="sign_in_email">メールで続行</string>
     <string name="sign_in_title">サインイン</string>
+
+    <!-- Welcome -->
+    <string name="welcome_brand_name">BarberApp</string>
+    <string name="welcome_subtitle">ようこそ</string>
+    <string name="welcome_title">本物の男たちの\n領域へ</string>
+    <string name="welcome_log_in">ログイン</string>
+    <string name="welcome_sign_up">サインアップ</string>
 
     <!-- Sign In -->
     <string name="sign_up_email">メールアドレス</string>

@@ -16,8 +16,14 @@
     <string name="app_error_inline_positive_button">Try again</string>
 
     <!-- Authentication -->
-    <string name="sign_in_email">Continue with Email</string>
     <string name="sign_in_title">Sign in</string>
+
+    <!-- Welcome -->
+    <string name="welcome_brand_name">BarberApp</string>
+    <string name="welcome_subtitle">Welcome to</string>
+    <string name="welcome_title">Territory\nof Real Men</string>
+    <string name="welcome_log_in">Log In</string>
+    <string name="welcome_sign_up">Sign Up</string>
 
     <!-- Sign In -->
     <string name="sign_up_email">Email</string>
