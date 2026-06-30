@@ -14,6 +14,9 @@ jobs:
   kotlin:
     name: runner / suggester / spotless / detekt
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v4
