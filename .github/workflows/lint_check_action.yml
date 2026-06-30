@@ -2,7 +2,6 @@ name: Lint Check
 on: pull_request
 
 env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
   CI: true
 
 concurrency:
@@ -11,10 +10,8 @@ concurrency:
 
 jobs:
   build:
-    runs-on: [ 'self-hosted', 'linux', 'x64' ]
+    runs-on: ubuntu-latest
     steps:
-      # When running on self-hosted GitHub Actions runners,
-      # NodeJS must be previously installed with the version specified in the action.yml.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
