@@ -1,4 +1,4 @@
-  package com.vmh.mvvmjetpackcompose.core.deeplink
+package com.vmh.mvvmjetpackcompose.core.deeplink
 
 /**
  * Single source of truth for the app's deeplink scheme/host.

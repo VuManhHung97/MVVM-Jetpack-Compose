@@ -7,7 +7,7 @@ jobs:
   delete-branch:
     # if: ${{ (github.event.pull_request.merged == true) }}
     if: ${{ false }} # Always skip
-    runs-on: [ 'self-hosted', 'linux', 'x64' ]
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
