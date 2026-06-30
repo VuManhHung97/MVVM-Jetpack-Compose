@@ -30,7 +30,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4.1.0
 
       - name: Assemble debug
-        run: ./gradlew :app-mobile:assembleBaseDevDebug :app-tv:assembleBaseDevDebug --stacktrace
+        run: ./gradlew :app:assembleBaseDevDebug --stacktrace
 
       - name: Install Ruby
         uses: ruby/setup-ruby@v1
