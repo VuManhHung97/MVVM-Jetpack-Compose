@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.fold
+import com.vmh.mvvmjetpackcompose.core.deeplink.DeepLinkDestination
 import com.vmh.mvvmjetpackcompose.core.domain.repository.AuthRepository
 import com.vmh.mvvmjetpackcompose.core.domain.repository.ForceUpdateErrorEventRepository
 import com.vmh.mvvmjetpackcompose.core.domain.repository.UnauthorizedErrorEventRepository
@@ -65,6 +66,15 @@ internal class MainViewModel @Inject constructor(
     .map { result ->
       result.toStartDestinationState()
     }
+
+  internal fun handleDeepLinkDestination(deepLinkDestination: DeepLinkDestination) {
+    when (deepLinkDestination) {
+      is DeepLinkDestination.Search ->
+        viewModelScope.launch {
+          eventChannel.send(MainSingleEvent.NavigateToSearch)
+        }
+    }
+  }
 
   internal fun logout() {
     viewModelScope.launch {
