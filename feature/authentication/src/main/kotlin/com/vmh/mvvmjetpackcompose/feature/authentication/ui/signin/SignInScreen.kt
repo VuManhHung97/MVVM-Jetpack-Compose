@@ -47,6 +47,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vmh.mvvmjetpackcompose.core.model.error.AppError
 import com.vmh.mvvmjetpackcompose.core.resource.R as CoreResourceR
+import com.vmh.mvvmjetpackcompose.core.ui.analytics.TrackScreenViewEvent
 import com.vmh.mvvmjetpackcompose.core.ui.common.DebouncedClickable
 import com.vmh.mvvmjetpackcompose.core.ui.common.DefaultGetAppErrorMessageForDialog
 import com.vmh.mvvmjetpackcompose.core.ui.common.LoadingIndicator
@@ -63,6 +64,8 @@ import com.vmh.mvvmjetpackcompose.ui.widget.common.CustomizedOutlinedTextField
 
 private val TextFieldShape = RoundedCornerShape(12.dp)
 
+private const val SignInScreenName = "SignIn"
+
 @Composable
 internal fun SignInRoute(
   onNavigateBack: () -> Unit,
@@ -71,6 +74,8 @@ internal fun SignInRoute(
   modifier: Modifier = Modifier,
   viewModel: SignInViewModel = hiltViewModel(),
 ) {
+  TrackScreenViewEvent(screenName = SignInScreenName)
+
   val focusManager = LocalFocusManager.current
   val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
   var appErrorToDisplay by rememberSaveable { mutableStateOf<AppError?>(null) }

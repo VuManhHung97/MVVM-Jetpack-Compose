@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.michaelbull.result.fold
+import com.vmh.mvvmjetpackcompose.core.analytics.AnalyticsTracker
+import com.vmh.mvvmjetpackcompose.core.analytics.logLogin
 import com.vmh.mvvmjetpackcompose.core.domain.repository.AuthRepository
 import com.vmh.mvvmjetpackcompose.lifecycle.EventChannel
 import com.vmh.mvvmjetpackcompose.lifecycle.HasEventFlow
@@ -19,6 +21,7 @@ import timber.log.Timber
 @HiltViewModel
 internal class SignInViewModel @Inject constructor(
   private val authRepository: AuthRepository,
+  private val analyticsTracker: AnalyticsTracker,
   private val eventChannel: EventChannel<SignInSingleEvent>,
   savedStateHandle: SavedStateHandle,
 ) : ViewModel(eventChannel),
@@ -96,6 +99,7 @@ internal class SignInViewModel @Inject constructor(
         )
         .fold(
           success = {
+            analyticsTracker.logLogin(method = LOGIN_METHOD_EMAIL)
             emitState { it.copy(isLoading = false) }
             eventChannel.send(SignInSingleEvent.SignInSuccess)
           },
@@ -111,5 +115,7 @@ internal class SignInViewModel @Inject constructor(
   companion object {
     private const val VIEW_STATE_BUNDLE_KEY =
       "com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.view_state"
+
+    private const val LOGIN_METHOD_EMAIL = "email"
   }
 }

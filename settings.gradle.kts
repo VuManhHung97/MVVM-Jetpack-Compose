@@ -42,6 +42,7 @@ include(":core:data")
 include(":core:local")
 include(":core:domain")
 include(":core:deeplink")
+include(":core:analytics")
 
 // ---------------------------------------- Library modules ----------------------------------------
 
