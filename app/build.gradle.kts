@@ -62,8 +62,6 @@ dependencies {
   implementation(libs.kotlin.result)
   implementation(libs.kotlin.result.coroutine)
   implementation(libs.material)
-  implementation(platform(libs.firebase.bom))
-  implementation(libs.firebase.analytics.ktx)
 
   implementation(libs.moshi)
   implementation(libs.moshix.sealed.reflect)
@@ -86,4 +84,5 @@ dependencies {
   implementation(projects.core.local)
   implementation(projects.core.model)
   implementation(projects.core.deeplink)
+  implementation(projects.core.analytics)
 }

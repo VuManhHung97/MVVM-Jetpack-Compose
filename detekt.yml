@@ -740,7 +740,7 @@ Compose:
   CompositionLocalAllowlist:
     active: true
     # -- You can optionally define a list of CompositionLocals that are allowed here
-    allowedCompositionLocals: LocalTypography,LocalSnackbarManager,LocalHorizontalPlayerUiConfig,LocalVerticalPlayerUiConfig,LocalPreloadManagerViewModel,LocalAppEventViewModel
+    allowedCompositionLocals: LocalTypography,LocalSnackbarManager,LocalHorizontalPlayerUiConfig,LocalVerticalPlayerUiConfig,LocalPreloadManagerViewModel,LocalAppEventViewModel,LocalAnalyticsTracker
   CompositionLocalNaming:
     active: true
   ContentEmitterReturningValues:

@@ -20,6 +20,7 @@ dependencies {
   implementation(projects.core.resource)
   implementation(projects.core.model)
   implementation(projects.core.common)
+  implementation(projects.core.analytics)
 
   // FlowExt
   api(projects.library.flowext)

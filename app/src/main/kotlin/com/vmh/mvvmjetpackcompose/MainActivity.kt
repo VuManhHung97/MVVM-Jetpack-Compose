@@ -39,8 +39,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
+import com.vmh.mvvmjetpackcompose.core.analytics.AnalyticsTracker
 import com.vmh.mvvmjetpackcompose.core.deeplink.DeepLinkResolver
 import com.vmh.mvvmjetpackcompose.core.resource.R as CoreResourceR
+import com.vmh.mvvmjetpackcompose.core.ui.analytics.LocalAnalyticsTracker
 import com.vmh.mvvmjetpackcompose.core.ui.common.CustomSnackbarHost
 import com.vmh.mvvmjetpackcompose.core.ui.common.LocalSnackbarManager
 import com.vmh.mvvmjetpackcompose.core.ui.common.SnackbarManager
@@ -88,6 +90,9 @@ class MainActivity : AppCompatActivity() {
   @Inject
   internal lateinit var deepLinkResolver: DeepLinkResolver
 
+  @Inject
+  internal lateinit var analyticsTracker: AnalyticsTracker
+
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
     setIntent(intent)
@@ -119,6 +124,7 @@ class MainActivity : AppCompatActivity() {
 
       CompositionLocalProvider(
         LocalSnackbarManager provides snackbarManager,
+        LocalAnalyticsTracker provides analyticsTracker,
       ) {
         MVVMJetpackComposeTheme {
           Surface(
