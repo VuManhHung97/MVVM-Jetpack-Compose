@@ -5,6 +5,7 @@ import java.util.Date
 plugins {
   id(libs.plugins.android.application.core.mobile.get().pluginId)
   id(libs.plugins.android.hilt.get().pluginId)
+  alias(libs.plugins.google.services)
 }
 
 android {
@@ -61,6 +62,8 @@ dependencies {
   implementation(libs.kotlin.result)
   implementation(libs.kotlin.result.coroutine)
   implementation(libs.material)
+  implementation(platform(libs.firebase.bom))
+  implementation(libs.firebase.analytics.ktx)
 
   implementation(libs.moshi)
   implementation(libs.moshix.sealed.reflect)

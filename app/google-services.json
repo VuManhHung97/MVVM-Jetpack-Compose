@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "794171090947",
+    "project_id": "mvvm-jetpack-compose-4011e",
+    "storage_bucket": "mvvm-jetpack-compose-4011e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:794171090947:android:096f4d331399c054888636",
+        "android_client_info": {
+          "package_name": "com.vmh.mvvmjetpackcompose.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsc37O8wGEeUAv9IsIXMIb0fnLuyU7qY0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
