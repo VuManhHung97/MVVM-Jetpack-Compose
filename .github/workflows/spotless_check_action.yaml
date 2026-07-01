@@ -4,7 +4,6 @@ on:
     types: [ opened, synchronize, reopened ]
 
 env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
   CI: true
 
 concurrency:
@@ -14,10 +13,11 @@ concurrency:
 jobs:
   kotlin:
     name: runner / suggester / spotless / detekt
-    runs-on: [ 'self-hosted', 'linux', 'x64' ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
-      # When running on self-hosted GitHub Actions runners,
-      # NodeJS must be previously installed with the version specified in the action.yml.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:

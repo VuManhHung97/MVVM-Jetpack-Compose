@@ -82,4 +82,5 @@ dependencies {
   implementation(projects.core.network)
   implementation(projects.core.local)
   implementation(projects.core.model)
+  implementation(projects.core.deeplink)
 }

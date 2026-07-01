@@ -1,6 +1,7 @@
 package com.vmh.mvvmjetpackcompose
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -38,6 +39,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
+import com.vmh.mvvmjetpackcompose.core.deeplink.DeepLinkResolver
 import com.vmh.mvvmjetpackcompose.core.resource.R as CoreResourceR
 import com.vmh.mvvmjetpackcompose.core.ui.common.CustomSnackbarHost
 import com.vmh.mvvmjetpackcompose.core.ui.common.LocalSnackbarManager
@@ -82,6 +84,15 @@ class MainActivity : AppCompatActivity() {
 
   @Inject
   internal lateinit var navTypeContainer: NavTypeContainer
+
+  @Inject
+  internal lateinit var deepLinkResolver: DeepLinkResolver
+
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+    handleIntent(intent)
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     // Call installSplashScreen in the starting activity before calling super.onCreate().
@@ -138,6 +149,16 @@ class MainActivity : AppCompatActivity() {
         }
       }
     }
+
+    if (savedInstanceState == null) {
+      handleIntent(intent)
+    }
+  }
+
+  private fun handleIntent(intent: Intent?) {
+    intent ?: return
+    deepLinkResolver.resolve(intent)
+      ?.let(viewModel::handleDeepLinkDestination)
   }
 }
 
@@ -179,6 +200,8 @@ private fun MVVMJetpackComposeApp(
           },
         )
       }
+
+      is MainSingleEvent.NavigateToSearch -> navController.navigateToSearchScreen()
     }
   }
 

@@ -41,6 +41,7 @@ include(":core:network")
 include(":core:data")
 include(":core:local")
 include(":core:domain")
+include(":core:deeplink")
 
 // ---------------------------------------- Library modules ----------------------------------------
 
