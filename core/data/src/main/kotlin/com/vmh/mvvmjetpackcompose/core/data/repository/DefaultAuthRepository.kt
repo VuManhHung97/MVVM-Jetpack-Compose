@@ -4,11 +4,13 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.coroutines.CoroutineBindingScope
 import com.github.michaelbull.result.coroutines.coroutineBinding
 import com.github.michaelbull.result.map
+import com.github.michaelbull.result.onFailure
 import com.vmh.mvvmjetpackcompose.core.common.coroutine.AppCoroutineDispatchers
 import com.vmh.mvvmjetpackcompose.core.data.mapper.auth.toUser
 import com.vmh.mvvmjetpackcompose.core.data.mapper.user.toLocalUser
 import com.vmh.mvvmjetpackcompose.core.data.mapper.user.updateProfile
 import com.vmh.mvvmjetpackcompose.core.domain.repository.AuthRepository
+import com.vmh.mvvmjetpackcompose.core.domain.repository.FcmTokenManager
 import com.vmh.mvvmjetpackcompose.core.local.datasource.AuthLocalDataSource
 import com.vmh.mvvmjetpackcompose.core.model.auth.AuthenticationState
 import com.vmh.mvvmjetpackcompose.core.model.error.AppError
@@ -19,11 +21,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 internal class DefaultAuthRepository @Inject constructor(
   private val authRemoteDataSource: AuthRemoteDataSource,
   private val authLocalDataSource: AuthLocalDataSource,
   private val userRemoteDataSource: UserRemoteDataSource,
+  private val fcmTokenManager: FcmTokenManager,
   private val appCoroutineDispatchers: AppCoroutineDispatchers,
 ) : AuthRepository {
   override suspend fun signUp(email: String, password: String) = withContext(appCoroutineDispatchers.io) {
@@ -75,6 +79,9 @@ internal class DefaultAuthRepository @Inject constructor(
   }
 
   override suspend fun logout() = withContext(appCoroutineDispatchers.io) {
+    fcmTokenManager.clearFcmToken()
+      .onFailure { Timber.e(it, "Failed to clear FCM token during logout") }
+
     authLocalDataSource.update { null }
   }
 }

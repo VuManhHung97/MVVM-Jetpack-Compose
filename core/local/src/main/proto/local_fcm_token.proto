@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+option java_package = "com.vmh.mvvmjetpackcompose.core.local";
+option java_multiple_files = true;
+
+message LocalFcmToken {
+  string token = 1;
+  bool is_synced = 2;
+}

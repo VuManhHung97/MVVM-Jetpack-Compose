@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Channel id must match com.google.firebase.messaging.default_notification_channel_id in the manifest. -->
+    <string name="notification_channel_default_id" translatable="false">default</string>
+    <string name="notification_channel_default_name">General</string>
+    <string name="notification_channel_default_description">General notifications</string>
+</resources>

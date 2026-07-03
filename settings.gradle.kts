@@ -43,6 +43,7 @@ include(":core:local")
 include(":core:domain")
 include(":core:deeplink")
 include(":core:analytics")
+include(":core:notification")
 
 // ---------------------------------------- Library modules ----------------------------------------
 

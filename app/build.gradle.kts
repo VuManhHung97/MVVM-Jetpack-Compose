@@ -85,4 +85,5 @@ dependencies {
   implementation(projects.core.model)
   implementation(projects.core.deeplink)
   implementation(projects.core.analytics)
+  implementation(projects.core.notification)
 }

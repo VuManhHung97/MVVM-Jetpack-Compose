@@ -5,12 +5,15 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
 import com.vmh.mvvmjetpackcompose.core.common.coroutine.AppCoroutineScope
+import com.vmh.mvvmjetpackcompose.core.local.LocalFcmToken
 import com.vmh.mvvmjetpackcompose.core.local.LocalLocale
 import com.vmh.mvvmjetpackcompose.core.local.LocalUser
 import com.vmh.mvvmjetpackcompose.core.local.datasource.AuthLocalDataSource
+import com.vmh.mvvmjetpackcompose.core.local.datasource.FcmTokenLocalDataSource
 import com.vmh.mvvmjetpackcompose.core.local.datasource.LanguageLocalDataSource
 import com.vmh.mvvmjetpackcompose.core.local.datasource.LocaleLocalDataSource
 import com.vmh.mvvmjetpackcompose.core.local.datasourceimpl.AuthLocalDataSourceImpl
+import com.vmh.mvvmjetpackcompose.core.local.datasourceimpl.FcmTokenLocalDataSourceImpl
 import com.vmh.mvvmjetpackcompose.core.local.datasourceimpl.LanguageLocalDataSourceImpl
 import com.vmh.mvvmjetpackcompose.core.local.datasourceimpl.LocaleLocalDataSourceImpl
 import com.vmh.mvvmjetpackcompose.core.local.mapper.LocalErrorMapper
@@ -44,9 +47,14 @@ internal interface DataLocalModule {
   @Singleton
   fun languageLocalDataSource(impl: LanguageLocalDataSourceImpl): LanguageLocalDataSource
 
+  @Binds
+  @Singleton
+  fun fcmTokenLocalDataSource(impl: FcmTokenLocalDataSourceImpl): FcmTokenLocalDataSource
+
   companion object {
     private const val LOCAL_USER_DATA_STORE_FILE_NAME = "local_user_data_store"
     private const val LOCAL_LOCALE_DATA_STORE_FILE_NAME = "local_locale_data_store"
+    private const val LOCAL_FCM_TOKEN_DATA_STORE_FILE_NAME = "local_fcm_token_data_store"
 
     @Provides
     @Singleton
@@ -67,6 +75,17 @@ internal interface DataLocalModule {
     ): DataStore<LocalLocale> = DataStoreFactory.create(
       serializer = getDefaultSerializer<LocalLocale>(),
       produceFile = { context.dataStoreFile(LOCAL_LOCALE_DATA_STORE_FILE_NAME) },
+      scope = appCoroutineScope,
+    )
+
+    @Provides
+    @Singleton
+    fun localFcmTokenDataStore(
+      @ApplicationContext context: Context,
+      appCoroutineScope: AppCoroutineScope,
+    ): DataStore<LocalFcmToken> = DataStoreFactory.create(
+      serializer = getDefaultSerializer<LocalFcmToken>(),
+      produceFile = { context.dataStoreFile(LOCAL_FCM_TOKEN_DATA_STORE_FILE_NAME) },
       scope = appCoroutineScope,
     )
   }
