@@ -73,6 +73,7 @@ import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.navigateToWebVie
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.webViewScreen
 import com.vmh.mvvmjetpackcompose.lifecycle.collectInLaunchedEffectWithLifecycle
 import com.vmh.mvvmjetpackcompose.locale.LocaleController
+import com.vmh.mvvmjetpackcompose.notification.NotificationPermissionEffect
 import com.vmh.mvvmjetpackcompose.ui.widget.common.DialogCommon
 import com.vmh.mvvmjetpackcompose.ui.widget.common.UnauthorizedErrorDialog
 import dagger.hilt.android.AndroidEntryPoint
@@ -185,6 +186,8 @@ private fun MVVMJetpackComposeApp(
   val context = LocalContext.current
   var isUnauthorizedErrorDialogVisible by rememberSaveable { mutableStateOf(false) }
   var isForceUpdateDialogVisible by rememberSaveable { mutableStateOf(false) }
+
+  NotificationPermissionEffect()
 
   viewModel.unauthorizedErrorEventFlow.collectInLaunchedEffectWithLifecycle {
     isUnauthorizedErrorDialogVisible = true

@@ -5,7 +5,10 @@ import com.vmh.mvvmjetpackcompose.core.data.repository.DefaultLanguageRepository
 import com.vmh.mvvmjetpackcompose.core.data.repository.DefaultSearchRepository
 import com.vmh.mvvmjetpackcompose.core.data.repository.RealForceUpdateErrorEventRepository
 import com.vmh.mvvmjetpackcompose.core.data.repository.RealUnauthorizedErrorEventRepository
+import com.vmh.mvvmjetpackcompose.core.data.repository.fcm.DefaultFcmTokenManager
+import com.vmh.mvvmjetpackcompose.core.data.repository.fcm.SynchronizedFcmTokenManager
 import com.vmh.mvvmjetpackcompose.core.domain.repository.AuthRepository
+import com.vmh.mvvmjetpackcompose.core.domain.repository.FcmTokenManager
 import com.vmh.mvvmjetpackcompose.core.domain.repository.ForceUpdateErrorEventRepository
 import com.vmh.mvvmjetpackcompose.core.domain.repository.LanguageRepository
 import com.vmh.mvvmjetpackcompose.core.domain.repository.SearchRepository
@@ -32,4 +35,11 @@ internal interface DataModule {
 
   @Binds
   fun bindForceUpdateErrorEventRepository(impl: RealForceUpdateErrorEventRepository): ForceUpdateErrorEventRepository
+
+  @Binds
+  @DelegateFcmTokenManager
+  fun bindDefaultFcmTokenManager(impl: DefaultFcmTokenManager): FcmTokenManager
+
+  @Binds
+  fun bindFcmTokenManager(impl: SynchronizedFcmTokenManager): FcmTokenManager
 }
