@@ -1,0 +1,12 @@
+[
+  { "code": "GD-88412", "account_id": "U0619", "amount": 500000, "method": "Momo", "time": "Hôm nay, 10:06", "type": "deposit" },
+  { "code": "GD-88405", "account_id": "U1024", "amount": 200000, "method": "Banking", "time": "Hôm nay, 09:44", "type": "deposit" },
+  { "code": "GD-88399", "account_id": "U1440", "amount": 100000, "method": "Admin trừ", "time": "Hôm nay, 08:31", "type": "deduct" },
+  { "code": "GD-88361", "account_id": "U0872", "amount": 1000000, "method": "Banking", "time": "Hôm qua, 22:18", "type": "deposit" },
+  { "code": "GD-88347", "account_id": "U1187", "amount": 300000, "method": "Momo", "time": "Hôm qua, 20:02", "type": "deposit" },
+  { "code": "GD-88320", "account_id": "U1502", "amount": 50000, "method": "Admin trừ", "time": "Hôm qua, 14:55", "type": "deduct" },
+  { "code": "GD-88291", "account_id": "U0872", "amount": 500000, "method": "Admin cấp", "time": "02/07, 16:40", "type": "deposit" },
+  { "code": "GD-88240", "account_id": "U1024", "amount": 1000000, "method": "Banking", "time": "01/07, 11:22", "type": "deposit" },
+  { "code": "GD-88188", "account_id": "U1355", "amount": 200000, "method": "Momo", "time": "30/06, 19:08", "type": "deposit" },
+  { "code": "GD-88154", "account_id": "U0619", "amount": 2000000, "method": "Banking", "time": "29/06, 09:30", "type": "deposit" }
+]

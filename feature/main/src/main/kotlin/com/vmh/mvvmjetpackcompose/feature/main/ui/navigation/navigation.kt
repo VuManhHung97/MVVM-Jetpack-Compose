@@ -4,10 +4,11 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.navigation
-import com.vmh.mvvmjetpackcompose.feature.home.ui.navigation.HomeGraphRoutePattern
-import com.vmh.mvvmjetpackcompose.feature.home.ui.navigation.homeGraph
-import com.vmh.mvvmjetpackcompose.feature.profile.ui.navigation.WebViewDestination
+import com.vmh.mvvmjetpackcompose.feature.account.presentation.account.navigation.accountGraph
+import com.vmh.mvvmjetpackcompose.feature.dashboard.presentation.dashboard.navigation.DashboardGraphRoutePattern
+import com.vmh.mvvmjetpackcompose.feature.dashboard.presentation.dashboard.navigation.dashboardGraph
 import com.vmh.mvvmjetpackcompose.feature.profile.ui.navigation.profileGraph
+import com.vmh.mvvmjetpackcompose.feature.transaction.presentation.transaction.navigation.transactionGraph
 
 const val MainGraphRoutePattern = "main_graph"
 
@@ -17,21 +18,24 @@ fun NavController.navigateToMainGraph(navOptions: NavOptions? = null) = navigate
 )
 
 fun NavGraphBuilder.mainGraph(
-  onNavigateToSearchScreen: () -> Unit,
-  onNavigateToLanguageScreen: () -> Unit,
-  onNavigateToAuthenticationScreen: () -> Unit,
-  onNavigateToWebViewScreen: (destination: WebViewDestination) -> Unit,
+  onNavigateToHistory: () -> Unit,
+  onNavigateToAccountDetail: (accountId: String) -> Unit,
+  onNavigateBack: () -> Unit,
+  onLogout: () -> Unit,
 ) {
   navigation(
     route = MainGraphRoutePattern,
-    startDestination = HomeGraphRoutePattern,
+    startDestination = DashboardGraphRoutePattern,
   ) {
-    homeGraph(onNavigateToSearchScreen = onNavigateToSearchScreen)
+    dashboardGraph(onNavigateToHistory = onNavigateToHistory)
 
-    profileGraph(
-      onNavigateToLanguageScreen = onNavigateToLanguageScreen,
-      onNavigateToAuthenticationScreen = onNavigateToAuthenticationScreen,
-      onNavigateToWebViewScreen = onNavigateToWebViewScreen,
+    accountGraph(
+      onNavigateToAccountDetail = onNavigateToAccountDetail,
+      onNavigateBack = onNavigateBack,
     )
+
+    transactionGraph()
+
+    profileGraph(onLogout = onLogout)
   }
 }

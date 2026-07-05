@@ -72,4 +72,134 @@
     <string name="app_error_force_update_title">Update require</string>
     <string name="app_error_force_update_message">A new version of the app is available. Please update to continue using the application.</string>
     <string name="app_error_force_update_positive_button">Update now</string>
+
+    <!-- ===== Võ Lâm 2 admin (values = default; dịch EN sau) ===== -->
+    <!-- Chrome / tabs -->
+    <string name="game_admin_logo_short">VL</string>
+    <string name="game_admin_admin_short">QT</string>
+    <string name="game_admin_server_subtitle">Võ Lâm 2 · Máy chủ Tình Nghĩa</string>
+    <string name="game_admin_xu_suffix">Xu</string>
+    <string name="tab_dashboard">Tổng quan</string>
+    <string name="tab_account">Tài khoản</string>
+    <string name="tab_transaction">Lịch sử</string>
+    <string name="tab_admin_profile">Cá nhân</string>
+
+    <!-- Sign in (Võ Lâm 2) -->
+    <string name="sign_in_admin_app_name">Võ Lâm 2</string>
+    <string name="sign_in_admin_subtitle">BẢNG ĐIỀU KHIỂN ADMIN</string>
+    <string name="sign_in_admin_account_label">TÀI KHOẢN</string>
+    <string name="sign_in_admin_password_label">MẬT KHẨU</string>
+    <string name="sign_in_admin_account_placeholder">admin@volam2.vn</string>
+    <string name="sign_in_admin_password_placeholder">••••••••</string>
+    <string name="sign_in_admin_submit">Đăng nhập</string>
+    <string name="sign_in_admin_footer">Chỉ dành cho quản trị viên được cấp quyền</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Tổng quan</string>
+    <string name="dashboard_today_deposit_label">XU NẠP HÔM NAY</string>
+    <string name="dashboard_today_deposit_value">800.000 Xu</string>
+    <string name="dashboard_today_deposit_delta">▲ 12% so với hôm qua · ≈ 80 triệu đ</string>
+    <string name="dashboard_stat_accounts_created_label">Tài khoản đã tạo</string>
+    <string name="dashboard_stat_accounts_created_value">12.376</string>
+    <string name="dashboard_stat_accounts_created_delta">+128 tuần này</string>
+    <string name="dashboard_stat_accounts_locked_label">Tài khoản bị khóa</string>
+    <string name="dashboard_stat_accounts_locked_value">214</string>
+    <string name="dashboard_stat_accounts_locked_delta">1,7% tổng số</string>
+    <string name="dashboard_stat_revenue_label">Doanh thu tháng</string>
+    <string name="dashboard_stat_revenue_value">1,84 tỷ đ</string>
+    <string name="dashboard_stat_revenue_delta">+8,3% tháng trước</string>
+    <string name="dashboard_stat_transactions_label">Giao dịch hôm nay</string>
+    <string name="dashboard_stat_transactions_value">342</string>
+    <string name="dashboard_stat_transactions_delta">+12% hôm qua</string>
+    <string name="dashboard_chart_title">Xu nạp 7 ngày</string>
+    <string name="dashboard_chart_unit">triệu Xu</string>
+    <string name="dashboard_recent_transactions_title">Giao dịch gần đây</string>
+    <string name="dashboard_recent_transactions_see_all">Tất cả →</string>
+
+    <!-- Account list -->
+    <string name="account_list_title">Quản lý tài khoản</string>
+    <string name="account_search_placeholder">Tìm tài khoản hoặc nhân vật…</string>
+    <string name="account_filter_all">Tất cả</string>
+    <string name="account_filter_active">Hoạt động</string>
+    <string name="account_filter_locked">Đã khóa</string>
+    <string name="account_count_suffix">%1$d TK</string>
+    <string name="account_empty">Không tìm thấy tài khoản phù hợp.</string>
+    <string name="account_subtitle">%1$s · %2$s · Lv%3$d</string>
+    <string name="account_balance_xu">%1$s Xu</string>
+    <string name="account_status_active">Hoạt động</string>
+    <string name="account_status_locked">Đã khóa</string>
+    <string name="account_action_deposit">Nạp Xu</string>
+    <string name="account_action_lock">Khóa</string>
+    <string name="account_action_unlock">Mở khóa</string>
+
+    <!-- Account detail -->
+    <string name="account_detail_title">Chi tiết tài khoản</string>
+    <string name="account_detail_id_created">ID %1$s · Tạo %2$s</string>
+    <string name="account_detail_balance_label">SỐ DƯ HIỆN TẠI</string>
+    <string name="account_detail_character_info_title">Thông tin nhân vật</string>
+    <string name="account_detail_info_character">Nhân vật</string>
+    <string name="account_detail_info_clan">Môn phái</string>
+    <string name="account_detail_info_level">Cấp độ</string>
+    <string name="account_detail_info_level_value">Lv %1$d</string>
+    <string name="account_detail_info_vip">Cấp VIP</string>
+    <string name="account_detail_info_last_login">Đăng nhập cuối</string>
+    <string name="account_detail_transaction_history_title">Lịch sử giao dịch</string>
+    <string name="account_detail_transaction_subtitle">%1$s · %2$s</string>
+    <string name="account_detail_no_transactions">Chưa có giao dịch.</string>
+
+    <!-- Transaction -->
+    <string name="transaction_title">Lịch sử giao dịch</string>
+    <string name="transaction_total_deposit_label">Tổng Xu đã nạp (30 ngày)</string>
+    <string name="transaction_total_deduct_label">Tổng Xu đã trừ (30 ngày)</string>
+    <string name="transaction_filter_all">Tất cả</string>
+    <string name="transaction_filter_deposit">Nạp thành công</string>
+    <string name="transaction_filter_deduct">Trừ thành công</string>
+    <string name="transaction_subtitle">%1$s · %2$s · %3$s</string>
+    <string name="transaction_status_deposit">Nạp thành công</string>
+    <string name="transaction_status_deduct">Trừ thành công</string>
+
+    <!-- Admin profile -->
+    <string name="admin_profile_title">Tài khoản Admin</string>
+    <string name="admin_profile_name">Quản trị viên</string>
+    <string name="admin_profile_email">admin@volam2.vn</string>
+    <string name="admin_profile_role_badge">Super Admin</string>
+    <string name="admin_profile_info_title">Thông tin</string>
+    <string name="admin_profile_info_role">Vai trò</string>
+    <string name="admin_profile_info_role_value">Super Admin</string>
+    <string name="admin_profile_info_server">Máy chủ phụ trách</string>
+    <string name="admin_profile_info_server_value">Tình Nghĩa</string>
+    <string name="admin_profile_info_last_login">Đăng nhập gần nhất</string>
+    <string name="admin_profile_info_last_login_value">Hôm nay, 07:58</string>
+    <string name="admin_profile_change_password">Đổi mật khẩu</string>
+    <string name="admin_profile_settings">Cài đặt hệ thống</string>
+    <string name="admin_profile_logout">Đăng xuất</string>
+    <string name="admin_profile_change_password_demo">Chức năng demo — Đổi mật khẩu</string>
+    <string name="admin_profile_settings_demo">Chức năng demo — Cài đặt</string>
+    <string name="admin_profile_logout_failed">Đăng xuất thất bại</string>
+
+    <!-- Deposit bottom sheet -->
+    <string name="deposit_title">Nạp Xu cho tài khoản</string>
+    <string name="deposit_target">%1$s · Số dư: %2$s Xu</string>
+    <string name="deposit_quick_label">CHỌN NHANH</string>
+    <string name="deposit_or_input_label">HOẶC NHẬP SỐ XU</string>
+    <string name="deposit_amount_placeholder">VD: 500000</string>
+    <string name="deposit_vnd_hint">≈ %1$sđ (1 Xu = 100đ)</string>
+    <string name="deposit_note_placeholder">Ghi chú (không bắt buộc)</string>
+    <string name="deposit_quick_thousand">%1$dk</string>
+    <string name="deposit_quick_million">%1$dtr</string>
+    <string name="deposit_confirm_with_amount">Xác nhận nạp %1$s Xu</string>
+    <string name="deposit_confirm">Xác nhận nạp Xu</string>
+    <string name="deposit_success">Đã nạp %1$s Xu cho %2$s</string>
+
+    <!-- Lock dialog -->
+    <string name="lock_title">Khóa tài khoản?</string>
+    <string name="unlock_title">Mở khóa tài khoản?</string>
+    <string name="lock_description">%1$s sẽ không thể đăng nhập vào game cho đến khi được mở khóa.</string>
+    <string name="unlock_description">%1$s sẽ có thể đăng nhập và chơi game bình thường.</string>
+    <string name="lock_reason_placeholder">Lý do khóa — VD: sử dụng hack</string>
+    <string name="lock_cancel">Hủy</string>
+    <string name="lock_confirm">Khóa tài khoản</string>
+    <string name="unlock_confirm">Mở khóa</string>
+    <string name="lock_success">Đã khóa %1$s</string>
+    <string name="unlock_success">Đã mở khóa %1$s</string>
 </resources>

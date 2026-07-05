@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,6 +35,7 @@ import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetPackComposeColors
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetpackComposeTheme
 import kotlin.let
 
+@Suppress("LongParameterList")
 @Composable
 fun DialogCommon(
   onDismiss: () -> Unit,
@@ -46,8 +48,15 @@ fun DialogCommon(
   dismissOnBackPress: Boolean = true,
   dismissOnClickOutside: Boolean = true,
   iconTint: Color = MVVMJetPackComposeColors.red40,
+  containerColor: Color = MVVMJetPackComposeColors.Neutral90,
+  titleColor: Color = MVVMJetPackComposeColors.Neutral10,
+  contentColor: Color = MVVMJetPackComposeColors.Neutral20,
+  dividerColor: Color = MVVMJetPackComposeColors.TransparentWhite5,
+  cancelBackground: Color = MVVMJetPackComposeColors.TransparentWhite5,
+  cancelTextColor: Color = MVVMJetPackComposeColors.Neutral10,
   confirmTextBackground: Color = MVVMJetPackComposeColors.Neutral10,
   confirmTextColor: Color = MVVMJetPackComposeColors.Neutral100,
+  extraContent: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
   Dialog(
     onDismissRequest = { onDismiss() },
@@ -70,7 +79,7 @@ fun DialogCommon(
         modifier = Modifier
           .fillMaxWidth()
           .padding(horizontal = 36.dp)
-          .background(MVVMJetPackComposeColors.Neutral90, RoundedCornerShape(16.dp))
+          .background(containerColor, RoundedCornerShape(16.dp))
           .padding(top = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
@@ -90,7 +99,7 @@ fun DialogCommon(
               .padding(horizontal = 16.dp),
             text = it,
             style = MVVMJetpackComposeTheme.typography.textStyleLargeBold,
-            color = MVVMJetPackComposeColors.Neutral10,
+            color = titleColor,
           )
         }
 
@@ -102,7 +111,17 @@ fun DialogCommon(
             text = it,
             textAlign = TextAlign.Center,
             style = MVVMJetpackComposeTheme.typography.textStyleBaseRegular,
-            color = MVVMJetPackComposeColors.Neutral20,
+            color = contentColor,
+          )
+        }
+
+        extraContent?.let {
+          Column(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(top = 16.dp)
+              .padding(horizontal = 16.dp),
+            content = it,
           )
         }
 
@@ -111,7 +130,7 @@ fun DialogCommon(
             .fillMaxWidth()
             .padding(top = 24.dp),
           thickness = 1.dp,
-          color = MVVMJetPackComposeColors.TransparentWhite5,
+          color = dividerColor,
         )
 
         Row(
@@ -124,7 +143,7 @@ fun DialogCommon(
             Text(
               modifier = Modifier
                 .weight(1f)
-                .background(MVVMJetPackComposeColors.TransparentWhite5, RoundedCornerShape(12.dp))
+                .background(cancelBackground, RoundedCornerShape(12.dp))
                 .clip(RoundedCornerShape(size = 12.dp))
                 .clickable {
                   onDismiss()
@@ -133,7 +152,7 @@ fun DialogCommon(
               text = it,
               textAlign = TextAlign.Center,
               style = MVVMJetpackComposeTheme.typography.textStyleMediumMedium,
-              color = MVVMJetPackComposeColors.Neutral10,
+              color = cancelTextColor,
             )
           }
 

@@ -10,9 +10,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navOptions
 import com.vmh.mvvmjetpackcompose.core.ui.navigation.findParentNavGraph
-import com.vmh.mvvmjetpackcompose.feature.home.ui.navigation.navigateToHomeScreen
+import com.vmh.mvvmjetpackcompose.feature.account.presentation.account.navigation.navigateToAccountsScreen
+import com.vmh.mvvmjetpackcompose.feature.dashboard.presentation.dashboard.navigation.navigateToDashboardScreen
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainTopScreenTopLevelDestination
 import com.vmh.mvvmjetpackcompose.feature.profile.ui.navigation.navigateToProfileScreen
+import com.vmh.mvvmjetpackcompose.feature.transaction.presentation.transaction.navigation.navigateToTransactionScreen
 
 @Composable
 fun rememberMainState(navController: NavHostController): MainState =
@@ -42,8 +44,10 @@ class MainState(private val navController: NavHostController) {
       restoreState = true
     }
     when (targetTopLevelDestination) {
-      MainTopScreenTopLevelDestination.Home -> navController.navigateToHomeScreen(topLevelNavOptions)
-      MainTopScreenTopLevelDestination.Settings -> navController.navigateToProfileScreen(topLevelNavOptions)
+      MainTopScreenTopLevelDestination.Dashboard -> navController.navigateToDashboardScreen(topLevelNavOptions)
+      MainTopScreenTopLevelDestination.Account -> navController.navigateToAccountsScreen(topLevelNavOptions)
+      MainTopScreenTopLevelDestination.Transaction -> navController.navigateToTransactionScreen(topLevelNavOptions)
+      MainTopScreenTopLevelDestination.Profile -> navController.navigateToProfileScreen(topLevelNavOptions)
     }
 
     return true

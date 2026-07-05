@@ -1,0 +1,10 @@
+[
+  { "id": "U1024", "username": "dragon_slayer99", "character": "Lãnh Nguyệt Hàn", "clan": "Thiếu Lâm", "level": 92, "balance": 1250000, "status": "active", "created": "12/03/2024", "last_login": "Hôm nay, 09:41", "vip": "VIP 7" },
+  { "id": "U1187", "username": "kiemthanh_vs", "character": "Kiếm Vô Tình", "clan": "Thiên Vương", "level": 88, "balance": 860500, "status": "active", "created": "28/05/2024", "last_login": "Hôm nay, 08:12", "vip": "VIP 5" },
+  { "id": "U0872", "username": "hoahonmon", "character": "Tiểu Long Nữ", "clan": "Nga My", "level": 95, "balance": 2140000, "status": "active", "created": "04/01/2024", "last_login": "Hôm qua, 23:50", "vip": "VIP 8" },
+  { "id": "U1355", "username": "doctonduongmon", "character": "Độc Cô Cầu Bại", "clan": "Đường Môn", "level": 79, "balance": 430200, "status": "locked", "created": "17/08/2024", "last_login": "02/07/2026", "vip": "VIP 3" },
+  { "id": "U1440", "username": "caibang_vn", "character": "Hàng Long Cái", "clan": "Cái Bang", "level": 85, "balance": 512800, "status": "active", "created": "09/10/2024", "last_login": "Hôm nay, 07:03", "vip": "VIP 4" },
+  { "id": "U1502", "username": "ngudoc_giao", "character": "Ngũ Độc Thánh Nữ", "clan": "Ngũ Độc", "level": 71, "balance": 96400, "status": "active", "created": "21/12/2024", "last_login": "Hôm qua, 21:17", "vip": "VIP 1" },
+  { "id": "U0619", "username": "vodang_kiem", "character": "Trương Chân Nhân", "clan": "Võ Đang", "level": 99, "balance": 3480000, "status": "active", "created": "02/11/2023", "last_login": "Hôm nay, 10:05", "vip": "VIP 9" },
+  { "id": "U1618", "username": "conlon_tu", "character": "Côn Lôn Tử", "clan": "Côn Lôn", "level": 63, "balance": 15000, "status": "locked", "created": "15/02/2025", "last_login": "28/06/2026", "vip": "—" }
+]
