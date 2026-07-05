@@ -10,7 +10,7 @@ globs: feature/**/*.kt, core/ui/**/*.kt
 ### Argument Names & modifier
 
 ```kotlin
-// Đúng — ghi rõ tên argument, modifier là parameter cuối
+// Đúng — ghi rõ tên argument; modifier là parameter cuối
 @Composable
 fun VideoCard(
     video: VideoUiModel,
@@ -27,12 +27,11 @@ VideoCard(
     modifier = Modifier.fillMaxWidth(),
 )
 
-// Sai
+// Sai — positional
 VideoCard(item, viewModel::onLikeToggle, onVideoOpen, Modifier.fillMaxWidth())
 ```
 
-- `modifier` phải là parameter cuối (hoặc gần cuối, trước trailing lambda).
-- Giá trị default: `modifier: Modifier = Modifier`.
+**Vị trí `modifier`**: luôn là **tham số cuối** (sau required params, trước trailing lambda nếu có) — cho mọi composable (reusable widget, screen, item…). Với Route: sau required params, trước `viewModel`. Luôn có default `modifier: Modifier = Modifier`.
 
 ### Xuống dòng theo số lượng parameter
 
@@ -188,3 +187,16 @@ LaunchedEffect(Unit) {
 - **Không** nhồi business logic phức tạp vào composable.
 - **Không** tạo side effect trực tiếp trong composition body.
 - Giữ recomposition scope nhỏ nhất có thể.
+
+## Modal (bottom sheet / dialog) — dùng & tái dùng component chuẩn
+
+- **Bottom sheet** → dùng Material 3 `ModalBottomSheet` (hoặc wrapper chung của project như `AppModalBottomSheet` ở `core:ui`). **Không** tự dựng scrim + `Box` + animation thủ công.
+  ```kotlin
+  content?.let { state ->
+    AppModalBottomSheet(onDismissRequest = onDismiss) { /* nội dung sheet */ }
+  }
+  ```
+- **Dialog** → **tái dùng dialog chung** của project (vd `DialogCommon`). Nếu thiếu tính năng (ô nhập, màu theme) → **cập nhật dialog chung** thêm slot/tham số (giữ default để không vỡ chỗ dùng cũ), rồi tái dùng. **Không** tự dựng dialog mới trùng chức năng.
+- **Toast/thông báo** → dùng `SnackbarManager`/host chung sẵn có; ViewModel emit SingleEvent → screen hiển thị. Không tự vẽ toast overlay nếu đã có cơ chế chung.
+- **Widget lặp lại** (card, button, chip, text field, badge…) → để ở `core:ui/widget`, tái dùng; không copy-vẽ lại trong từng feature.
+- Trạng thái hiển thị modal do state điều khiển (`deposit != null` → hiện sheet), đóng qua `onDismiss` cập nhật state.
