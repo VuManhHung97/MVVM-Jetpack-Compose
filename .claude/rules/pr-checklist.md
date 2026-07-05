@@ -60,6 +60,27 @@ Khi review code hoặc chuẩn bị submit PR, kiểm tra toàn bộ danh sách 
 - [ ] `update()` DataStore không ghi đè `accessToken`/`refreshToken` khi map profile response.
 - [ ] `IOException` khi đọc DataStore được xử lý (emit default) thay vì crash.
 
+## Data Layer (xem [`data-layer.md`](data-layer.md))
+
+- [ ] Không mock/seed hardcode trong ViewModel/Repository — data mới đi qua DTO + DataSource + mapper + repository.
+- [ ] Chưa có API thật: `Fake*RemoteDataSourceImpl` đọc dummy JSON từ `resources/`; `ApiService` vẫn định nghĩa contract thật.
+
+## Theming, Strings & Resources (xem [`theming-strings-resources.md`](theming-strings-resources.md))
+
+- [ ] Màu thêm vào palette trung tâm có sẵn — không tạo object/theme màu mới.
+- [ ] Mọi text hiển thị qua `stringResource`/`getString`; không hardcode; string động dùng `%1$s`.
+- [ ] Enum/data hiển thị dùng `@StringRes`/`@DrawableRes`, không nhúng text/glyph.
+
+## Modal (xem [`compose-rules.md`](compose-rules.md))
+
+- [ ] Bottom sheet dùng `ModalBottomSheet`/wrapper chung; dialog tái dùng `DialogCommon`; không tự dựng trùng.
+
+## Detekt / Spotless (xem [`detekt-hygiene.md`](detekt-hygiene.md))
+
+- [ ] `@Immutable` state/param dùng `ImmutableList`/`PersistentList`, không `List`.
+- [ ] Đã xoá unused import thủ công; dòng ≤ 120; `@Suppress` đều có comment.
+- [ ] `spotlessApply` + `detekt` xanh (kiểm tra `BUILD SUCCESSFUL` trong log).
+
 ## Code Quality
 
 - [ ] `./gradlew spotlessApply` đã chạy — không còn formatting violation.

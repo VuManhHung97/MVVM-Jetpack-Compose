@@ -175,10 +175,10 @@ import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetpackComposeTheme
 
 @Composable
 internal fun <Name>Item(
-  modifier: Modifier = Modifier,      // FIRST — convention cho reusable component
   // ... data params
   isSelected: Boolean,
   on<Name>ItemClick: () -> Unit,
+  modifier: Modifier = Modifier,      // LAST — sau required params, trước trailing lambda (nếu có)
 ) {
   Row(
     modifier = modifier
@@ -222,7 +222,7 @@ private fun <Name>ItemUnselectedPreview() {
 ```
 
 **Rules:**
-- `modifier` đặt **ĐẦU TIÊN** cho reusable component composable
+- `modifier` là **tham số CUỐI** (sau required params, trước trailing lambda) — cho mọi composable, kèm default `= Modifier`
 - Màu sắc dùng `MVVMJetPackComposeColors.*` — không dùng `MaterialTheme.colorScheme.*`
   - Primary text: `Neutral10`
   - Secondary text: `Neutral20`
@@ -382,7 +382,7 @@ private fun <Name>ScreenPreview() {
 | `UIItem` | Lồng bên trong `Content`, có `isSelected` thay vì `selectedItemId` |
 | `Error` | Chứa `AppError` object |
 | `@Immutable` | Bắt buộc trên sealed interface, `data object`, và mỗi `data class` subtype |
-| `modifier` vị trí | **FIRST** cho reusable component · **LAST** cho Screen · sau required params cho Route |
+| `modifier` vị trí | **CUỐI** (sau required params, trước trailing lambda) cho mọi composable; kèm default `= Modifier` |
 | Màu sắc | `MVVMJetPackComposeColors.*` — không dùng `MaterialTheme.colorScheme.*` |
 | Strings | `stringResource()` từ `strings.xml` — không hardcode text |
 | `contentType` | `private enum class` ở file level — không dùng `String` hay `Int` |
