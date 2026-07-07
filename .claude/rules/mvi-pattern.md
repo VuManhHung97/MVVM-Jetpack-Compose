@@ -118,6 +118,7 @@ internal class SignInViewModel @Inject constructor(
 - Mỗi user action = một public function trên ViewModel (không dùng `sealed interface` cho intent trong project này).
 - `EventChannel` được inject qua Hilt, không tạo thủ công.
 - Không để business logic phức tạp trong ViewModel — delegate xuống Repository.
+- **UI đọc state, không tính lại.** Trạng thái validate / dẫn xuất (vd đã hợp lệ hay chưa, nút có enable không, thông báo lỗi) đã được ViewModel tính và phơi trong `UiState` → Composable **đọc thẳng từ đó**, tuyệt đối **không recompute** logic đó trong màn. Recompute = lặp logic nghiệp vụ ở UI + dễ lệch với ViewModel.
 
 ## Composable Side — Thu thập State và Event
 

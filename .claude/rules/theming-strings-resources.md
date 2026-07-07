@@ -15,6 +15,14 @@ Rule cho màu, text và resource khi thêm màn/tính năng mới. Mục tiêu: 
 - Composable tham chiếu token trực tiếp (`MVVMJetPackComposeColors.Accent`). Không hardcode `Color(0xFF...)` rải rác trong screen.
 - Chỉ đổi Material `lightScheme/darkScheme` khi thực sự cần đổi nền toàn app; nếu screen tự vẽ background bằng token thì không cần.
 
+### Màu tương ứng role Material → ánh xạ vào `ColorScheme`, đừng tạo token semantic song song
+- Rút tập màu **từ UI design** (nền, chữ, nút, viền, focus/lỗi…) rồi đối chiếu theme app. Màu nào ứng với **role Material** (primary/secondary/tertiary/error/surface/outline…): **cập nhật thẳng giá trị token của `ColorScheme` sẵn có** (`primaryLight`, `secondaryLight`, `surfaceLight`, … hoặc bản `*Dark`) và cho Composable đọc `MaterialTheme.colorScheme.*`. **KHÔNG** thêm một loạt token semantic mới (`XxxPrimary`/`XxxSurface`…) vào palette — trùng vai trò Material, sẽ phải refactor.
+- App đang cố định 1 theme (vd dark) mà một nhóm màn cần theme khác → dùng **scheme còn lại** (vd cập nhật `lightScheme` rồi render nhóm màn đó với `useDarkTheme = false`), không dựng `ColorScheme`/object màu riêng.
+- Chọn role đúng cho từng phần tử ở **call-site của màn** (vd nút chính `colorScheme.primary`; màn khác dùng `colorScheme.tertiary`) thay vì nhét logic chọn role vào trong component tái dùng.
+
+### Màu ngoài role Material & màu chỉ 1 màn dùng → đặt gần nơi dùng
+- Màu **không có slot Material** (minh hoạ: mascot, gradient nền, bóng nút 3D, brand mark Google/Facebook): không đưa vào palette trung tâm. Nếu **chỉ một màn dùng** → khai báo **ngay trong package/file của màn đó** (`private val …`). Dùng ở ≥ 2 màn mới đưa lên theme dùng chung (vd nhóm "extended colors" cạnh theme).
+
 ```kotlin
 // core:ui/theme/Color.kt — thêm vào object có sẵn
 object MVVMJetPackComposeColors {
