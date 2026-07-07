@@ -91,6 +91,12 @@ onWatchHistoryItemOpen: () -> Unit
 - Một composable = một responsibility.
 - Emit empty state UI rõ ràng, không early return mà bỏ trống layout.
 
+### Tách vừa đủ — đừng chẻ quá nhỏ (ngược lại của Large Composables)
+
+- Chỉ tách một Composable ra hàm/file riêng khi nó **được tái sử dụng (≥ 2 nơi)** hoặc là **một đơn vị UI độc lập có ý nghĩa**.
+- Mẩu UI **dùng một lần, chỉ 1–2 dòng** (một nhãn, một dòng chú thích kèm link, một icon bấm…) → **viết thẳng trong parent**, không tạo composable/ file riêng.
+- **Đặt tên theo vai trò/chức năng cụ thể** của component (mô tả nó *hiển thị/làm gì*), **tránh** tính từ trang trí (`Playful…`, `Fancy…`, `Nice…`) và tên chung chung vô nghĩa. Mỗi component tái dùng = **một file** riêng.
+
 ### Stable Types
 
 - Dùng `@Immutable` cho tất cả UiModel/UiState class.
