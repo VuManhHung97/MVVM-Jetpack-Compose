@@ -73,6 +73,7 @@ dependencies {
   implementation(projects.feature.webview)
   implementation(projects.feature.search)
   implementation(projects.feature.language)
+  implementation(projects.feature.qrCodeReader)
 
   // Core Modules
   implementation(projects.core.ui)

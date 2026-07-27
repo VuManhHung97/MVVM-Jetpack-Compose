@@ -72,4 +72,11 @@
     <string name="app_error_force_update_title">Update require</string>
     <string name="app_error_force_update_message">A new version of the app is available. Please update to continue using the application.</string>
     <string name="app_error_force_update_positive_button">Update now</string>
+
+    <!-- QrCodeReader -->
+    <string name="qr_code_reader_permission_rationale_message">The app needs camera permission to scan QR codes.</string>
+    <string name="qr_code_reader_permission_denied_message">Camera permission is turned off. Please enable it in Settings to scan QR codes.</string>
+    <string name="qr_code_reader_permission_request_button">Grant permission</string>
+    <string name="qr_code_reader_permission_open_settings_button">Open settings</string>
+
 </resources>

@@ -66,6 +66,8 @@ import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainTopScreenTopLev
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.mainGraph
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.navigateToMainGraph
 import com.vmh.mvvmjetpackcompose.feature.main.ui.rememberMainState
+import com.vmh.mvvmjetpackcompose.feature.qrCodeReader.presentation.navigation.QRCodeReaderRoutePattern
+import com.vmh.mvvmjetpackcompose.feature.qrCodeReader.presentation.navigation.qrCodeReaderScreen
 import com.vmh.mvvmjetpackcompose.feature.search.ui.navigation.navigateToSearchScreen
 import com.vmh.mvvmjetpackcompose.feature.search.ui.navigation.searchScreen
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.WebViewArgs
@@ -149,7 +151,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             MVVMJetpackComposeApp(
-              startDestination = startDestination,
+              startDestination = QRCodeReaderRoutePattern,
               navTypeContainer = navTypeContainer,
             )
           }
@@ -332,6 +334,10 @@ private fun MVVMJetpackComposeApp(
       )
 
       languageScreen(
+        onNavigateBack = navController::popBackStack,
+      )
+
+      qrCodeReaderScreen(
         onNavigateBack = navController::popBackStack,
       )
     }
