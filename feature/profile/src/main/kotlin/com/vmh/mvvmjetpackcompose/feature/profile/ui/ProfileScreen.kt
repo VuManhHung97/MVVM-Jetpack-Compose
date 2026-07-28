@@ -47,6 +47,7 @@ internal fun ProfileRoute(
   onNavigateToAuthenticationScreen: () -> Unit,
   onNavigateToWebViewScreen: (destination: WebViewDestination) -> Unit,
   onNavigateToLanguageScreen: () -> Unit,
+  onNavigateToCameraScreen: () -> Unit,
   modifier: Modifier = Modifier,
   viewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -96,6 +97,9 @@ internal fun ProfileRoute(
 
                 ProfileUiItem.Option.Language ->
                   onNavigateToLanguageScreen()
+
+                is ProfileUiItem.Profile.Info ->
+                  onNavigateToCameraScreen()
 
                 else -> {
                   // TODO: handle late
@@ -233,6 +237,7 @@ private fun SettingsRoutePreview() {
     ProfileRoute(
       onNavigateToLanguageScreen = {},
       onNavigateToAuthenticationScreen = {},
+      onNavigateToCameraScreen = {},
       onNavigateToWebViewScreen = {},
     )
   }

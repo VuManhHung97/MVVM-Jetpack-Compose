@@ -68,6 +68,16 @@
     <string name="search_hint">Search content</string>
     <string name="search_result_empty_content">No results found for \"%s\"</string>
 
+    <!-- camera -->
+    <string name="camera_title">Take a photo</string>
+    <string name="camera_permission_rationale">Camera access is required to take a photo.</string>
+    <string name="camera_permission_grant">Open settings</string>
+    <string name="camera_shutter_content_description">Take a photo</string>
+    <string name="camera_captured_photo_content_description">Captured photo</string>
+    <string name="camera_retake">Retake</string>
+    <string name="camera_use_photo">Use photo</string>
+    <string name="camera_update_success">Photo updated successfully</string>
+
     <!-- Force Update -->
     <string name="app_error_force_update_title">Update require</string>
     <string name="app_error_force_update_message">A new version of the app is available. Please update to continue using the application.</string>

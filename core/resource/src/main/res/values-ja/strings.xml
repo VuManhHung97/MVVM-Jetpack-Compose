@@ -68,6 +68,16 @@
     <string name="search_hint">コンテンツを検索</string>
     <string name="search_result_empty_content">「%s」の検索結果が見つかりません</string>
 
+    <!-- camera -->
+    <string name="camera_title">写真を撮る</string>
+    <string name="camera_permission_rationale">写真を撮るにはカメラへのアクセスが必要です。</string>
+    <string name="camera_permission_grant">設定を開く</string>
+    <string name="camera_shutter_content_description">写真を撮る</string>
+    <string name="camera_captured_photo_content_description">撮影した写真</string>
+    <string name="camera_retake">撮り直す</string>
+    <string name="camera_use_photo">この写真を使う</string>
+    <string name="camera_update_success">写真を更新しました</string>
+
     <!-- Force Update -->
     <string name="app_error_force_update_title">更新が必要です</string>
     <string name="app_error_force_update_message">アプリの新しいバージョンが利用可能です。引き続きアプリケーションをご利用いただくには、アップデートしてください。</string>

@@ -57,6 +57,9 @@ import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.nav
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.navigation.signInScreen
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.navigateToSignUpScreen
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.signUpScreen
+import com.vmh.mvvmjetpackcompose.feature.camera.presentation.camera.navigation.CameraRoutePattern
+import com.vmh.mvvmjetpackcompose.feature.camera.presentation.camera.navigation.cameraScreen
+import com.vmh.mvvmjetpackcompose.feature.camera.presentation.camera.navigation.navigateToCameraScreen
 import com.vmh.mvvmjetpackcompose.feature.language.presentation.language.navigation.languageScreen
 import com.vmh.mvvmjetpackcompose.feature.language.presentation.language.navigation.navigateToLanguageScreen
 import com.vmh.mvvmjetpackcompose.feature.main.ui.MainNavigationBar
@@ -139,7 +142,7 @@ class MainActivity : AppCompatActivity() {
 
             val startDestination = when (startDestinationState) {
               StartDestinationState.AuthenticationScreen ->
-                AuthenticationRoutePattern
+                CameraRoutePattern
 
               StartDestinationState.MainScreen ->
                 MainGraphRoutePattern
@@ -280,6 +283,7 @@ private fun MVVMJetpackComposeApp(
           )
         },
         onNavigateToLanguageScreen = navController::navigateToLanguageScreen,
+        onNavigateToCameraScreen = navController::navigateToCameraScreen,
       )
 
       searchScreen(
@@ -332,6 +336,10 @@ private fun MVVMJetpackComposeApp(
       )
 
       languageScreen(
+        onNavigateBack = navController::popBackStack,
+      )
+
+      cameraScreen(
         onNavigateBack = navController::popBackStack,
       )
     }
