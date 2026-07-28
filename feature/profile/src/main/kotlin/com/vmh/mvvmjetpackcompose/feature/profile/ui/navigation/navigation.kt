@@ -19,6 +19,7 @@ fun NavController.navigateToProfileScreen(navOptions: NavOptions? = null) = navi
 fun NavGraphBuilder.profileGraph(
   onNavigateToLanguageScreen: () -> Unit,
   onNavigateToAuthenticationScreen: () -> Unit,
+  onNavigateToCameraScreen: () -> Unit,
   onNavigateToWebViewScreen: (destination: WebViewDestination) -> Unit,
 ) {
   navigation(
@@ -29,6 +30,7 @@ fun NavGraphBuilder.profileGraph(
       ProfileRoute(
         onNavigateToLanguageScreen = onNavigateToLanguageScreen,
         onNavigateToAuthenticationScreen = onNavigateToAuthenticationScreen,
+        onNavigateToCameraScreen = onNavigateToCameraScreen,
         onNavigateToWebViewScreen = onNavigateToWebViewScreen,
       )
     }

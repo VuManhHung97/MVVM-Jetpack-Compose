@@ -20,6 +20,7 @@ fun NavGraphBuilder.mainGraph(
   onNavigateToSearchScreen: () -> Unit,
   onNavigateToLanguageScreen: () -> Unit,
   onNavigateToAuthenticationScreen: () -> Unit,
+  onNavigateToCameraScreen: () -> Unit,
   onNavigateToWebViewScreen: (destination: WebViewDestination) -> Unit,
 ) {
   navigation(
@@ -31,6 +32,7 @@ fun NavGraphBuilder.mainGraph(
     profileGraph(
       onNavigateToLanguageScreen = onNavigateToLanguageScreen,
       onNavigateToAuthenticationScreen = onNavigateToAuthenticationScreen,
+      onNavigateToCameraScreen = onNavigateToCameraScreen,
       onNavigateToWebViewScreen = onNavigateToWebViewScreen,
     )
   }

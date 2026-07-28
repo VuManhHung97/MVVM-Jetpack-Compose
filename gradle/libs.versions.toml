@@ -91,6 +91,9 @@ google-ima = "3.36.0"
 # Google ads
 play-services-ads = "24.6.0"
 
+# CameraX
+camerax = "1.5.0"
+
 [libraries]
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -222,6 +225,12 @@ play-services-ads = { module = "com.google.android.gms:play-services-ads", versi
 
 # Google Libphonenumber
 google-libphonenumber = { module = "com.googlecode.libphonenumber:libphonenumber", version.ref = "libphonenumber" }
+
+# CameraX
+androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "camerax" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
