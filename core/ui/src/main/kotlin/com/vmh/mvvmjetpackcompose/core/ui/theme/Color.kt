@@ -100,6 +100,8 @@ object MVVMJetPackComposeColors {
   val Neutral100 = Color(0xFF171717)
   val NeutralBlack = Color(0xFF000000)
 
+  val Orange = Color(0xFFEC5938)
+
   val Transparent = Color(0x00000000)
 
   val TransparentBlack5 = Color(0x0D000000)

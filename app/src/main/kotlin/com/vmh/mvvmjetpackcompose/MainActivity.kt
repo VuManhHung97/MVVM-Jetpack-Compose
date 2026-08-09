@@ -288,6 +288,7 @@ private fun MVVMJetpackComposeApp(
 
       authenticationScreen(
         onNavigateToSignInScreen = navController::navigateToSignInScreen,
+        onNavigateToSignUpScreen = navController::navigateToSignUpScreen,
         onNavigateToHomeScreen = {
           navController.navigateToMainGraph(
             navOptions {
