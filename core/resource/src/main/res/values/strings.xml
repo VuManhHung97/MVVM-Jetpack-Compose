@@ -39,6 +39,34 @@
     <string name="sign_up_confirm_your_password">Confirm your password</string>
     <string name="sign_up_confirm_password">Confirm password</string>
 
+    <!-- Authentication playful (Material 3 handoff) -->
+    <string name="auth_field_label_email">Email</string>
+    <string name="auth_field_label_password">Mật khẩu</string>
+    <string name="auth_field_label_confirm_password">Nhập lại mật khẩu</string>
+    <string name="auth_email_placeholder">ban@vidu.com</string>
+    <string name="auth_show_password_content_description">Hiện mật khẩu</string>
+
+    <string name="auth_sign_in_greeting_title">Xin chào! 👋</string>
+    <string name="auth_sign_in_greeting_subtitle">Đăng nhập để tiếp tục cuộc phiêu lưu</string>
+    <string name="auth_sign_in_password_placeholder">••••••••</string>
+    <string name="auth_sign_in_forgot_password">Quên mật khẩu?</string>
+    <string name="auth_sign_in_submit">Đăng nhập</string>
+    <string name="auth_sign_in_submit_done">Tuyệt vời! 🎉</string>
+    <string name="auth_sign_in_divider">hoặc tiếp tục với</string>
+    <string name="auth_sign_in_google">Google</string>
+    <string name="auth_sign_in_facebook">Facebook</string>
+    <string name="auth_sign_in_no_account">Chưa có tài khoản?</string>
+    <string name="auth_sign_in_sign_up_cta">Đăng ký ngay</string>
+
+    <string name="auth_sign_up_greeting_title">Tạo tài khoản 🌱</string>
+    <string name="auth_sign_up_greeting_subtitle">Chỉ mất một phút thôi!</string>
+    <string name="auth_sign_up_password_placeholder">Ít nhất 6 ký tự</string>
+    <string name="auth_sign_up_confirm_password_placeholder">Gõ lại y hệt nhé</string>
+    <string name="auth_sign_up_submit">Đăng ký</string>
+    <string name="auth_sign_up_submit_done">Chào mừng bạn! 🎉</string>
+    <string name="auth_sign_up_have_account">Đã có tài khoản?</string>
+    <string name="auth_sign_up_sign_in_cta">Đăng nhập</string>
+
     <!-- profile -->
     <string name="profile_title">Profile</string>
     <string name="profile_preferences">App Preferences</string>

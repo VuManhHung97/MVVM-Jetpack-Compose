@@ -1,48 +1,46 @@
 package com.vmh.mvvmjetpackcompose.feature.authentication.ui.signin
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vmh.mvvmjetpackcompose.core.model.error.AppError
@@ -51,20 +49,45 @@ import com.vmh.mvvmjetpackcompose.core.ui.analytics.TrackScreenViewEvent
 import com.vmh.mvvmjetpackcompose.core.ui.common.DebouncedClickable
 import com.vmh.mvvmjetpackcompose.core.ui.common.DefaultGetAppErrorMessageForDialog
 import com.vmh.mvvmjetpackcompose.core.ui.common.LoadingIndicator
-import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetPackComposeColors
-import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetpackComposeTheme
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.SignInSingleEvent
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.SignInUiState
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.SignInViewModel
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.ValidationStatus
+import com.vmh.mvvmjetpackcompose.feature.authentication.ui.common.AuthExtendedColors
+import com.vmh.mvvmjetpackcompose.feature.authentication.ui.common.AuthTheme
+import com.vmh.mvvmjetpackcompose.feature.authentication.ui.common.component.AuthGradientBackground
+import com.vmh.mvvmjetpackcompose.feature.authentication.ui.common.component.EmailTextField
+import com.vmh.mvvmjetpackcompose.feature.authentication.ui.common.component.GradientButton
+import com.vmh.mvvmjetpackcompose.feature.authentication.ui.common.component.PasswordTextField
+import com.vmh.mvvmjetpackcompose.feature.authentication.ui.common.component.SocialButton
+import com.vmh.mvvmjetpackcompose.feature.authentication.ui.common.component.SunMascot
 import com.vmh.mvvmjetpackcompose.lifecycle.collectInLaunchedEffectWithLifecycle
 import com.vmh.mvvmjetpackcompose.ui.widget.common.BackIconButton
 import com.vmh.mvvmjetpackcompose.ui.widget.common.CommonAppErrorContent
-import com.vmh.mvvmjetpackcompose.ui.widget.common.CustomizedOutlinedTextField
-
-private val TextFieldShape = RoundedCornerShape(12.dp)
 
 private const val SignInScreenName = "SignIn"
+
+// Fixed brand marks for the social sign-in buttons — not part of the app palette.
+private val GoogleBrandColor = Color(0xFF4285F4)
+private val FacebookBrandColor = Color(0xFF1877F2)
+
+// Illustration colors used only by SignIn: sun mascot over a sky gradient, coral CTA depth.
+private val SignInExtendedColors = AuthExtendedColors(
+  backgroundTop = Color(0xFF8FE1FF),
+  backgroundMid = Color(0xFFC8F3FF),
+  backgroundBottom = Color(0xFFEAFBF2),
+  ctaGradientTop = Color(0xFFFF8A5C),
+  ctaShadow = Color(0xFFE4572E),
+  focusAmber = Color(0xFFFFB300),
+  matchBorder = Color(0xFF66BB6A),
+  mascotBase = Color(0xFFFFC107),
+  mascotHighlight = Color(0xFFFFE082),
+  mascotGlow = Color(0x59FFD54F),
+  mascotEye = Color(0xFF4E342E),
+  mascotLeafLight = Color(0xFFFFC107),
+  mascotLeafDark = Color(0xFFFFC107),
+  cheek = Color(0xFFFF8A65),
+)
 
 @Composable
 internal fun SignInRoute(
@@ -91,277 +114,218 @@ internal fun SignInRoute(
     }
   }
 
-  Scaffold(
-    modifier = modifier.pointerInput(Unit) {
-      detectTapGestures {
-        focusManager.clearFocus() // Clear focus when tapped outside
-      }
-    },
-    containerColor = MVVMJetPackComposeColors.Neutral100,
-    topBar = {
-      BackIconButton(
-        modifier = Modifier.padding(start = 6.dp, top = 40.dp),
-        onBackClick = { DebouncedClickable.onClick(onNavigateBack) },
-      )
-    },
-    content = { innerPadding ->
-      Box(
-        modifier = Modifier
-          .fillMaxSize()
-          .padding(paddingValues = innerPadding)
-          .consumeWindowInsets(paddingValues = innerPadding),
-      ) {
+  AuthTheme(extendedColors = SignInExtendedColors) {
+    Box(
+      modifier = modifier
+        .fillMaxSize()
+        .pointerInput(Unit) {
+          detectTapGestures { focusManager.clearFocus() } // Clear focus when tapped outside
+        },
+    ) {
+      AuthGradientBackground {
         SignInContent(
-          modifier = Modifier
-            .padding(top = 24.dp)
-            .padding(horizontal = 24.dp),
           uiState = uiState,
           onEmailChange = viewModel::emailChanged,
           onPasswordChange = viewModel::passwordChanged,
           onSignInValidate = viewModel::signIn,
           onNavigateToSignUpScreen = onNavigateToSignUpScreen,
-          onNavigateToForgotPasswordScreen = {},
+          onForgotPasswordClick = {},
         )
-
-        if (uiState.isLoading) {
-          LoadingIndicator(modifier = Modifier.align(Alignment.Center))
-        }
-
-        appErrorToDisplay?.let {
-          CommonAppErrorContent(
-            appError = it,
-            getAppErrorMessage = DefaultGetAppErrorMessageForDialog,
-            onDismiss = { appErrorToDisplay == null },
-            onConfirm = { appErrorToDisplay == null },
-          )
-        }
       }
-    },
-  )
+
+      BackIconButton(
+        modifier = Modifier
+          .statusBarsPadding()
+          .padding(start = 6.dp, top = 6.dp),
+        onBackClick = { DebouncedClickable.onClick(onNavigateBack) },
+      )
+
+      if (uiState.isLoading) {
+        LoadingIndicator(modifier = Modifier.align(Alignment.Center))
+      }
+
+      appErrorToDisplay?.let {
+        CommonAppErrorContent(
+          appError = it,
+          getAppErrorMessage = DefaultGetAppErrorMessageForDialog,
+          onDismiss = { appErrorToDisplay = null },
+          onConfirm = { appErrorToDisplay = null },
+        )
+      }
+    }
+  }
 }
 
-@Composable
-private fun signInContentTextFieldColors(): TextFieldColors = OutlinedTextFieldDefaults.colors(
-  focusedTextColor = MVVMJetPackComposeColors.Neutral10,
-  focusedBorderColor = MVVMJetPackComposeColors.Neutral40,
-  unfocusedTextColor = MVVMJetPackComposeColors.Neutral10,
-  unfocusedBorderColor = MVVMJetPackComposeColors.Neutral70,
-  cursorColor = MVVMJetPackComposeColors.NeutralWhite,
-  errorCursorColor = MVVMJetPackComposeColors.NeutralWhite,
-  focusedPlaceholderColor = MVVMJetPackComposeColors.Neutral40,
-  unfocusedPlaceholderColor = MVVMJetPackComposeColors.Neutral40,
-  errorTextColor = MVVMJetPackComposeColors.Neutral10,
-  errorBorderColor = MVVMJetPackComposeColors.red40,
-  errorTrailingIconColor = MVVMJetPackComposeColors.Neutral10,
-)
-
-@Suppress("LongMethod")
 @Composable
 private fun SignInContent(
   uiState: SignInUiState,
-  onEmailChange: (String) -> Unit,
-  onPasswordChange: (String) -> Unit,
+  onEmailChange: (email: String) -> Unit,
+  onPasswordChange: (password: String) -> Unit,
   onSignInValidate: () -> Unit,
   onNavigateToSignUpScreen: () -> Unit,
-  onNavigateToForgotPasswordScreen: () -> Unit,
+  onForgotPasswordClick: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
-  val textFieldColors = signInContentTextFieldColors()
-  var isPasswordVisible by rememberSaveable { mutableStateOf(false) } // Default: password hidden
+  var isPasswordVisible by rememberSaveable { mutableStateOf(false) }
+  var isPasswordFocused by remember { mutableStateOf(false) }
+  val colorScheme = MaterialTheme.colorScheme
 
-  val emailValidationStatus = uiState.emailValidationStatus
-  val passwordValidationStatus = uiState.passwordValidationStatus
-
-  Column(modifier = modifier) {
-    Text(
+  Column(
+    modifier = modifier
+      .fillMaxSize()
+      .statusBarsPadding(),
+  ) {
+    Column(
       modifier = Modifier
-        .padding(horizontal = 16.dp)
-        .align(Alignment.CenterHorizontally),
-      text = stringResource(CoreResourceR.string.sign_in_title),
-      style = MVVMJetpackComposeTheme.typography.textStyleXXXXLargeBold,
-      color = MVVMJetPackComposeColors.NeutralWhite,
-      textAlign = TextAlign.Center,
-    )
-
-    Text(
-      modifier = Modifier.padding(top = 24.dp),
-      text = stringResource(CoreResourceR.string.sign_up_email),
-      style = MVVMJetpackComposeTheme.typography.textStyleBaseMedium,
-      color = MVVMJetPackComposeColors.NeutralWhite,
-      textAlign = TextAlign.Center,
-    )
-
-    CustomizedOutlinedTextField(
-      modifier = Modifier
-        .padding(top = 8.dp)
-        .fillMaxWidth(),
-      value = uiState.email,
-      onValueChange = onEmailChange,
-      isError = uiState.emailChangedByUser && emailValidationStatus is ValidationStatus.Error,
-      colors = textFieldColors,
-      placeholder = { Text(stringResource(CoreResourceR.string.sign_up_your_email)) },
-      supportingText = {
-        if (uiState.emailChangedByUser && emailValidationStatus is ValidationStatus.Error) {
-          Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-          ) {
-            Icon(
-              imageVector = ImageVector.vectorResource(id = CoreResourceR.drawable.ic_error),
-              tint = MVVMJetPackComposeColors.red40,
-              contentDescription = null,
-            )
-
-            Text(
-              text = stringResource(id = emailValidationStatus.getErrorMessage()),
-              style = MVVMJetpackComposeTheme.typography.textStyleSmallRegular,
-              color = MVVMJetPackComposeColors.red40,
-            )
-          }
-        }
-      },
-      textStyle = MVVMJetpackComposeTheme.typography.textStyleMediumRegular,
-      singleLine = true,
-      shape = TextFieldShape,
-      keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default),
-      contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-    )
-
-    Text(
-      modifier = Modifier.padding(top = 16.dp),
-      text = stringResource(CoreResourceR.string.sign_up_password),
-      style = MVVMJetpackComposeTheme.typography.textStyleBaseMedium,
-      color = MVVMJetPackComposeColors.NeutralWhite,
-      textAlign = TextAlign.Center,
-    )
-
-    CustomizedOutlinedTextField(
-      modifier = Modifier
-        .padding(top = 8.dp)
-        .fillMaxWidth(),
-      value = uiState.password,
-      onValueChange = onPasswordChange,
-      isError = uiState.passwordChangedByUser && passwordValidationStatus is ValidationStatus.Error,
-      colors = textFieldColors,
-      placeholder = { Text(stringResource(CoreResourceR.string.sign_up_your_password)) },
-      supportingText = {
-        if (uiState.passwordChangedByUser && passwordValidationStatus is ValidationStatus.Error) {
-          Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Icon(
-              imageVector = ImageVector.vectorResource(id = CoreResourceR.drawable.ic_error),
-              tint = MVVMJetPackComposeColors.red40,
-              contentDescription = null,
-            )
-
-            Text(
-              text = stringResource(id = passwordValidationStatus.getErrorMessage()),
-              style = MVVMJetpackComposeTheme.typography.textStyleSmallRegular,
-              color = MVVMJetPackComposeColors.red40,
-            )
-          }
-        }
-      },
-      trailingIcon = {
-        Icon(
-          modifier = Modifier.clickable {
-            isPasswordVisible = !isPasswordVisible
-          },
-          imageVector = if (isPasswordVisible) {
-            ImageVector.vectorResource(CoreResourceR.drawable.ic_show_password)
-          } else {
-            ImageVector.vectorResource(CoreResourceR.drawable.ic_hidden_password)
-          },
-          tint = MVVMJetPackComposeColors.Neutral20,
-          contentDescription = null,
-        )
-      },
-      textStyle = MVVMJetpackComposeTheme.typography.textStyleMediumRegular,
-      singleLine = true,
-      shape = TextFieldShape,
-      visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-      keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default),
-      contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-    )
-
-    Text(
-      modifier = Modifier
-        .padding(top = 16.dp)
-        .clickable(onClick = onNavigateToForgotPasswordScreen),
-      text = stringResource(CoreResourceR.string.sign_in_forgot_password),
-      color = MVVMJetPackComposeColors.Neutral20,
-      style = MVVMJetpackComposeTheme.typography.textStyleBaseMedium,
-    )
-
-    Button(
-      modifier = Modifier
-        .padding(top = 24.dp)
         .fillMaxWidth()
-        .height(40.dp),
-      shape = TextFieldShape,
-      colors = ButtonDefaults.elevatedButtonColors(
-        containerColor = MVVMJetPackComposeColors.Primary60,
-        contentColor = MVVMJetPackComposeColors.NeutralWhite,
-      ),
-      onClick = onSignInValidate,
+        .padding(top = 34.dp),
+      horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+      SunMascot(eyesClosed = isPasswordFocused && !isPasswordVisible)
+
       Text(
-        text = stringResource(CoreResourceR.string.sign_in_title),
-        style = MVVMJetpackComposeTheme.typography.textStyleMediumMedium,
+        modifier = Modifier.padding(top = 22.dp),
+        text = stringResource(CoreResourceR.string.auth_sign_in_greeting_title),
+        color = colorScheme.onSurface,
+        fontSize = 30.sp,
+        fontWeight = FontWeight.ExtraBold,
+      )
+      Text(
+        modifier = Modifier.padding(top = 6.dp),
+        text = stringResource(CoreResourceR.string.auth_sign_in_greeting_subtitle),
+        color = colorScheme.onSurfaceVariant,
+        fontSize = 15.sp,
+        fontWeight = FontWeight.Bold,
       )
     }
 
-    Row(
+    Column(
       modifier = Modifier
-        .padding(vertical = 12.dp)
-        .fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.Center,
+        .padding(top = 26.dp)
+        .fillMaxSize()
+        .clip(RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp))
+        .background(colorScheme.surface)
+        .verticalScroll(rememberScrollState())
+        .imePadding()
+        .navigationBarsPadding()
+        .padding(horizontal = 24.dp, vertical = 28.dp),
+      verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-      HorizontalDivider(
-        modifier = Modifier.weight(1f),
+      EmailTextField(
+        modifier = Modifier.fillMaxWidth(),
+        value = uiState.email,
+        onValueChange = onEmailChange,
+        focusColor = colorScheme.secondary,
+        errorMessage = uiState.emailValidationStatus.errorMessageOrNull(uiState.emailChangedByUser),
       )
-      Text(
-        modifier = Modifier.padding(all = 12.dp),
-        text = stringResource(CoreResourceR.string.sign_in_have_account),
-        color = MVVMJetPackComposeColors.Neutral20,
-        style = MVVMJetpackComposeTheme.typography.textStyleBaseMedium,
-      )
-      HorizontalDivider(modifier = Modifier.weight(1f))
-    }
 
-    Text(
-      modifier = Modifier
-        .align(Alignment.CenterHorizontally)
-        .clickable(onClick = onNavigateToSignUpScreen),
-      text = stringResource(CoreResourceR.string.sign_up_title),
-      style = MVVMJetpackComposeTheme.typography.textStyleMediumMedium,
-      color = MVVMJetPackComposeColors.Neutral10,
-      textAlign = TextAlign.Center,
-    )
+      PasswordTextField(
+        modifier = Modifier.fillMaxWidth(),
+        value = uiState.password,
+        onValueChange = onPasswordChange,
+        placeholder = stringResource(CoreResourceR.string.auth_sign_in_password_placeholder),
+        isPasswordVisible = isPasswordVisible,
+        onPasswordVisibilityToggle = { isPasswordVisible = !isPasswordVisible },
+        onFocusChange = { isPasswordFocused = it },
+        errorMessage = uiState.passwordValidationStatus.errorMessageOrNull(uiState.passwordChangedByUser),
+      )
+
+      Text(
+        modifier = Modifier
+          .align(Alignment.End)
+          .clip(RoundedCornerShape(12.dp))
+          .clickable(onClick = onForgotPasswordClick)
+          .padding(horizontal = 8.dp, vertical = 6.dp),
+        text = stringResource(CoreResourceR.string.auth_sign_in_forgot_password),
+        color = colorScheme.secondary,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.ExtraBold,
+      )
+
+      GradientButton(
+        modifier = Modifier.fillMaxWidth(),
+        text = stringResource(CoreResourceR.string.auth_sign_in_submit),
+        onClick = onSignInValidate,
+        baseColor = colorScheme.primary,
+      )
+
+      SocialSection()
+
+      Spacer(modifier = Modifier.height(4.dp))
+
+      Row(
+        modifier = Modifier
+          .padding(top = 4.dp)
+          .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+      ) {
+        Text(
+          text = stringResource(CoreResourceR.string.auth_sign_in_no_account),
+          color = colorScheme.onSurfaceVariant,
+          fontSize = 14.5.sp,
+          fontWeight = FontWeight.Bold,
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+          modifier = Modifier.clickable(onClick = onNavigateToSignUpScreen),
+          text = stringResource(CoreResourceR.string.auth_sign_in_sign_up_cta),
+          color = colorScheme.primary,
+          fontSize = 14.5.sp,
+          fontWeight = FontWeight.ExtraBold,
+        )
+      }
+    }
   }
 }
+
+@Composable
+private fun SocialSection(modifier: Modifier = Modifier) {
+  val colorScheme = MaterialTheme.colorScheme
+  Column(
+    modifier = modifier.fillMaxWidth(),
+    verticalArrangement = Arrangement.spacedBy(12.dp),
+  ) {
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+      HorizontalDivider(modifier = Modifier.weight(1f), thickness = 2.dp, color = colorScheme.outlineVariant)
+      Text(
+        text = stringResource(CoreResourceR.string.auth_sign_in_divider),
+        color = colorScheme.outline,
+        fontSize = 12.5.sp,
+        fontWeight = FontWeight.ExtraBold,
+        textAlign = TextAlign.Center,
+      )
+      HorizontalDivider(modifier = Modifier.weight(1f), thickness = 2.dp, color = colorScheme.outlineVariant)
+    }
+
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+      SocialButton(
+        modifier = Modifier.weight(1f),
+        label = stringResource(CoreResourceR.string.auth_sign_in_google),
+        monogram = "G",
+        monogramColor = GoogleBrandColor,
+        onClick = {},
+      )
+      SocialButton(
+        modifier = Modifier.weight(1f),
+        label = stringResource(CoreResourceR.string.auth_sign_in_facebook),
+        monogram = "f",
+        monogramColor = FacebookBrandColor,
+        onClick = {},
+      )
+    }
+  }
+}
+
+@Composable
+private fun ValidationStatus.errorMessageOrNull(changedByUser: Boolean): String? =
+  if (changedByUser && this is ValidationStatus.Error) stringResource(getErrorMessage()) else null
 
 @StringRes
 private fun ValidationStatus.Error.getErrorMessage(): Int = when (this) {
   ValidationStatus.Error.Email.Empty -> CoreResourceR.string.validation_empty_email
   ValidationStatus.Error.Password.Empty -> CoreResourceR.string.validation_empty_password
-}
-
-@Preview
-@Composable
-private fun SignInPreview() {
-  MVVMJetpackComposeTheme {
-    Surface {
-      SignInContent(
-        modifier = Modifier
-          .padding(top = 24.dp)
-          .padding(horizontal = 24.dp),
-        uiState = SignInUiState.initial,
-        onEmailChange = {},
-        onPasswordChange = {},
-        onSignInValidate = {},
-        onNavigateToForgotPasswordScreen = {},
-        onNavigateToSignUpScreen = {},
-      )
-    }
-  }
 }
