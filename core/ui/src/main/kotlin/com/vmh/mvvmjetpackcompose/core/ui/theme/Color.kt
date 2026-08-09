@@ -1,7 +1,9 @@
 package com.vmh.mvvmjetpackcompose.core.ui.theme
 
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 
 val primaryLight = Color(0xFF2C638B)
 val onPrimaryLight = Color(0xFFFFFFFF)
@@ -160,7 +162,79 @@ object MVVMJetPackComposeColors {
   val yellow60 = Color(0xFF995200)
 
   val black100 = Color(0xFF121212)
+
+  // ---------------- Võ Lâm 2 admin palette (parchment / gold) ----------------
+  // Backgrounds
+  val PageTop = Color(0xFFFAF4E6)
+  val PageMid = Color(0xFFF5EEDD)
+  val CardBg = Color(0xFFFDF9EF)
+  val TileBg = Color(0xFFF0E7D2)
+  val InputBg = Color(0xFFFBF6EA)
+  val PanelTint = Color(0xFFFBF3DD)
+  val PanelTint2 = Color(0xFFF3E7C8)
+
+  // Borders
+  val Border = Color(0xFFE3D7BA)
+  val BorderStrong = Color(0xFFD4C29A)
+  val BorderSoft = Color(0xFFD8C9A6)
+  val BorderHover = Color(0xFFC6AF80)
+  val Divider = Color(0xFFF0E7D2)
+
+  // Text / ink
+  val Ink = Color(0xFF2E2618)
+  val InkTitle = Color(0xFF2A2214)
+  val Muted = Color(0xFF8A7A58)
+  val Faint = Color(0xFFA2926E)
+
+  // Accent (gold)
+  val Accent = Color(0xFFB4893C)
+  val AccentDeep = Color(0xFF8A6A2E)
+  val AccentSoft = Color(0xFFA8813B)
+  val GoldValue = Color(0xFFA67C22)
+  val OnAccent = Color(0xFF1A130A)
+
+  // Semantic
+  val Green = Color(0xFF3E8E5F)
+  val Red = Color(0xFFC4553F)
+  val BarIdle = Color(0xFFD4C29A)
+
+  // Status pills
+  val StatusActiveBg = Color(0x243E8E5F)
+  val StatusLockedBg = Color(0x21C4553F)
+
+  // Scrim
+  val Scrim = Color(0x663E321E)
 }
+
+/** Page background gradient: parchment top glow into a flat mid tone. */
+@Stable
+val GameAdminPageBrush: Brush
+  get() = Brush.verticalGradient(
+    0f to MVVMJetPackComposeColors.PageTop,
+    0.18f to MVVMJetPackComposeColors.PageMid,
+    1f to MVVMJetPackComposeColors.PageMid,
+  )
+
+/** Gold button gradient (accent → soft gold). */
+@Stable
+val GameAdminGoldButtonBrush: Brush
+  get() = Brush.linearGradient(
+    colors = listOf(MVVMJetPackComposeColors.Accent, MVVMJetPackComposeColors.AccentSoft),
+  )
+
+/** Logo badge gradient (accent → darker gold). */
+@Stable
+val GameAdminLogoBrush: Brush
+  get() = Brush.linearGradient(
+    colors = listOf(MVVMJetPackComposeColors.Accent, MVVMJetPackComposeColors.AccentDeep),
+  )
+
+/**
+ * The design uses "Noto Serif" for headings. To stay offline without bundling font binaries we
+ * approximate with the platform serif; layout, weights and colors carry the visual identity.
+ */
+@Stable
+val GameAdminSerif: FontFamily = FontFamily.Serif
 
 @Stable
 object ContentAlpha {

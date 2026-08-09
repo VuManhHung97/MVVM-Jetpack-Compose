@@ -1,25 +1,22 @@
 package com.vmh.mvvmjetpackcompose.feature.main.ui.navigation
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
-import com.vmh.mvvmjetpackcompose.core.resource.R as CoreResourceR
-import com.vmh.mvvmjetpackcompose.feature.home.ui.navigation.HomeGraphRoutePattern
+import com.vmh.mvvmjetpackcompose.core.resource.R
+import com.vmh.mvvmjetpackcompose.feature.account.presentation.account.navigation.AccountGraphRoutePattern
+import com.vmh.mvvmjetpackcompose.feature.dashboard.presentation.dashboard.navigation.DashboardGraphRoutePattern
 import com.vmh.mvvmjetpackcompose.feature.profile.ui.navigation.ProfileGraphRoutePattern
+import com.vmh.mvvmjetpackcompose.feature.transaction.presentation.transaction.navigation.TransactionGraphRoutePattern
 
 @Immutable
 enum class MainTopScreenTopLevelDestination(
-  @DrawableRes val icon: Int,
-  val titleTextId: Int,
+  @param:DrawableRes val iconResId: Int,
+  @param:StringRes val titleResId: Int,
   val graphRoutePattern: String,
 ) {
-  Home(
-    icon = CoreResourceR.drawable.ic_home,
-    titleTextId = CoreResourceR.string.tab_home_title,
-    graphRoutePattern = HomeGraphRoutePattern,
-  ),
-  Settings(
-    icon = CoreResourceR.drawable.ic_user_24,
-    titleTextId = CoreResourceR.string.tab_profile_title,
-    graphRoutePattern = ProfileGraphRoutePattern,
-  ),
+  Dashboard(R.drawable.ic_tab_dashboard, R.string.tab_dashboard, DashboardGraphRoutePattern),
+  Account(R.drawable.ic_tab_account, R.string.tab_account, AccountGraphRoutePattern),
+  Transaction(R.drawable.ic_tab_transaction, R.string.tab_transaction, TransactionGraphRoutePattern),
+  Profile(R.drawable.ic_tab_admin_profile, R.string.tab_admin_profile, ProfileGraphRoutePattern),
 }

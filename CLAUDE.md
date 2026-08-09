@@ -24,11 +24,16 @@ Detailed rules are in [`.claude/rules/`](.claude/rules/):
 | [`clean-architecture.md`](.claude/rules/clean-architecture.md) | Layer boundaries, dependency direction, Repository/DataSource pattern, AppError hierarchy |
 | [`mvi-pattern.md`](.claude/rules/mvi-pattern.md) | UiState, SingleEvent, ViewModel structure, EventChannel |
 | [`kotlin-style.md`](.claude/rules/kotlin-style.md) | Naming conventions (boolean, count, callback, feature/class), commit style |
-| [`compose-rules.md`](.claude/rules/compose-rules.md) | Composable API design, state management, side-effect APIs |
+| [`compose-rules.md`](.claude/rules/compose-rules.md) | Composable API design, state management, side-effect APIs, modal (bottom sheet/dialog) reuse |
 | [`dependency-injection.md`](.claude/rules/dependency-injection.md) | Hilt rules — what to inject, module organization, event bus |
 | [`navigation.md`](.claude/rules/navigation.md) | NavTypeContainer, lifecycle pitfalls, duplicate collector prevention |
 | [`local-storage.md`](.claude/rules/local-storage.md) | DataStore Proto, Room, mapper patterns, token safety |
+| [`data-layer.md`](.claude/rules/data-layer.md) | New feature data: API contract + Fake data source + dummy JSON (before real backend) |
+| [`theming-strings-resources.md`](.claude/rules/theming-strings-resources.md) | Colors into central palette, mandatory `stringResource` + i18n, `@StringRes`/`@DrawableRes` enums |
+| [`detekt-hygiene.md`](.claude/rules/detekt-hygiene.md) | Preempt detekt/spotless failures (ImmutableList state, unused imports, ≤120, `@Suppress` conventions) |
 | [`pr-checklist.md`](.claude/rules/pr-checklist.md) | Full review checklist trước khi submit PR |
+
+> Khi hiện thực một **Claude Design handoff** (bundle `*.dc.html`), chạy skill [`/implement-design-handoff`](.claude/commands/implement-design-handoff.md) — quy trình tách module theo màn + tái dùng module có sẵn + verify trên emulator.
 
 ## Module Structure
 

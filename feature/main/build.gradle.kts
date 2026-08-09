@@ -10,7 +10,9 @@ dependencies {
   implementation(projects.core.resource)
   implementation(projects.core.ui)
 
-  implementation(projects.feature.home)
+  implementation(projects.feature.dashboard)
+  implementation(projects.feature.account)
+  implementation(projects.feature.transaction)
   implementation(projects.feature.profile)
 
   api(libs.kotlinx.collections.immutable)

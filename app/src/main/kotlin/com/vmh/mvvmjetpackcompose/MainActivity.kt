@@ -50,6 +50,7 @@ import com.vmh.mvvmjetpackcompose.core.ui.common.rememberSnackbarManager
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetPackComposeColors
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetpackComposeTheme
 import com.vmh.mvvmjetpackcompose.core.ui.util.openAppInPlayStore
+import com.vmh.mvvmjetpackcompose.feature.account.presentation.account.navigation.navigateToAccountDetailScreen
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.AuthenticationRoutePattern
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.authenticationScreen
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.navigateToAuthenticationScreen
@@ -58,7 +59,6 @@ import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.nav
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.navigateToSignUpScreen
 import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.signUpScreen
 import com.vmh.mvvmjetpackcompose.feature.language.presentation.language.navigation.languageScreen
-import com.vmh.mvvmjetpackcompose.feature.language.presentation.language.navigation.navigateToLanguageScreen
 import com.vmh.mvvmjetpackcompose.feature.main.ui.MainNavigationBar
 import com.vmh.mvvmjetpackcompose.feature.main.ui.MainState
 import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainGraphRoutePattern
@@ -68,8 +68,6 @@ import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.navigateToMainGraph
 import com.vmh.mvvmjetpackcompose.feature.main.ui.rememberMainState
 import com.vmh.mvvmjetpackcompose.feature.search.ui.navigation.navigateToSearchScreen
 import com.vmh.mvvmjetpackcompose.feature.search.ui.navigation.searchScreen
-import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.WebViewArgs
-import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.navigateToWebViewScreen
 import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.webViewScreen
 import com.vmh.mvvmjetpackcompose.lifecycle.collectInLaunchedEffectWithLifecycle
 import com.vmh.mvvmjetpackcompose.locale.LocaleController
@@ -260,30 +258,20 @@ private fun MVVMJetpackComposeApp(
       startDestination = startDestination,
     ) {
       mainGraph(
-        onNavigateToSearchScreen = navController::navigateToSearchScreen,
-        onNavigateToAuthenticationScreen = {
+        onNavigateToHistory = {
+          mainState.navigateToTopLevelDestination(MainTopScreenTopLevelDestination.Transaction)
+        },
+        onNavigateToAccountDetail = navController::navigateToAccountDetailScreen,
+        onNavigateBack = navController::popBackStack,
+        onLogout = {
           navController.navigateToAuthenticationScreen(
             navOptions = navOptions {
-              popUpTo(id = navController.graph.id) { inclusive = true }
+              popUpTo(navController.graph.id) { inclusive = true }
 
               launchSingleTop = true
             },
           )
         },
-        onNavigateToWebViewScreen = { webViewDestination ->
-          navController.navigateToWebViewScreen(
-            navType = navTypeContainer.webViewArgsNavType,
-            args = WebViewArgs(
-              path = webViewDestination.path,
-              title = context.getString(webViewDestination.titleResId),
-            ),
-          )
-        },
-        onNavigateToLanguageScreen = navController::navigateToLanguageScreen,
-      )
-
-      searchScreen(
-        onNavigateBack = navController::popBackStack,
       )
 
       authenticationScreen(
@@ -324,6 +312,10 @@ private fun MVVMJetpackComposeApp(
             },
           )
         },
+      )
+
+      searchScreen(
+        onNavigateBack = navController::popBackStack,
       )
 
       webViewScreen(
