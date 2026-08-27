@@ -1,119 +1,143 @@
----
-description: Navigation Compose và lifecycle pitfalls — tránh duplicate collectors, ViewModel leak, và nav args serialization.
-globs: feature/**/*.kt, app/**/*.kt
----
+# Navigation Rules — Jetpack Navigation 3
 
-# Navigation & Lifecycle Rules
+Dự án dùng **Navigation 3**. Back stack là `List` do code mình giữ, không nằm trong `NavController`.
+Navigate = `add()`. Back = `removeLastOrNull()`. Không có route string, không có nested graph.
 
-## Nav Graph Structure
+## Mô hình hai lớp
 
-- Mỗi feature module có nav graph riêng, wired vào root `NavHost` trong `MainActivity`.
-- Dùng `NavTypeContainer` để truyền complex object giữa destinations.
-
-```kotlin
-// Đăng ký MoshiNavType cho argument phức tạp
-@Immutable
-internal class NavTypeContainer @Inject constructor(
-    internal val webViewArgsNavType: MoshiNavType<WebViewArgs>
-)
-
-// MainActivity inject NavTypeContainer và pass vào NavHost
+```
+┌───────────────────────────────────────────────────────────┐
+│  LỚP NGOÀI — rootStack: NavBackStack<NavKey>              │
+│  [ Auth ] · [ Auth, SignIn ] · [ Auth, SignUp ] · [ Main ]│
+│  vào/ra bằng add / remove  →  ViewModel được clear         │
+├───────────────────────────────────────────────────────────┤
+│  LỚP TRONG — NavigationState (chỉ tồn tại dưới MainNavKey)│
+│  startRoute   = HomeNavKey        (tab thoát app)         │
+│  topLevelRoute: MutableState      = Home | Profile        │
+│  backStacks   = { Home: [...], Profile: [...] }           │
+└───────────────────────────────────────────────────────────┘
 ```
 
-## Complex Nav Args — NavTypeContainer
+**`MainNavKey` là marker**, không bao giờ được render → không khai `entry<MainNavKey>`.
+
+Nguyên tắc bất di bất dịch: **`topLevelRoutes` chỉ chứa tab.** Màn hình ngoài hệ tab (luồng xác thực,
+onboarding…) thuộc `rootStack`. Nhét màn không-phải-tab vào `topLevelRoutes` sẽ khiến entry của nó
+không bao giờ rời back stack → ViewModel sống mãi.
+
+## Module
+
+| Module | Chứa | Phụ thuộc |
+|---|---|---|
+| `:core:navigation` | `NavigationState`, `AppNavigationState`, `Navigator`, `toEntries()` | chỉ `navigation3-runtime` — **không** biết key của feature nào |
+| `feature/x/api` | `@Serializable data object XNavKey : NavKey` + `fun Navigator.navigateToX()` | `:core:navigation` |
+| `feature/x/impl` | `xEntry()`, Screen, ViewModel, Contract | `x/api` + `api` của feature nó điều hướng tới |
+
+Feature cần đi tới feature khác thì phụ thuộc `:api` của feature đó, **không bao giờ** `:impl`.
+
+## NavKey — đặt ở `:api`
 
 ```kotlin
-// Định nghĩa args class
-@Parcelize
-data class WebViewArgs(val url: String, val title: String) : Parcelable
+@Serializable
+data object HomeNavKey : NavKey
 
-// Đăng ký trong NavTypeContainer
-val webViewArgsNavType: MoshiNavType<WebViewArgs>
+fun Navigator.navigateToHome() = navigate(HomeNavKey)
+```
 
-// Dùng trong NavHost
-composable(
-    route = Screen.WebView.route,
-    arguments = listOf(navArgument("args") { type = navTypeContainer.webViewArgsNavType })
-) { backStackEntry ->
-    val args = backStackEntry.arguments?.get("args") as WebViewArgs
-    WebViewScreen(args = args)
+- `data object` (không phải `object`) — `toString()` đọc được khi log back stack.
+- Key có tham số dùng `data class`; tham số **là** argument, không encode vào string.
+- **Không để text hiển thị trong key.** Key được serialize và lưu qua process death; chuỗi đã dịch
+  sẽ đóng băng, đổi ngôn ngữ không cập nhật. Giữ `@StringRes` hoặc enum, resolve ở màn hình.
+- `@Serializable` chỉ có tác dụng khi module apply plugin `kotlin.plugin.serialization` —
+  plugin `android.feature.api` đã lo. Đặt `NavKey` ở module khác thì phải tự kiểm bằng
+  `javap` xem có sinh `serializer()` không; thiếu thì crash lúc process death, không phải lúc compile.
+
+## Entry provider — đặt ở `:impl`
+
+```kotlin
+// feature/profile/impl/.../navigation/ProfileEntryProvider.kt
+fun EntryProviderScope<NavKey>.profileEntry(navigator: Navigator) {
+  entry<ProfileNavKey> {
+    ProfileRoute(
+      onNavigateToLanguageScreen = navigator::navigateToLanguage,
+      onNavigateToWebViewScreen = navigator::navigateToWebView,
+      onNavigateToAuthenticationScreen = { navigator.resetRootTo(AuthenticationNavKey) },
+    )
+  }
 }
 ```
 
-## Lifecycle Pitfalls
+- Một file `<Feature>EntryProvider.kt` cho mỗi màn, hàm `fun EntryProviderScope<NavKey>.xEntry(navigator: Navigator)`.
+- `:app` gọi thẳng trong `entryProvider { }` — **không** dùng Hilt multibinding (theo nowinandroid).
+- **Không truyền lambda điều hướng xuyên module.** Entry builder có sẵn `navigator` trong scope.
+- Composable màn hình giữ nguyên chữ ký `onNavigateToX: () -> Unit` — chỉ chỗ nối dây đổi.
+- `entry<T>` nhận mọi `NavKey`, compiler **không** bắt được nếu khai nhầm key. Kiểm mắt một lượt:
+  mỗi key đúng một entry, không key nào thiếu.
 
-### ViewModel Scope vs NavBackStackEntry Scope
+## `Navigator` API
+
+| Hàm | Dùng khi |
+|---|---|
+| `navigate(navKey)` | đi tới màn bất kỳ — tự phân nhánh theo vùng đang đứng |
+| `resetRootTo(navKey)` | đổi vùng: đăng nhập xong → `MainNavKey`, đăng xuất / 401 → `AuthenticationNavKey`. Reset luôn mọi `backStacks` |
+| `goBack(): Boolean` | `false` = hết stack, caller quyết định `finish()` |
+| `clearCurrentStack()` | bấm lại tab đang đứng |
+
+`navigate()` không cần marker: đang ở vùng auth thì key vào `rootStack`, đang ở vùng app thì key vào
+sub-stack của tab hiện tại.
+
+## Vòng đời ViewModel — quy tắc duy nhất
+
+> *"when an entry is removed from the back stack the `ViewModelStoreNavEntryDecorator`
+> clears its associated `ViewModelStore`"* — [tài liệu Nav3](https://developer.android.com/guide/navigation/navigation-3/naventrydecorators)
+
+Hệ quả phải nhớ:
+
+- **`clear()` rồi `add()` cùng một key trong cùng một frame KHÔNG tính là "rời stack".** Compose chỉ
+  thấy snapshot cuối. Muốn ViewModel bị clear thì entry phải thật sự biến mất khỏi danh sách.
+- **Entry của tab sống mãi** — đúng thiết kế, tab cần giữ state. Đừng trông chờ ViewModel của tab
+  được tạo lại khi chuyển tab.
+- **Nav2 huỷ destination khi `popUpTo(inclusive = true)`; Nav3 thì không.** Mọi chỗ code cũ ngầm dựa
+  vào *"quay lại màn X = X chạy lại từ đầu"* đều sai. Cần chạy lại thì dùng `LaunchedEffect` trong
+  Route, đừng đặt trong `init` của ViewModel.
+
+## Điều hướng khởi phát từ đâu
+
+| Loại | Ví dụ | Cách làm |
+|---|---|---|
+| Người dùng bấm | back, mở WebView, chọn ngôn ngữ | gọi thẳng `navigator` trong entry builder |
+| ViewModel, sau việc async | sign-in thành công, logout, deep link, 401 | `SingleEvent` qua `EventChannel` như cũ |
+
+`EventChannel` là `Channel.UNLIMITED` và chỉ đóng khi ViewModel bị clear. ViewModel sống lâu + màn
+không hiển thị = event xếp hàng, sẽ nổ hết khi màn quay lại. Nếu một `SingleEvent` chỉ có nghĩa lúc
+màn đang hiển thị, thu hẹp nguồn phát (ví dụ `.map { it is Authenticated }.distinctUntilChanged()`)
+thay vì trông vào việc ViewModel sẽ được tạo mới.
+
+## Bottom bar
 
 ```kotlin
-// Cẩn thận — VM scope phụ thuộc BackStackEntry scope
-// Khi popUpTo(route, inclusive = true): VM của route đó bị destroy
-// Khi popUpTo(route, inclusive = false): VM của route đó vẫn sống
-
-// Luôn kiểm tra: sau navigation, VM cũ có bị destroy không?
-// Nếu không → có thể bị duplicate Flow collector
+val currentTopLevelKey = navigationState.tabs.topLevelRoute
+val currentKey = if (navigationState.isInAppArea) navigationState.tabs.currentStack.last() else null
+val isMainNavigationBarVisible = topLevelDestinations.any { it.navKey == currentKey }
 ```
 
-### launchSingleTop / restoreState
+Bar chỉ hiện ở vùng app **và** khi đang đứng ở màn gốc của một tab. Chuyển tab và bấm lại tab là hai
+ý định khác nhau → hai callback riêng (`onDestinationSelect` / `onDestinationReselect`), không gộp.
 
-```kotlin
-navController.navigate(Screen.Home.route) {
-    popUpTo(navController.graph.startDestinationId) { saveState = true }
-    launchSingleTop = true
-    restoreState = true  // Cẩn thận: restoreState không phù hợp có thể giữ screen cũ
-}
-```
+## Bất biến phải giữ
 
-- `restoreState = true` chỉ dùng khi muốn khôi phục state của destination đã lưu.
-- Nếu không cần restore state, bỏ `restoreState` để tránh giữ màn hình/ViewModel cũ ngoài ý muốn.
-
-### Duplicate Flow Collection sau Navigation
-
-Nguyên nhân thường gặp:
-1. ViewModel không bị destroy sau `popUpTo` → Flow collector cũ vẫn còn
-2. `collectAsStateWithLifecycle()` ở nhiều BackStackEntry scope cùng subscribe 1 Flow
-3. Graph scope ViewModel bị share giữa các destination không mong muốn
-
-Cách phát hiện và fix:
-```kotlin
-// Luôn dùng lifecycleOwner scope phù hợp khi collect
-viewLifecycleOwner.lifecycleScope.launch {
-    viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-        viewModel.eventFlow.collect { ... }
-    }
-}
-
-// Trong Compose: collectAsStateWithLifecycle() tự xử lý lifecycle
-val state by viewModel.uiStateFlow.collectAsStateWithLifecycle()
-```
-
-## Single Event Collection
-
-```kotlin
-// Đúng — LaunchedEffect với key là ViewModel, không phải Unit nếu có thể leak
-LaunchedEffect(viewModel) {
-    viewModel.eventFlow.collect { event ->
-        when (event) {
-            is MyEvent.Navigate -> navController.navigate(event.route)
-            is MyEvent.ShowError -> snackbarHostState.showSnackbar(event.message)
-        }
-    }
-}
-```
-
-- Key của `LaunchedEffect` cho event collection phải stable (ViewModel instance là stable trong Compose).
-- Không dùng `LaunchedEffect(Unit)` cho event collection nếu có thể bị cancel/restart không mong muốn.
+- Sub-stack của mỗi tab **không bao giờ rỗng** — luôn còn ít nhất key gốc của tab.
+- `startRoute` phải nằm trong `topLevelRoutes`.
+- `resetRootTo` chỉ nhận key thuộc `rootStack` (Auth hoặc Main), không nhận key của tab.
 
 ## Network Interceptors — AuthInterceptor
 
-Interceptor sử dụng `Mutex` để tránh race condition khi refresh token:
+Interceptor dùng `Mutex` để tránh race condition khi refresh token:
 
 ```kotlin
-// Chỉ một coroutine được refresh token tại một thời điểm
 private val mutex = Mutex()
 
-// Trên 401: các request song song sẽ wait mutex, sau đó dùng token mới
 val newAccessToken = runBlocking(io) {
-    mutex.withLock { executeRefreshTokenIfNeeded(localUser) }
+  mutex.withLock { executeRefreshTokenIfNeeded(localUser) }
 }
 ```
 

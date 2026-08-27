@@ -44,6 +44,7 @@ include(":core:domain")
 include(":core:deeplink")
 include(":core:analytics")
 include(":core:notification")
+include(":core:navigation")
 
 // ---------------------------------------- Library modules ----------------------------------------
 
@@ -51,13 +52,19 @@ include(":library:flowext")
 
 // ---------------------------------------- Feature modules ----------------------------------------
 
-include(":feature:main")
-include(":feature:home")
-include(":feature:profile")
-include(":feature:authentication")
-include(":feature:webview")
-include(":feature:search")
-include(":feature:language")
+include(":feature:main:api")
+include(":feature:home:api")
+include(":feature:home:impl")
+include(":feature:profile:api")
+include(":feature:profile:impl")
+include(":feature:authentication:api")
+include(":feature:authentication:impl")
+include(":feature:webview:api")
+include(":feature:webview:impl")
+include(":feature:search:api")
+include(":feature:search:impl")
+include(":feature:language:api")
+include(":feature:language:impl")
 
 plugins {
   id("org.gradle.toolchains.foojay-resolver-convention") version ("0.9.0")

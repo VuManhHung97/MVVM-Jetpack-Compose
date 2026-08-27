@@ -68,7 +68,7 @@ Theo mục Modal trong `compose-rules`:
 - Toast/snackbar → dùng `SnackbarManager` sẵn có; ViewModel emit SingleEvent → screen show.
 
 ## Bước 6 — Wire + build sạch
-- Đăng ký module (`settings.gradle.kts`, `app/build.gradle.kts`), wire graph vào module main/NavHost.
+- Đăng ký module `api` + `impl` (`settings.gradle.kts`, `app/build.gradle.kts`), thêm `<name>Entry(navigator)` vào `entryProvider { }` của `MainActivity`.
 - Trước khi báo xong: **`spotlessApply` → `detekt` → `assembleDebug`** đều xanh (theo `.claude/rules/detekt-hygiene.md` để tránh vòng lặp).
 
 ## Bước 7 — Verify trên thiết bị (bắt buộc)
