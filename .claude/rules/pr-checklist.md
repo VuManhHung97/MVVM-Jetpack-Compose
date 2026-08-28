@@ -49,11 +49,20 @@ Khi review code hoặc chuẩn bị submit PR, kiểm tra toàn bộ danh sách 
 - [ ] `AppError` subtype đúng layer: `ApiException` từ network, `LocalStorageException` từ local.
 - [ ] Dùng `coroutineBinding { }.bind()` để chain Results, không nest `.fold()`.
 
-## Flow / Coroutines / Navigation
+## Flow / Coroutines
 
 - [ ] Flow collection dùng đúng lifecycle scope — không leak collector sau navigation.
-- [ ] `popUpTo` / `launchSingleTop` / `restoreState` không giữ ViewModel cũ ngoài ý muốn.
 - [ ] Không có duplicate event collection sau navigate.
+
+## Navigation 3 (xem [`navigation.md`](navigation.md))
+
+- [ ] `NavKey` là `@Serializable data object` / `data class`, nằm ở `:api`; entry builder ở `:impl`.
+- [ ] `topLevelRoutes` **chỉ chứa tab** — màn ngoài hệ tab thuộc `rootStack`.
+- [ ] Không truyền lambda điều hướng xuyên module; entry builder gọi thẳng `navigator`.
+- [ ] Mỗi `NavKey` đúng một `entry<>`, không key nào thiếu (compiler không bắt được).
+- [ ] Key không mang text đã dịch — giữ `@StringRes`/enum, resolve ở màn hình.
+- [ ] Module chứa `NavKey` có apply plugin serialization (kiểm bằng `javap` nếu không phải `:api`).
+- [ ] Không dựa vào "quay lại màn X = X chạy lại từ đầu" — Nav3 không huỷ entry như `popUpTo` của Nav2.
 
 ## Local Storage
 

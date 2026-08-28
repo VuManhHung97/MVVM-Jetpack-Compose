@@ -11,11 +11,26 @@ Create a new Android feature module following the project's conventions.
 
 You will create a complete feature module scaffold. Replace `<name>` with the module name provided (e.g. `language` → `Language`, package `language`).
 
-### 1. Create `feature/<name>/build.gradle.kts`
+### 1. Create the `api` + `impl` module pair
+
+`feature/<name>/api/build.gradle.kts` — navigation contract only (route pattern / `NavKey` +
+`navigateToX()`). Không Hilt, không Compose, không `core:ui`:
 
 ```kotlin
 plugins {
-  id(libs.plugins.android.feature.get().pluginId)
+  id(libs.plugins.android.feature.api.get().pluginId)
+}
+
+android {
+  namespace = "com.vmh.mvvmjetpackcompose.feature.<name>.api"
+}
+```
+
+`feature/<name>/impl/build.gradle.kts` — screens, ViewModel, nav graph builder:
+
+```kotlin
+plugins {
+  id(libs.plugins.android.feature.impl.get().pluginId)
 }
 
 android {
@@ -23,6 +38,8 @@ android {
 }
 
 dependencies {
+  api(projects.feature.<name>.api)
+
   implementation(projects.core.ui)
   implementation(projects.core.resource)
   implementation(projects.core.common)
@@ -31,9 +48,10 @@ dependencies {
 }
 ```
 
+
 ### 2. Create `<Name>Contract.kt` (UiState only — no StateSaver, no SingleEvent at this stage)
 
-Path: `feature/<name>/src/main/kotlin/com/vmh/mvvmjetpackcompose/feature/<name>/presentation/<name>/<Name>Contract.kt`
+Path: `feature/<name>/impl/src/main/kotlin/com/vmh/mvvmjetpackcompose/feature/<name>/presentation/<name>/<Name>Contract.kt`
 
 ```kotlin
 package com.vmh.mvvmjetpackcompose.feature.<name>.presentation.<name>
@@ -54,7 +72,7 @@ data class <Name>UiState(val isLoading: Boolean) : Parcelable {
 
 ### 3. Create `<Name>ViewModel.kt`
 
-Path: `feature/<name>/src/main/kotlin/com/vmh/mvvmjetpackcompose/feature/<name>/presentation/<name>/<Name>ViewModel.kt`
+Path: `feature/<name>/impl/src/main/kotlin/com/vmh/mvvmjetpackcompose/feature/<name>/presentation/<name>/<Name>ViewModel.kt`
 
 ```kotlin
 package com.vmh.mvvmjetpackcompose.feature.<name>.presentation.<name>
@@ -79,36 +97,58 @@ internal class <Name>ViewModel @Inject constructor() : ViewModel() {
 }
 ```
 
-### 4. Create `navigation/navigation.kt`
+### 4. Create `NavKey` (ở `api`) và entry provider (ở `impl`)
 
-Path: `feature/<name>/src/main/kotlin/com/vmh/mvvmjetpackcompose/feature/<name>/presentation/<name>/navigation/navigation.kt`
+Xem [`navigation.md`](../rules/navigation.md) cho toàn bộ quy tắc.
+
+**`feature/<name>/api/.../presentation/<name>/navigation/<Name>NavKey.kt`**
 
 ```kotlin
 package com.vmh.mvvmjetpackcompose.feature.<name>.presentation.<name>.navigation
 
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavOptions
-import androidx.navigation.compose.composable
+import androidx.navigation3.runtime.NavKey
+import com.vmh.mvvmjetpackcompose.core.navigation.Navigator
+import kotlinx.serialization.Serializable
+
+@Serializable
+data object <Name>NavKey : NavKey
+
+fun Navigator.navigateTo<Name>() = navigate(<Name>NavKey)
+```
+
+**`feature/<name>/impl/.../presentation/<name>/navigation/<Name>EntryProvider.kt`**
+
+```kotlin
+package com.vmh.mvvmjetpackcompose.feature.<name>.presentation.<name>.navigation
+
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
+import com.vmh.mvvmjetpackcompose.core.navigation.Navigator
 import com.vmh.mvvmjetpackcompose.feature.<name>.ui.<name>.<Name>Route
 
-const val <Name>RoutePattern = "<name>_route"
-
-fun NavController.navigateTo<Name>Screen(navOptions: NavOptions? = null) = navigate(
-  route = <Name>RoutePattern,
-  navOptions = navOptions,
-)
-
-fun NavGraphBuilder.<name>Screen(onNavigateBack: () -> Unit) {
-  composable(route = <Name>RoutePattern) {
-    <Name>Route(onNavigateBack = onNavigateBack)
+fun EntryProviderScope<NavKey>.<name>Entry(navigator: Navigator) {
+  entry<<Name>NavKey> {
+    <Name>Route(onNavigateBack = { navigator.goBack() })
   }
 }
 ```
 
+Không truyền lambda điều hướng từ `:app` xuống — entry builder đã có `navigator` trong scope.
+
+### 4b. Nối vào `MainActivity`
+
+Thêm **một dòng** vào block `entryProvider { }`:
+
+```kotlin
+<name>Entry(navigator)
+```
+
+Nếu màn mới là tab thì thêm `<Name>NavKey` vào `topLevelRoutes` và vào enum
+`MainTopScreenTopLevelDestination`. **Màn không phải tab thì không được đụng vào `topLevelRoutes`.**
+
 ### 5. Create `<Name>Screen.kt`
 
-Path: `feature/<name>/src/main/kotlin/com/vmh/mvvmjetpackcompose/feature/<name>/ui/<name>/<Name>Screen.kt`
+Path: `feature/<name>/impl/src/main/kotlin/com/vmh/mvvmjetpackcompose/feature/<name>/ui/<name>/<Name>Screen.kt`
 
 - `<Name>Route`: collect uiState, truyền `onNavigateBack` lambda trực tiếp xuống `<Name>Screen`
 - `<Name>Screen`: stateless UI với `Scaffold` + `BackIconButton`

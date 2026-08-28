@@ -1,6 +1,6 @@
 # Feature Vertical Slice
 
-Tạo một feature module **đầy đủ vertical-slice** đi qua mọi layer Clean Architecture của project: domain model → repository interface → network (DTO + ApiService contract + DataSource + **Fake đọc dummy JSON + Real viết sẵn** + DI) → data (mapper + `Default*Repository` + bind) → presentation MVI → UI Compose → wiring vào NavHost → hygiene.
+Tạo một feature module **đầy đủ vertical-slice** đi qua mọi layer Clean Architecture của project: domain model → repository interface → network (DTO + ApiService contract + DataSource + **Fake đọc dummy JSON + Real viết sẵn** + DI) → data (mapper + `Default*Repository` + bind) → presentation MVI → UI Compose → wiring vào `entryProvider` → hygiene.
 
 Bổ khuyết `/new-feature-module` (chỉ scaffold presentation rỗng, không có data layer): command này lo trọn slice có dữ liệu, tạm chạy bằng dummy JSON để khi có backend chỉ đổi **1 dòng `@Binds`**.
 
@@ -29,7 +29,7 @@ Command này **không lặp lại** convention. Nạp và tuân theo các rule (
 - [`.claude/rules/kotlin-style.md`](../rules/kotlin-style.md) — naming (boolean/count/callback, feature=plural class=singular), Instant, log.
 - [`.claude/rules/theming-strings-resources.md`](../rules/theming-strings-resources.md) — string qua `stringResource`, enum dùng `@StringRes`/`@DrawableRes`, màu vào palette trung tâm.
 - [`.claude/rules/local-storage.md`](../rules/local-storage.md) — nếu domain cần cache/DataStore/Room.
-- [`.claude/rules/navigation.md`](../rules/navigation.md) — nav graph, lifecycle, single-event collection.
+- [`.claude/rules/navigation.md`](../rules/navigation.md) — mô hình hai lớp, NavKey/entry provider, vòng đời ViewModel.
 - [`.claude/rules/detekt-hygiene.md`](../rules/detekt-hygiene.md) — `ImmutableList` trong `@Immutable`, unused import, MaxLineLength, MagicNumber, `@Suppress` kèm comment.
 
 **Portable**: các đường dẫn file cụ thể bên dưới chỉ là **ví dụ tham chiếu trong repo hiện tại**. Nếu project khác không có chúng, tìm symbol tương đương (ưu tiên skill graph `explore-codebase` để tiết kiệm token) hoặc theo mô tả convention + rule ở trên.
@@ -182,11 +182,19 @@ internal class Default<Domain>Repository @Inject constructor(
 
 ### 5. Presentation — `feature/<domain>` (theo `mvi-pattern.md`, `compose-rules.md`)
 
-**`feature/<domain>/build.gradle.kts`** — **không** phụ thuộc `core:data/network/local`:
+**`feature/<domain>/api/build.gradle.kts`** — chỉ contract điều hướng:
 ```kotlin
-plugins { id(libs.plugins.android.feature.get().pluginId) }
+plugins { id(libs.plugins.android.feature.api.get().pluginId) }
+android { namespace = "com.vmh.mvvmjetpackcompose.feature.<domain>.api" }
+```
+
+**`feature/<domain>/impl/build.gradle.kts`** — **không** phụ thuộc `core:data/network/local`:
+```kotlin
+plugins { id(libs.plugins.android.feature.impl.get().pluginId) }
 android { namespace = "com.vmh.mvvmjetpackcompose.feature.<domain>" }
 dependencies {
+  api(projects.feature.<domain>.api)
+
   implementation(projects.core.ui)
   implementation(projects.core.resource)
   implementation(projects.core.common)
@@ -255,12 +263,20 @@ internal class <Domain>ViewModel @Inject constructor(
 - Content: `when(uiState)` → Loading spinner / Content(`LazyColumn` với `key { it.id }` + `contentType` bằng **private enum** + empty state khi rỗng) / Error + nút retry.
 - Extract item row ra `ui/component/<Domain>ItemRow.kt`. Format `occurredAt` bằng `DateTimeFormatter` + `ZoneId.systemDefault()` tại Composable.
 
-**`navigation/navigation.kt`**:
+**`<Domain>NavKey.kt`** (ở `api`):
 ```kotlin
-const val <Domain>RoutePattern = "<domain>_route"
-fun NavController.navigateTo<Domain>Screen(navOptions: NavOptions? = null) = navigate(<Domain>RoutePattern, navOptions)
-fun NavGraphBuilder.<domain>Screen(onNavigateBack: () -> Unit, modifier: Modifier = Modifier) {
-  composable(route = <Domain>RoutePattern) { <Domain>Route(modifier = modifier, onNavigateBack = onNavigateBack) }
+@Serializable
+data object <Domain>NavKey : NavKey
+
+fun Navigator.navigateTo<Domain>() = navigate(<Domain>NavKey)
+```
+
+**`<Domain>EntryProvider.kt`** (ở `impl`, cùng package):
+```kotlin
+fun EntryProviderScope<NavKey>.<domain>Entry(navigator: Navigator) {
+  entry<<Domain>NavKey> {
+    <Domain>Route(onNavigateBack = { navigator.goBack() })
+  }
 }
 ```
 
@@ -272,10 +288,12 @@ fun NavGraphBuilder.<domain>Screen(onNavigateBack: () -> Unit, modifier: Modifie
 
 ### 7. Wiring
 
-1. `settings.gradle.kts`: thêm `include(":feature:<domain>")` ở nhóm Feature modules.
-2. `app/build.gradle.kts`: thêm `implementation(projects.feature.<domain>)`.
-3. `app/.../MainActivity.kt`: `import ...feature.<domain>.ui.navigation.<domain>Screen` (+ `navigateTo<Domain>Screen` nếu có caller) và thêm `<domain>Screen(onNavigateBack = navController::popBackStack)` vào `NavHost`.
-4. Wire entry point: từ một màn có sẵn (vd Profile) gọi `navController.navigateTo<Domain>Screen()`, truyền callback qua nav graph tương ứng.
+1. `settings.gradle.kts`: thêm `include(":feature:<domain>:api")` và `include(":feature:<domain>:impl")`.
+2. `app/build.gradle.kts`: thêm `implementation(projects.feature.<domain>.api)` và `.impl`.
+3. `app/.../MainActivity.kt`: thêm **một dòng** `<domain>Entry(navigator)` vào block `entryProvider { }`.
+4. Wire entry point: module gọi tới khai `implementation(projects.feature.<domain>.api)`, entry builder của
+   nó gọi `navigator.navigateTo<Domain>()`. **Không** truyền lambda điều hướng xuyên module.
+5. Màn mới **không phải tab** thì không được đụng vào `topLevelRoutes`.
 
 ---
 
