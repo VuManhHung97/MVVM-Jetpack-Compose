@@ -9,6 +9,7 @@ android {
 
 dependencies {
   // Libs
+  implementation(libs.androidx.compose.material.iconsCore)
   implementation(libs.androidx.constraintlayout)
   implementation(libs.androidx.core.ktx)
   implementation(libs.material)

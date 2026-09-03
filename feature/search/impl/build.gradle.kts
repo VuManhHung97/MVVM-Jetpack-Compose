@@ -15,5 +15,6 @@ dependencies {
   api(projects.core.domain)
 
   // Libraries
+  implementation(libs.androidx.compose.material.iconsCore)
   api(libs.kotlinx.collections.immutable)
 }
