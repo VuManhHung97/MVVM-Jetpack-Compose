@@ -49,16 +49,46 @@ Khi review code hoặc chuẩn bị submit PR, kiểm tra toàn bộ danh sách 
 - [ ] `AppError` subtype đúng layer: `ApiException` từ network, `LocalStorageException` từ local.
 - [ ] Dùng `coroutineBinding { }.bind()` để chain Results, không nest `.fold()`.
 
-## Flow / Coroutines / Navigation
+## Flow / Coroutines
 
 - [ ] Flow collection dùng đúng lifecycle scope — không leak collector sau navigation.
-- [ ] `popUpTo` / `launchSingleTop` / `restoreState` không giữ ViewModel cũ ngoài ý muốn.
 - [ ] Không có duplicate event collection sau navigate.
+
+## Navigation 3 (xem [`navigation.md`](navigation.md))
+
+- [ ] `NavKey` là `@Serializable data object` / `data class`, nằm ở `:api`; entry builder ở `:impl`.
+- [ ] `topLevelRoutes` **chỉ chứa tab** — màn ngoài hệ tab thuộc `rootStack`.
+- [ ] Không truyền lambda điều hướng xuyên module; entry builder gọi thẳng `navigator`.
+- [ ] Mỗi `NavKey` đúng một `entry<>`, không key nào thiếu (compiler không bắt được).
+- [ ] Key không mang text đã dịch — giữ `@StringRes`/enum, resolve ở màn hình.
+- [ ] Module chứa `NavKey` có apply plugin serialization (kiểm bằng `javap` nếu không phải `:api`).
+- [ ] Không dựa vào "quay lại màn X = X chạy lại từ đầu" — Nav3 không huỷ entry như `popUpTo` của Nav2.
 
 ## Local Storage
 
 - [ ] `update()` DataStore không ghi đè `accessToken`/`refreshToken` khi map profile response.
 - [ ] `IOException` khi đọc DataStore được xử lý (emit default) thay vì crash.
+
+## Data Layer (xem [`data-layer.md`](data-layer.md))
+
+- [ ] Không mock/seed hardcode trong ViewModel/Repository — data mới đi qua DTO + DataSource + mapper + repository.
+- [ ] Chưa có API thật: `Fake*RemoteDataSourceImpl` đọc dummy JSON từ `resources/`; `ApiService` vẫn định nghĩa contract thật.
+
+## Theming, Strings & Resources (xem [`theming-strings-resources.md`](theming-strings-resources.md))
+
+- [ ] Màu thêm vào palette trung tâm có sẵn — không tạo object/theme màu mới.
+- [ ] Mọi text hiển thị qua `stringResource`/`getString`; không hardcode; string động dùng `%1$s`.
+- [ ] Enum/data hiển thị dùng `@StringRes`/`@DrawableRes`, không nhúng text/glyph.
+
+## Modal (xem [`compose-rules.md`](compose-rules.md))
+
+- [ ] Bottom sheet dùng `ModalBottomSheet`/wrapper chung; dialog tái dùng `DialogCommon`; không tự dựng trùng.
+
+## Detekt / Spotless (xem [`detekt-hygiene.md`](detekt-hygiene.md))
+
+- [ ] `@Immutable` state/param dùng `ImmutableList`/`PersistentList`, không `List`.
+- [ ] Đã xoá unused import thủ công; dòng ≤ 120; `@Suppress` đều có comment.
+- [ ] `spotlessApply` + `detekt` xanh (kiểm tra `BUILD SUCCESSFUL` trong log).
 
 ## Code Quality
 

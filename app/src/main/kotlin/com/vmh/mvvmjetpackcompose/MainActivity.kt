@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -27,6 +28,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -34,13 +36,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navOptions
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.NavDisplay
+import com.vmh.mvvmjetpackcompose.core.analytics.AnalyticsTracker
 import com.vmh.mvvmjetpackcompose.core.deeplink.DeepLinkResolver
+import com.vmh.mvvmjetpackcompose.core.navigation.Navigator
+import com.vmh.mvvmjetpackcompose.core.navigation.rememberAppNavigationState
+import com.vmh.mvvmjetpackcompose.core.navigation.toEntries
 import com.vmh.mvvmjetpackcompose.core.resource.R as CoreResourceR
+import com.vmh.mvvmjetpackcompose.core.ui.analytics.LocalAnalyticsTracker
 import com.vmh.mvvmjetpackcompose.core.ui.common.CustomSnackbarHost
 import com.vmh.mvvmjetpackcompose.core.ui.common.LocalSnackbarManager
 import com.vmh.mvvmjetpackcompose.core.ui.common.SnackbarManager
@@ -48,33 +53,29 @@ import com.vmh.mvvmjetpackcompose.core.ui.common.rememberSnackbarManager
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetPackComposeColors
 import com.vmh.mvvmjetpackcompose.core.ui.theme.MVVMJetpackComposeTheme
 import com.vmh.mvvmjetpackcompose.core.ui.util.openAppInPlayStore
-import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.AuthenticationRoutePattern
-import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.authenticationScreen
-import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.navigateToAuthenticationScreen
-import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.navigation.navigateToSignInScreen
-import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.navigation.signInScreen
-import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.navigateToSignUpScreen
-import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.signUpScreen
-import com.vmh.mvvmjetpackcompose.feature.language.presentation.language.navigation.languageScreen
-import com.vmh.mvvmjetpackcompose.feature.language.presentation.language.navigation.navigateToLanguageScreen
-import com.vmh.mvvmjetpackcompose.feature.main.ui.MainNavigationBar
-import com.vmh.mvvmjetpackcompose.feature.main.ui.MainState
-import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainGraphRoutePattern
-import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainTopScreenTopLevelDestination
-import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.mainGraph
-import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.navigateToMainGraph
-import com.vmh.mvvmjetpackcompose.feature.main.ui.rememberMainState
-import com.vmh.mvvmjetpackcompose.feature.search.ui.navigation.navigateToSearchScreen
-import com.vmh.mvvmjetpackcompose.feature.search.ui.navigation.searchScreen
-import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.WebViewArgs
-import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.navigateToWebViewScreen
-import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.webViewScreen
+import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.AuthenticationNavKey
+import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.authentication.navigation.authenticationEntry
+import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signIn.navigation.signInEntry
+import com.vmh.mvvmjetpackcompose.feature.authentication.presentation.signup.navigation.signUpEntry
+import com.vmh.mvvmjetpackcompose.feature.home.ui.navigation.HomeNavKey
+import com.vmh.mvvmjetpackcompose.feature.home.ui.navigation.homeEntry
+import com.vmh.mvvmjetpackcompose.feature.language.presentation.language.navigation.languageEntry
+import com.vmh.mvvmjetpackcompose.feature.main.ui.navigation.MainNavKey
+import com.vmh.mvvmjetpackcompose.feature.profile.ui.navigation.ProfileNavKey
+import com.vmh.mvvmjetpackcompose.feature.profile.ui.navigation.profileEntry
+import com.vmh.mvvmjetpackcompose.feature.search.ui.navigation.navigateToSearch
+import com.vmh.mvvmjetpackcompose.feature.search.ui.navigation.searchEntry
+import com.vmh.mvvmjetpackcompose.feature.webview.ui.navigation.webViewEntry
 import com.vmh.mvvmjetpackcompose.lifecycle.collectInLaunchedEffectWithLifecycle
 import com.vmh.mvvmjetpackcompose.locale.LocaleController
+import com.vmh.mvvmjetpackcompose.navigation.MainNavigationBar
+import com.vmh.mvvmjetpackcompose.navigation.MainTopScreenTopLevelDestination
+import com.vmh.mvvmjetpackcompose.notification.NotificationPermissionEffect
 import com.vmh.mvvmjetpackcompose.ui.widget.common.DialogCommon
 import com.vmh.mvvmjetpackcompose.ui.widget.common.UnauthorizedErrorDialog
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
 
@@ -83,10 +84,10 @@ class MainActivity : AppCompatActivity() {
   private val viewModel: MainViewModel by viewModels()
 
   @Inject
-  internal lateinit var navTypeContainer: NavTypeContainer
+  internal lateinit var deepLinkResolver: DeepLinkResolver
 
   @Inject
-  internal lateinit var deepLinkResolver: DeepLinkResolver
+  internal lateinit var analyticsTracker: AnalyticsTracker
 
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
@@ -119,6 +120,7 @@ class MainActivity : AppCompatActivity() {
 
       CompositionLocalProvider(
         LocalSnackbarManager provides snackbarManager,
+        LocalAnalyticsTracker provides analyticsTracker,
       ) {
         MVVMJetpackComposeTheme {
           Surface(
@@ -130,21 +132,13 @@ class MainActivity : AppCompatActivity() {
               value = viewModel.startDestinationStateFlow.first { it !is StartDestinationState.Loading }
             }
 
-            val startDestination = when (startDestinationState) {
-              StartDestinationState.AuthenticationScreen ->
-                AuthenticationRoutePattern
-
-              StartDestinationState.MainScreen ->
-                MainGraphRoutePattern
-
-              StartDestinationState.Loading ->
-                return@Surface
+            val rootStartKey = when (startDestinationState) {
+              StartDestinationState.AuthenticationScreen -> AuthenticationNavKey
+              StartDestinationState.MainScreen -> MainNavKey
+              StartDestinationState.Loading -> return@Surface
             }
 
-            MVVMJetpackComposeApp(
-              startDestination = startDestination,
-              navTypeContainer = navTypeContainer,
-            )
+            MVVMJetpackComposeApp(rootStartKey = rootStartKey)
           }
         }
       }
@@ -167,18 +161,28 @@ private const val MainNavigationBarAnimationDurationMillis = 300
 @Suppress("LongMethod")
 @Composable
 private fun MVVMJetpackComposeApp(
-  startDestination: String,
-  navTypeContainer: NavTypeContainer,
+  rootStartKey: NavKey,
   modifier: Modifier = Modifier,
   viewModel: MainViewModel = hiltViewModel(),
-  navController: NavHostController = rememberNavController(),
-  mainState: MainState = rememberMainState(navController = navController),
   localSnackbarManager: SnackbarManager = LocalSnackbarManager.current,
 ) {
   val mainTopScreenTopLevelDestinations = MainTopScreenTopLevelDestination.entries.toPersistentList()
   val context = LocalContext.current
+  val activity = LocalActivity.current
+
+  val navigationState = rememberAppNavigationState(
+    appRootKey = MainNavKey,
+    rootStartKey = rootStartKey,
+    tabStartRoute = HomeNavKey,
+    topLevelRoutes = persistentSetOf(HomeNavKey, ProfileNavKey),
+  )
+
+  val navigator = remember(navigationState) { Navigator(navigationState) }
+
   var isUnauthorizedErrorDialogVisible by rememberSaveable { mutableStateOf(false) }
   var isForceUpdateDialogVisible by rememberSaveable { mutableStateOf(false) }
+
+  NotificationPermissionEffect()
 
   viewModel.unauthorizedErrorEventFlow.collectInLaunchedEffectWithLifecycle {
     isUnauthorizedErrorDialogVisible = true
@@ -192,16 +196,10 @@ private fun MVVMJetpackComposeApp(
     when (event) {
       MainSingleEvent.NavigateToAuthentication -> {
         isUnauthorizedErrorDialogVisible = false
-        navController.navigateToAuthenticationScreen(
-          navOptions = navOptions {
-            popUpTo(navController.graph.id) { inclusive = true }
-
-            launchSingleTop = true
-          },
-        )
+        navigator.resetRootTo(AuthenticationNavKey)
       }
 
-      is MainSingleEvent.NavigateToSearch -> navController.navigateToSearchScreen()
+      is MainSingleEvent.NavigateToSearch -> navigator.navigateToSearch()
     }
   }
 
@@ -209,14 +207,14 @@ private fun MVVMJetpackComposeApp(
     modifier = modifier,
     contentWindowInsets = ScaffoldDefaults.contentWindowInsets.exclude(WindowInsets.statusBars),
     bottomBar = {
-      val isMainNavigationBarVisible = mainState.currentDestination
-        ?.hierarchy
-        ?.any { navDestination ->
-          mainTopScreenTopLevelDestinations.any { destination ->
-            navDestination.route == destination.graphRoutePattern
-          }
-        }
-        ?: false
+      val currentTopLevelKey = navigationState.tabs.topLevelRoute
+      val currentKey = if (navigationState.isInAppArea) {
+        navigationState.tabs.currentStack.last()
+      } else {
+        null
+      }
+      val isMainNavigationBarVisible =
+        mainTopScreenTopLevelDestinations.any { it.navKey == currentKey }
 
       AnimatedVisibility(
         visible = isMainNavigationBarVisible,
@@ -231,101 +229,36 @@ private fun MVVMJetpackComposeApp(
       ) {
         MainNavigationBar(
           destinations = mainTopScreenTopLevelDestinations,
-          onNavigateToDestination = {
-            mainState.navigateToTopLevelDestination(
-              targetTopLevelDestination = it,
-            )
-          },
-          currentDestination = mainState.currentDestination,
+          currentTopLevelKey = currentTopLevelKey,
+          onDestinationSelect = { destination -> navigator.navigate(destination.navKey) },
+          onDestinationReselect = { navigator.clearCurrentStack() },
         )
       }
     },
     snackbarHost = { CustomSnackbarHost(snackbarState = localSnackbarManager.snackbarHostState) },
   ) { innerPadding ->
-    NavHost(
+
+    val entryProvider = remember(navigator) {
+      entryProvider {
+        authenticationEntry(navigator)
+        signInEntry(navigator)
+        signUpEntry(navigator)
+        homeEntry(navigator)
+        profileEntry(navigator)
+        searchEntry(navigator)
+        languageEntry(navigator)
+        webViewEntry(navigator)
+      }
+    }
+
+    NavDisplay(
       modifier = Modifier
         .padding(innerPadding)
         .consumeWindowInsets(innerPadding)
         .fillMaxSize(),
-      navController = navController,
-      startDestination = startDestination,
-    ) {
-      mainGraph(
-        onNavigateToSearchScreen = navController::navigateToSearchScreen,
-        onNavigateToAuthenticationScreen = {
-          navController.navigateToAuthenticationScreen(
-            navOptions = navOptions {
-              popUpTo(id = navController.graph.id) { inclusive = true }
-
-              launchSingleTop = true
-            },
-          )
-        },
-        onNavigateToWebViewScreen = { webViewDestination ->
-          navController.navigateToWebViewScreen(
-            navType = navTypeContainer.webViewArgsNavType,
-            args = WebViewArgs(
-              path = webViewDestination.path,
-              title = context.getString(webViewDestination.titleResId),
-            ),
-          )
-        },
-        onNavigateToLanguageScreen = navController::navigateToLanguageScreen,
-      )
-
-      searchScreen(
-        onNavigateBack = navController::popBackStack,
-      )
-
-      authenticationScreen(
-        onNavigateToSignInScreen = navController::navigateToSignInScreen,
-        onNavigateToHomeScreen = {
-          navController.navigateToMainGraph(
-            navOptions {
-              popUpTo(navController.graph.id) { inclusive = true }
-
-              launchSingleTop = true
-            },
-          )
-        },
-      )
-
-      signInScreen(
-        onNavigateBack = navController::popBackStack,
-        onNavigateToSignUpScreen = navController::navigateToSignUpScreen,
-        navigateToAuthenticationScreen = {
-          navController.navigateToAuthenticationScreen(
-            navOptions = navOptions {
-              popUpTo(navController.graph.id) { inclusive = true }
-
-              launchSingleTop = true
-            },
-          )
-        },
-      )
-
-      signUpScreen(
-        onNavigateBack = navController::popBackStack,
-        navigateToAuthenticationScreen = {
-          navController.navigateToAuthenticationScreen(
-            navOptions = navOptions {
-              popUpTo(id = navController.graph.id) { inclusive = true }
-
-              launchSingleTop = true
-            },
-          )
-        },
-      )
-
-      webViewScreen(
-        navType = navTypeContainer.webViewArgsNavType,
-        onNavigateBack = navController::popBackStack,
-      )
-
-      languageScreen(
-        onNavigateBack = navController::popBackStack,
-      )
-    }
+      entries = navigationState.toEntries(entryProvider),
+      onBack = { if (!navigator.goBack()) activity?.finish() },
+    )
 
     if (isUnauthorizedErrorDialogVisible) {
       UnauthorizedErrorDialog(

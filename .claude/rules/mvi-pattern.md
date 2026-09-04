@@ -52,7 +52,10 @@ sealed interface SignInSingleEvent {
 
 - Dùng `sealed interface`, không dùng `sealed class`.
 - Dùng `@JvmInline value class` cho event có payload đơn.
-- **Không bao giờ** đặt navigation trigger hoặc toast trong `UiState`. Navigation và snackbar là side effect, phải đi qua `SingleEvent`.
+- **Không bao giờ** đặt navigation trigger hoặc toast trong `UiState`.
+- Navigation **do người dùng bấm** không đi qua `SingleEvent` — Composable nhận `onNavigateToX: () -> Unit`, entry builder ở `:impl` nối thẳng vào `navigator` (xem [`navigation.md`](navigation.md)).
+- Navigation **sau việc async** (sign-in thành công, logout, deep link, 401), snackbar, dialog vẫn đi qua `SingleEvent`.
+- `EventChannel` là `Channel.UNLIMITED` và chỉ đóng khi ViewModel bị clear. Với Nav3, ViewModel của một màn có thể sống lâu hơn lần hiển thị của màn đó → event phát lúc màn không hiển thị sẽ xếp hàng và nổ hết khi màn quay lại. Event chỉ có nghĩa khi màn đang hiển thị thì phải thu hẹp nguồn phát, đừng trông vào việc ViewModel được tạo mới.
 - Không dùng `SharedFlow` hay `StateFlow` cho one-shot event — dùng `EventChannel` (Channel.UNLIMITED).
 
 ### ValidationStatus (nếu có form input)
@@ -118,6 +121,7 @@ internal class SignInViewModel @Inject constructor(
 - Mỗi user action = một public function trên ViewModel (không dùng `sealed interface` cho intent trong project này).
 - `EventChannel` được inject qua Hilt, không tạo thủ công.
 - Không để business logic phức tạp trong ViewModel — delegate xuống Repository.
+- **UI đọc state, không tính lại.** Trạng thái validate / dẫn xuất (vd đã hợp lệ hay chưa, nút có enable không, thông báo lỗi) đã được ViewModel tính và phơi trong `UiState` → Composable **đọc thẳng từ đó**, tuyệt đối **không recompute** logic đó trong màn. Recompute = lặp logic nghiệp vụ ở UI + dễ lệch với ViewModel.
 
 ## Composable Side — Thu thập State và Event
 

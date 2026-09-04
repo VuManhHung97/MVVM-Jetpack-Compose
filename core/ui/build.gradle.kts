@@ -9,6 +9,7 @@ android {
 
 dependencies {
   // Libs
+  implementation(libs.androidx.compose.material.iconsCore)
   implementation(libs.androidx.constraintlayout)
   implementation(libs.androidx.core.ktx)
   implementation(libs.material)
@@ -20,6 +21,7 @@ dependencies {
   implementation(projects.core.resource)
   implementation(projects.core.model)
   implementation(projects.core.common)
+  implementation(projects.core.analytics)
 
   // FlowExt
   api(projects.library.flowext)

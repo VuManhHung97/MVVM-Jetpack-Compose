@@ -5,6 +5,7 @@ import java.util.Date
 plugins {
   id(libs.plugins.android.application.core.mobile.get().pluginId)
   id(libs.plugins.android.hilt.get().pluginId)
+  alias(libs.plugins.google.services)
 }
 
 android {
@@ -61,17 +62,27 @@ dependencies {
   implementation(libs.kotlin.result)
   implementation(libs.kotlin.result.coroutine)
   implementation(libs.material)
+  implementation(libs.kotlinx.collections.immutable)
 
   implementation(libs.moshi)
   implementation(libs.moshix.sealed.reflect)
 
-  implementation(projects.feature.main)
-  implementation(projects.feature.authentication)
-  implementation(projects.feature.home)
-  implementation(projects.feature.profile)
-  implementation(projects.feature.webview)
-  implementation(projects.feature.search)
-  implementation(projects.feature.language)
+  implementation(projects.core.navigation)
+  implementation(libs.androidx.navigation3.ui)
+
+  implementation(projects.feature.authentication.api)
+  implementation(projects.feature.authentication.impl)
+  implementation(projects.feature.main.api)
+  implementation(projects.feature.home.api)
+  implementation(projects.feature.home.impl)
+  implementation(projects.feature.profile.api)
+  implementation(projects.feature.profile.impl)
+  implementation(projects.feature.webview.api)
+  implementation(projects.feature.webview.impl)
+  implementation(projects.feature.search.api)
+  implementation(projects.feature.search.impl)
+  implementation(projects.feature.language.api)
+  implementation(projects.feature.language.impl)
 
   // Core Modules
   implementation(projects.core.ui)
@@ -83,4 +94,6 @@ dependencies {
   implementation(projects.core.local)
   implementation(projects.core.model)
   implementation(projects.core.deeplink)
+  implementation(projects.core.analytics)
+  implementation(projects.core.notification)
 }

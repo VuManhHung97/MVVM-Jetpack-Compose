@@ -32,7 +32,6 @@ class AndroidLibraryComposeConventionPlugin : Plugin<Project> {
         implementation(libs.findLibrary("androidx.lifecycle.runtime.compose").get())
         implementation(libs.findLibrary("androidx.compose.foundation").get())
         implementation(libs.findLibrary("androidx.compose.runtime").get())
-        implementation(libs.findLibrary("androidx.navigation.compose").get())
         implementation(libs.findLibrary("androidx.hilt.navigation.compose").get())
         implementation(libs.findLibrary("kotlin.coil.compose.network").get())
         implementation(libs.findLibrary("kotlin.coil.compose").get())

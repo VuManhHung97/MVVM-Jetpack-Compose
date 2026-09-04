@@ -26,14 +26,14 @@ Detailed rules are in [`.claude/rules/`](.claude/rules/):
 | [`kotlin-style.md`](.claude/rules/kotlin-style.md) | Naming conventions (boolean, count, callback, feature/class), commit style |
 | [`compose-rules.md`](.claude/rules/compose-rules.md) | Composable API design, state management, side-effect APIs |
 | [`dependency-injection.md`](.claude/rules/dependency-injection.md) | Hilt rules — what to inject, module organization, event bus |
-| [`navigation.md`](.claude/rules/navigation.md) | NavTypeContainer, lifecycle pitfalls, duplicate collector prevention |
+| [`navigation.md`](.claude/rules/navigation.md) | Nav3: mô hình hai lớp, NavKey/entry provider, vòng đời ViewModel |
 | [`local-storage.md`](.claude/rules/local-storage.md) | DataStore Proto, Room, mapper patterns, token safety |
 | [`pr-checklist.md`](.claude/rules/pr-checklist.md) | Full review checklist trước khi submit PR |
 
 ## Module Structure
 
 ```
-app/                    # Entry point, MainActivity, MainViewModel, NavHost, NavTypeContainer
+app/                    # Entry point, MainActivity, MainViewModel, NavDisplay, MainNavigationBar
 build-logic/convention/ # Gradle convention plugins (AndroidFeature, Hilt, Library, Compose...)
 core/
   model/                # Domain entities (User, AuthenticationState, AppError) — pure Kotlin
@@ -42,21 +42,34 @@ core/
   network/              # Retrofit services, OkHttp interceptors, remote DataSources
   local/                # Room, DataStore, local DataSources
   ui/                   # Shared Compose components, theme, EventChannel
+  navigation/           # Nav3: NavigationState, AppNavigationState, Navigator, toEntries()
   resource/             # Drawables, strings
   common/               # Kotlin utility extensions
 feature/
+  <name>/api/           # NavKey + Navigator.navigateToX(). No Hilt, no Compose
+  <name>/impl/          # Screens, ViewModels, entry provider
   authentication/       # Sign in, sign up (MVI pattern reference implementation)
-  home/ profile/ search/ webview/ main/
+  home/ profile/ search/ webview/ language/
+  main/api/             # MainNavKey — marker "đang ở vùng app có tab" (không có impl)
 library/flowext/        # Shared Flow extensions
 ```
 
 ## Adding a New Feature Module
 
-1. Create `feature/<name>/build.gradle.kts`:
+Mỗi feature gồm hai module: `api` (contract điều hướng) và `impl` (UI + ViewModel).
+
+1. Create `feature/<name>/api/build.gradle.kts` — chỉ chứa route pattern / `NavKey` và `navigateToX()`:
 ```kotlin
-plugins { id(libs.plugins.android.feature.get().pluginId) }
+plugins { id(libs.plugins.android.feature.api.get().pluginId) }
+android { namespace = "com.vmh.mvvmjetpackcompose.feature.<name>.api" }
+```
+2. Create `feature/<name>/impl/build.gradle.kts`:
+```kotlin
+plugins { id(libs.plugins.android.feature.impl.get().pluginId) }
 android { namespace = "com.vmh.mvvmjetpackcompose.feature.<name>" }
 dependencies {
+    api(projects.feature.<name>.api)
+
     implementation(projects.core.ui)
     implementation(projects.core.resource)
     implementation(projects.core.common)
@@ -64,9 +77,11 @@ dependencies {
     implementation(projects.core.model)
 }
 ```
-2. Register in `settings.gradle.kts`.
-3. Create `presentation/<screen>/` with `<Screen>Contract.kt` + `<Screen>ViewModel.kt`.
-4. Create `ui/` with Composable screens.
-5. Add a nav graph, connect to root `NavHost` in `app/`.
+3. Register `:feature:<name>:api` và `:feature:<name>:impl` in `settings.gradle.kts`.
+4. Create `presentation/<screen>/` with `<Screen>Contract.kt` + `<Screen>ViewModel.kt` trong `impl`.
+5. Create `ui/` with Composable screens trong `impl`.
+6. Create `<Name>NavKey` trong `api` và `<Name>EntryProvider` trong `impl`, thêm một dòng `<name>Entry(navigator)` vào `entryProvider { }` của `MainActivity`.
+
+> Feature nào cần điều hướng tới feature khác thì phụ thuộc `:api` của feature đó, **không bao giờ** `:impl`.
 
 > Reference implementation: `feature/authentication/presentation/signIn/`

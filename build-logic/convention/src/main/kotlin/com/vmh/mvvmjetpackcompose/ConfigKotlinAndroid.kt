@@ -49,7 +49,7 @@ internal fun configSdk(commonExtension: CommonExtension<*, *, *, *, *, *>) {
       minSdk = 26
 
       if (this is ApplicationDefaultConfig) {
-        targetSdk = 35
+        targetSdk = 36
       }
     }
   }

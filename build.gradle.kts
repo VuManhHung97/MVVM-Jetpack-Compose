@@ -17,6 +17,7 @@ plugins {
   alias(libs.plugins.detekt) apply false
   alias(libs.plugins.google.protobuf) apply false
   alias(libs.plugins.jvm.library) apply false
+  alias(libs.plugins.jetbrains.kotlin.serialization) apply false
 }
 
 subprojects {
