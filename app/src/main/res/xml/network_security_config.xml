@@ -5,9 +5,6 @@
             <certificates src="system" />
         </trust-anchors>
     </base-config>
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.200.1</domain>
-    </domain-config>
     <debug-overrides>
         <trust-anchors>
             <!-- Trust user added CAs while debuggable only -->
