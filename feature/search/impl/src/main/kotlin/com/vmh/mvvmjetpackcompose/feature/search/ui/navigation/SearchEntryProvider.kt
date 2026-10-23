@@ -6,8 +6,9 @@ import com.vmh.mvvmjetpackcompose.core.navigation.Navigator
 import com.vmh.mvvmjetpackcompose.feature.search.ui.SearchRoute
 
 fun EntryProviderScope<NavKey>.searchEntry(navigator: Navigator) {
-  entry<SearchNavKey> {
+  entry<SearchNavKey> { key ->
     SearchRoute(
+      initialKeyword = key.keyword,
       onNavigateBack = navigator::goBack,
     )
   }

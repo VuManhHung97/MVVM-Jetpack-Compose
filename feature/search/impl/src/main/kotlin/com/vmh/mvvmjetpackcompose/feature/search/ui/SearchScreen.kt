@@ -54,6 +54,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 internal fun SearchRoute(
+  initialKeyword: String?,
   onNavigateBack: () -> Unit,
   modifier: Modifier = Modifier,
   viewModel: SearchViewModel = hiltViewModel(),
@@ -66,6 +67,12 @@ internal fun SearchRoute(
   val scope = rememberCoroutineScope()
   val lazyGridState = rememberLazyGridState()
   val context = LocalContext.current
+
+  LaunchedEffect(viewModel, initialKeyword) {
+    if (!initialKeyword.isNullOrBlank()) {
+      viewModel.onInitialKeyword(initialKeyword)
+    }
+  }
 
   viewModel.eventFlow.collectInLaunchedEffectWithLifecycle { event ->
     when (event) {

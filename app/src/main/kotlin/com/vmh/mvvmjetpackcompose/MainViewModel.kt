@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.produceIn
@@ -75,7 +76,10 @@ internal class MainViewModel @Inject constructor(
     when (deepLinkDestination) {
       is DeepLinkDestination.Search ->
         viewModelScope.launch {
-          eventChannel.send(MainSingleEvent.NavigateToSearch)
+          val startDestination = startDestinationStateFlow.first { it != StartDestinationState.Loading }
+          if (startDestination == StartDestinationState.MainScreen) {
+            eventChannel.send(MainSingleEvent.NavigateToSearch(keyword = deepLinkDestination.keyword))
+          }
         }
     }
   }

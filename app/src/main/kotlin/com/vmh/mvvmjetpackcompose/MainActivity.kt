@@ -199,7 +199,7 @@ private fun MVVMJetpackComposeApp(
         navigator.resetRootTo(AuthenticationNavKey)
       }
 
-      is MainSingleEvent.NavigateToSearch -> navigator.navigateToSearch()
+      is MainSingleEvent.NavigateToSearch -> navigator.navigateToSearch(keyword = event.keyword)
     }
   }
 

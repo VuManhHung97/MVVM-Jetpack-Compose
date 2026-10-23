@@ -5,6 +5,6 @@ import com.vmh.mvvmjetpackcompose.core.navigation.Navigator
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object SearchNavKey : NavKey
+data class SearchNavKey(val keyword: String? = null) : NavKey
 
-fun Navigator.navigateToSearch() = navigate(SearchNavKey)
+fun Navigator.navigateToSearch(keyword: String? = null) = navigate(SearchNavKey(keyword = keyword))
