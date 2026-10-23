@@ -49,3 +49,5 @@ captures/
 # Kotlin
 .kotlin
 META-INF/
+keystore/release.properties
+keystore/release.jks

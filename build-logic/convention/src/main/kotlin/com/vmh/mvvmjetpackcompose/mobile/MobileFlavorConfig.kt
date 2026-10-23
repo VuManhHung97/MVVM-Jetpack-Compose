@@ -52,6 +52,8 @@ enum class MobileFlavor(
   }
 }
 
+private const val RELEASE_KEYSTORE_PROPERTIES_PATH = "keystore/release.properties"
+
 @OptIn(ExperimentalStdlibApi::class)
 internal fun CommonExtension<*, *, *, *, *, *>.configureFlavorsForMobile(
   project: Project,
@@ -70,9 +72,16 @@ internal fun CommonExtension<*, *, *, *, *, *>.configureFlavorsForMobile(
         storePassword = keystoreProperties["storePassword"] as String
       }
 
-      // TODO(release): change signing configs
-      create(MobileBuildType.release.name) {
-        initWith(getByName(MobileBuildType.debug.name))
+      if (project.rootProject.file(RELEASE_KEYSTORE_PROPERTIES_PATH).exists()) {
+        create(MobileBuildType.release.name) {
+          val keystoreProperties = project.readPropertiesFile(RELEASE_KEYSTORE_PROPERTIES_PATH)
+
+          keyAlias = keystoreProperties["keyAlias"] as String
+          keyPassword = keystoreProperties["keyPassword"] as String
+          storeFile =
+            project.rootProject.file(keystoreProperties["storeFile"] as String).apply { check(exists()) }
+          storePassword = keystoreProperties["storePassword"] as String
+        }
       }
     }
   }
@@ -92,7 +101,7 @@ internal fun CommonExtension<*, *, *, *, *, *>.configureFlavorsForMobile(
         isMinifyEnabled = true
         isShrinkResources = true
         isDebuggable = false
-        signingConfig = signingConfigs.getByName(MobileBuildType.release.name)
+        signingConfig = signingConfigs.findByName(MobileBuildType.release.name)
       }
     }
   }
