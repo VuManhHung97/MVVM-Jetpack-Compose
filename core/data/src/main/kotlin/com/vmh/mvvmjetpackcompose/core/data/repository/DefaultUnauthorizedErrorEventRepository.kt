@@ -4,7 +4,7 @@ import com.vmh.mvvmjetpackcompose.core.domain.repository.UnauthorizedErrorEventR
 import com.vmh.mvvmjetpackcompose.core.network.remote.datasource.UnauthorizedErrorEventDataSource
 import javax.inject.Inject
 
-internal class RealUnauthorizedErrorEventRepository @Inject constructor(
+internal class DefaultUnauthorizedErrorEventRepository @Inject constructor(
   unauthorizedErrorEventDataSource: UnauthorizedErrorEventDataSource,
 ) : UnauthorizedErrorEventRepository {
   override val events = unauthorizedErrorEventDataSource.events

@@ -1,10 +1,10 @@
 package com.vmh.mvvmjetpackcompose.core.data.di
 
 import com.vmh.mvvmjetpackcompose.core.data.repository.DefaultAuthRepository
+import com.vmh.mvvmjetpackcompose.core.data.repository.DefaultForceUpdateErrorEventRepository
 import com.vmh.mvvmjetpackcompose.core.data.repository.DefaultLanguageRepository
 import com.vmh.mvvmjetpackcompose.core.data.repository.DefaultSearchRepository
-import com.vmh.mvvmjetpackcompose.core.data.repository.RealForceUpdateErrorEventRepository
-import com.vmh.mvvmjetpackcompose.core.data.repository.RealUnauthorizedErrorEventRepository
+import com.vmh.mvvmjetpackcompose.core.data.repository.DefaultUnauthorizedErrorEventRepository
 import com.vmh.mvvmjetpackcompose.core.data.repository.fcm.DefaultFcmTokenManager
 import com.vmh.mvvmjetpackcompose.core.data.repository.fcm.SynchronizedFcmTokenManager
 import com.vmh.mvvmjetpackcompose.core.domain.repository.AuthRepository
@@ -31,10 +31,12 @@ internal interface DataModule {
   fun languageRepository(impl: DefaultLanguageRepository): LanguageRepository
 
   @Binds
-  fun bindUnauthorizedErrorEventRepository(impl: RealUnauthorizedErrorEventRepository): UnauthorizedErrorEventRepository
+  fun bindUnauthorizedErrorEventRepository(
+    impl: DefaultUnauthorizedErrorEventRepository,
+  ): UnauthorizedErrorEventRepository
 
   @Binds
-  fun bindForceUpdateErrorEventRepository(impl: RealForceUpdateErrorEventRepository): ForceUpdateErrorEventRepository
+  fun bindForceUpdateErrorEventRepository(impl: DefaultForceUpdateErrorEventRepository): ForceUpdateErrorEventRepository
 
   @Binds
   @DelegateFcmTokenManager
