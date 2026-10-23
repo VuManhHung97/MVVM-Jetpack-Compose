@@ -18,6 +18,7 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -49,6 +50,7 @@ internal class SearchViewModel @Inject constructor(
   val uiStateFlow: StateFlow<SearchUiState> = _uiStateFlow.asStateFlow()
   val keywordStateFlow: StateFlow<String> = savedStateHandle.getStateFlow(KEYWORD_KEY, "")
   private val submitFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
+  private var loadMoreJob: Job? = null
   private inline fun emitState(f: (SearchUiState) -> SearchUiState) = _uiStateFlow.update(f)
 
   init {
@@ -129,6 +131,7 @@ internal class SearchViewModel @Inject constructor(
   }
 
   private suspend fun searchByKeyword(keyword: String) {
+    loadMoreJob?.cancel()
     emitState { it.copy(searchResultUiState = SearchUiState.SearchResultUiState.Loading) }
 
     searchRepository
@@ -185,7 +188,7 @@ internal class SearchViewModel @Inject constructor(
       }
     }
 
-    viewModelScope.launch {
+    loadMoreJob = viewModelScope.launch {
       searchRepository
         .searchByKeyword(
           keyword = keyword,
