@@ -3,6 +3,7 @@ package com.vmh.mvvmjetpackcompose.core.data.repository.fcm
 import com.vmh.mvvmjetpackcompose.core.data.di.DelegateFcmTokenManager
 import com.vmh.mvvmjetpackcompose.core.domain.repository.FcmTokenManager
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -12,7 +13,11 @@ import kotlinx.coroutines.sync.withLock
  * produce duplicate or out-of-order backend calls.
  *
  * Kept separate from [DefaultFcmTokenManager] so the sync logic stays free of locking concerns.
+ *
+ * Must be a singleton: every injection site has to share the same [mutex], otherwise calls from
+ * different callers (e.g. logout vs. token refresh) are not serialized.
  */
+@Singleton
 internal class SynchronizedFcmTokenManager @Inject constructor(
   @param:DelegateFcmTokenManager private val delegate: FcmTokenManager,
 ) : FcmTokenManager {
