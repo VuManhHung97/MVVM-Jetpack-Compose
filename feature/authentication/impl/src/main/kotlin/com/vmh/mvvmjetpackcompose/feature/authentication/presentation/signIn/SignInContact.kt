@@ -36,7 +36,14 @@ data class SignInUiState(
   }
 
   internal class StateSaver {
-    fun SignInUiState.toBundle() = bundleOf(VIEW_STATE_KEY to this)
+    fun SignInUiState.toBundle() = bundleOf(
+      VIEW_STATE_KEY to copy(
+        password = initial.password,
+        passwordValidationStatus = initial.passwordValidationStatus,
+        passwordChangedByUser = initial.passwordChangedByUser,
+        isLoading = initial.isLoading,
+      ),
+    )
 
     inline fun restore(bundle: Bundle?, initial: () -> SignInUiState) = bundle
       ?.getParcelableCompat(VIEW_STATE_KEY)

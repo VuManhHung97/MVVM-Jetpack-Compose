@@ -71,6 +71,8 @@ internal class SignInViewModel @Inject constructor(
   }
 
   fun signIn() {
+    if (uiStateFlow.value.isLoading) return
+
     emitState { state ->
       state.copy(
         emailChangedByUser = true,

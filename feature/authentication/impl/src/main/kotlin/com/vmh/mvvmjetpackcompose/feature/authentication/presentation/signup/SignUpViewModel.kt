@@ -98,6 +98,8 @@ internal class SignUpViewModel @Inject constructor(
   }
 
   fun signUp() {
+    if (uiStateFlow.value.isLoading) return
+
     emitState { state ->
       state.copy(
         emailChangedByUser = true,
