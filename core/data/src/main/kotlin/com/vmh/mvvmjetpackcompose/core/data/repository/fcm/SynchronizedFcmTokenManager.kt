@@ -13,9 +13,6 @@ import kotlinx.coroutines.sync.withLock
  * produce duplicate or out-of-order backend calls.
  *
  * Kept separate from [DefaultFcmTokenManager] so the sync logic stays free of locking concerns.
- *
- * Must be a singleton: every injection site has to share the same [mutex], otherwise calls from
- * different callers (e.g. logout vs. token refresh) are not serialized.
  */
 @Singleton
 internal class SynchronizedFcmTokenManager @Inject constructor(
