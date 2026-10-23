@@ -131,7 +131,6 @@ internal class SearchViewModel @Inject constructor(
   }
 
   private suspend fun searchByKeyword(keyword: String) {
-    // A page still loading for the previous keyword must not be appended to the new results.
     loadMoreJob?.cancel()
     emitState { it.copy(searchResultUiState = SearchUiState.SearchResultUiState.Loading) }
 
