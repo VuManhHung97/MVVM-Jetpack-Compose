@@ -114,9 +114,7 @@ internal class RemoteErrorMapperImpl @Inject constructor(
       cause = this,
       details = ErrorDetails(
         message = message,
-        statusCode = checkNotNull(StatusCode.entries.find { it.code == statusCode }) {
-          "Cannot find StatusCode for HTTP status code: $statusCode"
-        },
+        statusCode = StatusCode.entries.find { it.code == statusCode } ?: StatusCode.Unknown,
       ),
     )
   }

@@ -4,6 +4,7 @@ import android.content.Context
 import com.github.michaelbull.result.get
 import com.vmh.mvvmjetpackcompose.core.common.coroutine.AppCoroutineDispatchers
 import com.vmh.mvvmjetpackcompose.core.local.datasource.AuthLocalDataSource
+import com.vmh.mvvmjetpackcompose.core.local.extention.valueOrNull
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlin.let
@@ -27,13 +28,11 @@ internal class RefreshTokenInterceptor @Inject internal constructor(
         .get()
     }
 
-    if (localUser?.refreshToken == null) {
-      return unauthorizedResponse(request)
-    }
+    val refreshToken = localUser?.refreshToken.valueOrNull() ?: return unauthorizedResponse(request)
 
     return chain.proceedWithHeader(
       request = request,
-      token = localUser.refreshToken.value,
+      token = refreshToken,
     )
   }
 

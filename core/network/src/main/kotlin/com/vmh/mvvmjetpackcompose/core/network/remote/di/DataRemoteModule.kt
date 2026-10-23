@@ -8,6 +8,7 @@ import com.vmh.mvvmjetpackcompose.core.common.BuildConfig
 import com.vmh.mvvmjetpackcompose.core.network.remote.di.DataRemoteModule.Companion.OkHttpClientConfig.OK_HTTP_CLIENT_CONNECT_TIMEOUT
 import com.vmh.mvvmjetpackcompose.core.network.remote.di.DataRemoteModule.Companion.OkHttpClientConfig.OK_HTTP_CLIENT_READ_TIMEOUT
 import com.vmh.mvvmjetpackcompose.core.network.remote.di.DataRemoteModule.Companion.OkHttpClientConfig.OK_HTTP_CLIENT_WRITE_TIMEOUT
+import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.ApiConstants
 import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.AuthInterceptor
 import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.ForceUpdateInterceptor
 import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.RefreshTokenInterceptor
@@ -113,6 +114,7 @@ internal interface DataRemoteModule {
     @Provides
     fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor {
       val interceptor = HttpLoggingInterceptor()
+      interceptor.redactHeader(ApiConstants.Headers.AUTHORIZATION)
 
       interceptor.level =
         if (BuildConfig.DEBUG) {
