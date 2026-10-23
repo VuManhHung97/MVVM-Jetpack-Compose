@@ -1,5 +1,6 @@
 package com.vmh.mvvmjetpackcompose.core.data.repository
 
+import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.coroutines.CoroutineBindingScope
 import com.github.michaelbull.result.coroutines.coroutineBinding
@@ -17,10 +18,12 @@ import com.vmh.mvvmjetpackcompose.core.model.error.AppError
 import com.vmh.mvvmjetpackcompose.core.network.remote.datasource.AuthRemoteDataSource
 import com.vmh.mvvmjetpackcompose.core.network.remote.datasource.UserRemoteDataSource
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 
 internal class DefaultAuthRepository @Inject constructor(
@@ -79,9 +82,15 @@ internal class DefaultAuthRepository @Inject constructor(
   }
 
   override suspend fun logout() = withContext(appCoroutineDispatchers.io) {
-    fcmTokenManager.clearFcmToken()
-      .onFailure { Timber.e(it, "Failed to clear FCM token during logout") }
+    val clearFcmTokenResult = withTimeoutOrNull(CLEAR_FCM_TOKEN_TIMEOUT) { fcmTokenManager.clearFcmToken() }
+      ?: Err(AppError.ApiException.TimeoutException(cause = null))
+    clearFcmTokenResult.onFailure { Timber.e(it, "Failed to clear FCM token during logout") }
 
     authLocalDataSource.update { null }
+  }
+
+  private companion object {
+    // Logout must not hang until the 60s OkHttp timeout on a slow network
+    val CLEAR_FCM_TOKEN_TIMEOUT = 5.seconds
   }
 }
