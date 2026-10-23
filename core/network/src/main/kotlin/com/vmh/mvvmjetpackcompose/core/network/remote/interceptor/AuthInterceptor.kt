@@ -1,7 +1,9 @@
 package com.vmh.mvvmjetpackcompose.core.network.remote.interceptor
 
 import android.content.Context
+import com.github.michaelbull.result.coroutines.runSuspendCatching
 import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getOrElse
 import com.vmh.mvvmjetpackcompose.core.common.BuildConfig
 import com.vmh.mvvmjetpackcompose.core.common.coroutine.AppCoroutineDispatchers
 import com.vmh.mvvmjetpackcompose.core.local.LocalUser
@@ -12,6 +14,7 @@ import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.ApiConstants.H
 import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.ApiConstants.Headers.NO_AUTH
 import com.vmh.mvvmjetpackcompose.core.network.remote.service.RefreshTokenApiService
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.IOException
 import java.net.HttpURLConnection.HTTP_FORBIDDEN
 import java.net.HttpURLConnection.HTTP_OK
 import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
@@ -86,13 +89,14 @@ internal class AuthInterceptor @Inject internal constructor(
       }
       currentToken != localUser.accessToken.value -> currentToken
       else -> {
-        val refreshTokenRes = refreshTokenApiService
-          .get()
-          .refreshToken()
+        // OkHttp crashes the app if an interceptor throws anything other than an IOException
+        val refreshTokenRes = runSuspendCatching { refreshTokenApiService.get().refreshToken() }
+          .getOrElse { throw it as? IOException ?: IOException("Failed to refresh token", it) }
 
         when (refreshTokenRes.code()) {
           HTTP_OK -> {
-            refreshTokenRes.body()!!.data
+            (refreshTokenRes.body() ?: throw IOException("Empty refresh token response"))
+              .data
               .accessToken
               .also { accessToken ->
                 authLocalDataSource.update {
