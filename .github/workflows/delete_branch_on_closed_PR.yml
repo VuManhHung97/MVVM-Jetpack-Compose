@@ -5,8 +5,7 @@ on:
 
 jobs:
   delete-branch:
-    # if: ${{ (github.event.pull_request.merged == true) }}
-    if: ${{ false }} # Always skip
+    if: ${{ github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
