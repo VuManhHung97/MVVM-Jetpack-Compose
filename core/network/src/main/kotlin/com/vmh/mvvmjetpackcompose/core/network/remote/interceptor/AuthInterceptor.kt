@@ -12,6 +12,7 @@ import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.ApiConstants.H
 import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.ApiConstants.Headers.NO_AUTH
 import com.vmh.mvvmjetpackcompose.core.network.remote.service.RefreshTokenApiService
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.net.HttpURLConnection.HTTP_FORBIDDEN
 import java.net.HttpURLConnection.HTTP_OK
 import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
 import javax.inject.Inject
@@ -103,15 +104,14 @@ internal class AuthInterceptor @Inject internal constructor(
               }
           }
 
-          HTTP_UNAUTHORIZED -> {
+          HTTP_UNAUTHORIZED, HTTP_FORBIDDEN -> {
             // clear user local
             authLocalDataSource.update { null }
             null
           }
 
           else -> {
-            // clear user local
-            authLocalDataSource.update { null }
+            Timber.w("Refresh token failed with code=${refreshTokenRes.code()}, keep current session")
             null
           }
         }
