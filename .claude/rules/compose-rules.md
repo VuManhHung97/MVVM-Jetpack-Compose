@@ -10,13 +10,15 @@ globs: feature/**/*.kt, core/ui/**/*.kt
 ### Argument Names & modifier
 
 ```kotlin
-// Đúng — ghi rõ tên argument; modifier là parameter cuối
+// Đúng — ghi rõ tên argument; modifier là tham số optional ĐẦU TIÊN
 @Composable
 fun VideoCard(
-    video: VideoUiModel,
+    video: VideoUiModel,                               // 1. required
     onVideoLikeToggle: (videoId: Video.Id) -> Unit,
     onVideoOpen: (videoId: Video.Id) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier,                     // 2. modifier
+    isLiked: Boolean = false,                          // 3. optional khác
+    content: @Composable () -> Unit = {},              // 4. trailing @Composable lambda (nếu có)
 )
 
 // Đúng — call site ghi rõ tên
@@ -31,7 +33,56 @@ VideoCard(
 VideoCard(item, viewModel::onLikeToggle, onVideoOpen, Modifier.fillMaxWidth())
 ```
 
-**Vị trí `modifier`**: luôn là **tham số cuối** (sau required params, trước trailing lambda nếu có) — cho mọi composable (reusable widget, screen, item…). Với Route: sau required params, trước `viewModel`. Luôn có default `modifier: Modifier = Modifier`.
+**Vị trí `modifier`** — theo [Compose API guidelines](https://android.googlesource.com/platform/frameworks/support/+/androidx-main/compose/docs/compose-component-api-guidelines.md#modifier-parameter) của Google: `modifier` là **tham số optional đầu tiên**, tức thứ tự luôn là:
+
+1. Tham số required (data, callback bắt buộc).
+2. `modifier: Modifier = Modifier`.
+3. Các tham số optional khác (`enabled`, `colors`, `viewModel = hiltViewModel()`…).
+4. Trailing `@Composable` lambda (`content`) nếu có.
+
+Áp dụng cho mọi composable (reusable widget, screen, item…). Luôn có default `modifier: Modifier = Modifier`, và chỉ apply nó cho **root layout** của composable.
+
+### Màn hình — tách 2 tầng `Route` / `Content`
+
+Mỗi màn trong `feature/<x>/impl` gồm 2 composable, đặt chung file `<X>Screen.kt`:
+
+| Tầng | Tên | Visibility | Trách nhiệm |
+|---|---|---|---|
+| Stateful | `<X>Route` | `internal` (entry provider gọi) | Nhận `viewModel = hiltViewModel()`, `collectAsStateWithLifecycle()`, thu thập `eventFlow`, nối callback → hàm ViewModel |
+| Stateless | `<X>Content` | `private` | Chỉ nhận `uiState` + callback, render UI. **Không** biết ViewModel, Hilt, Flow |
+
+```kotlin
+@Composable
+internal fun LanguageRoute(
+  onNavigateBack: () -> Unit,
+  modifier: Modifier = Modifier,
+  viewModel: LanguageViewModel = hiltViewModel(),
+) {
+  val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
+
+  viewModel.eventFlow.collectInLaunchedEffectWithLifecycle { event -> /* snackbar, navigate sau async… */ }
+
+  LanguageContent(
+    uiState = uiState,
+    onNavigateBack = onNavigateBack,
+    onLanguageItemSelect = viewModel::selectLanguage,
+    modifier = modifier,
+  )
+}
+
+@Composable
+private fun LanguageContent(
+  uiState: LanguageUiState,
+  onNavigateBack: () -> Unit,
+  onLanguageItemSelect: (languageId: Long) -> Unit,
+  modifier: Modifier = Modifier,
+) { /* UI */ }
+```
+
+- `@Preview` chỉ gọi `<X>Content` với `uiState` giả — **không** preview `<X>Route`.
+- Entry provider (xem [`navigation.md`](navigation.md)) chỉ gọi `<X>Route`.
+- Callback điều hướng do người dùng bấm (`onNavigateBack`, `onNavigateToX`) đi thẳng từ `Route` xuống `Content`, không vòng qua ViewModel.
+- Ngoại lệ: màn chỉ bọc một view nền tảng (vd `WebViewRoute` dùng `AndroidView`) không có state để preview → được phép chỉ có `Route`.
 
 ### Xuống dòng theo số lượng parameter
 
@@ -101,7 +152,14 @@ onWatchHistoryItemOpen: () -> Unit
 
 - Dùng `@Immutable` cho tất cả UiModel/UiState class.
 - `LazyList` / `LazyGrid`: luôn có `key { item.id }` ổn định.
-- `contentType` phải ổn định — dùng `enum` hoặc `object`, không dùng `String` tuỳ tiện.
+- `contentType` phải là **hằng theo loại item** — cùng loại layout thì cùng giá trị, để Compose tái dùng composition giữa các item cùng loại. Dùng `enum`, `object` hoặc `String` constant đều được; **không** chứa id/dữ liệu động, **không** tạo object mới mỗi lần.
+  ```kotlin
+  // Đúng
+  contentType = { "SearchResultItem" }
+  contentType = { item -> item.type }                 // enum
+  // Sai — mỗi item một giá trị, mất tác dụng tái dùng
+  contentType = { item -> "SearchResultItem_${item.id}" }
+  ```
 
 ## State Management
 
@@ -111,19 +169,23 @@ onWatchHistoryItemOpen: () -> Unit
 |---|---|
 | `rememberSaveable` | State cần sống qua configuration change |
 | `remember(key)` | Cache computation nặng hoặc object cần giữ ổn định |
-| `derivedStateOf` | Computed state phụ thuộc state khác — tránh recomposition thừa |
+| `derivedStateOf` | State **thuần UI** đổi nhanh hơn kết quả cần (scroll, drag…) — tránh recomposition thừa. **Không** dùng để tính state nghiệp vụ |
 | `collectAsStateWithLifecycle()` | Thu thập Flow từ ViewModel |
 
 ```kotlin
 // Đúng
 val uiState by viewModel.uiStateFlow.collectAsStateWithLifecycle()
+
+// Đúng — derivedStateOf cho state thuần UI: index đổi liên tục, kết quả chỉ đổi khi qua ngưỡng
+val listState = rememberLazyListState()
+val isScrollToTopVisible by remember { derivedStateOf { listState.firstVisibleItemIndex > 0 } }
+
+// Sai — tính lại state nghiệp vụ trong UI; ViewModel phải phơi sẵn trong UiState (xem mvi-pattern.md)
 val isButtonEnabled by remember { derivedStateOf { uiState.email.isNotEmpty() && !uiState.isLoading } }
+// → Đúng: Button(enabled = uiState.isSignInButtonEnabled, ...)
 
 // Sai — không bọc collectAsStateWithLifecycle bằng remember
 val uiState by remember { viewModel.uiStateFlow.collectAsStateWithLifecycle() }
-
-// Sai — không dùng remember(key1 = ...) style cũ nếu không cần
-val result by remember(key1 = someKey) { ... }
 ```
 
 ### Local Val — Tránh lặp truy cập state
@@ -196,10 +258,11 @@ LaunchedEffect(Unit) {
 
 ## Modal (bottom sheet / dialog) — dùng & tái dùng component chuẩn
 
-- **Bottom sheet** → dùng Material 3 `ModalBottomSheet` (hoặc wrapper chung của project như `AppModalBottomSheet` ở `core:ui`). **Không** tự dựng scrim + `Box` + animation thủ công.
+- **Bottom sheet** → dùng Material 3 `ModalBottomSheet`. **Không** tự dựng scrim + `Box` + animation thủ công.
+  - Project **chưa có** wrapper chung. Khi bottom sheet thứ 2 xuất hiện (hoặc cần style chung: shape, màu, drag handle) → tạo `AppModalBottomSheet` trong `core:ui/widget/common` rồi chuyển các chỗ dùng sang wrapper đó.
   ```kotlin
   content?.let { state ->
-    AppModalBottomSheet(onDismissRequest = onDismiss) { /* nội dung sheet */ }
+    ModalBottomSheet(onDismissRequest = onDismiss) { /* nội dung sheet */ }
   }
   ```
 - **Dialog** → **tái dùng dialog chung** của project (vd `DialogCommon`). Nếu thiếu tính năng (ô nhập, màu theme) → **cập nhật dialog chung** thêm slot/tham số (giữ default để không vỡ chỗ dùng cũ), rồi tái dùng. **Không** tự dựng dialog mới trùng chức năng.

@@ -17,7 +17,8 @@ Khi review code hoặc chuẩn bị submit PR, kiểm tra toàn bộ danh sách 
 
 - [ ] Tất cả Composable call ghi rõ argument names — không positional args.
 - [ ] Callback tên `on + Noun + Verb`; lambda type có parameter name.
-- [ ] `modifier` là parameter cuối.
+- [ ] `modifier` là tham số optional đầu tiên (sau required params, trước optional params khác và trailing `content`).
+- [ ] Màn hình tách `<X>Route` (stateful, `internal`) + `<X>Content` (stateless, `private`); `@Preview` chỉ gọi `Content`.
 - [ ] Large composable được extract thành sub-components.
 - [ ] Empty state UI được emit rõ ràng.
 
@@ -42,6 +43,7 @@ Khi review code hoặc chuẩn bị submit PR, kiểm tra toàn bộ danh sách 
 - [ ] DTO sống trong `core:network`, Local entity trong `core:local`, mapper trong `core:data`.
 - [ ] DI chỉ inject external dependency — không inject `MutableMap`, `ArrayList`, `AtomicInteger`.
 - [ ] Implementation class là `internal`, chỉ interface là `public`.
+- [ ] Mô tả PR chỉ gọi là "Clean Architecture" khi không vi phạm layer boundary nào (xem [`clean-architecture.md`](clean-architecture.md)). Nếu chưa tuân thủ đủ, dùng "MVVM with improved code organization" / "focus on maintainability".
 
 ## Error Handling
 
@@ -82,7 +84,7 @@ Khi review code hoặc chuẩn bị submit PR, kiểm tra toàn bộ danh sách 
 
 ## Modal (xem [`compose-rules.md`](compose-rules.md))
 
-- [ ] Bottom sheet dùng `ModalBottomSheet`/wrapper chung; dialog tái dùng `DialogCommon`; không tự dựng trùng.
+- [ ] Bottom sheet dùng `ModalBottomSheet` (hoặc `AppModalBottomSheet` khi đã có); dialog tái dùng `DialogCommon`; không tự dựng trùng.
 
 ## Detekt / Spotless (xem [`detekt-hygiene.md`](detekt-hygiene.md))
 
