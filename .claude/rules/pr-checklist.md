@@ -38,9 +38,9 @@ Khi review code hoặc chuẩn bị submit PR, kiểm tra toàn bộ danh sách 
 
 ## Architecture & DI
 
-- [ ] `feature/*` không import `core:data`, `core:network`, `core:local`.
-- [ ] Domain model trong `core:model` là pure Kotlin — không có Android/Retrofit/Room annotation.
-- [ ] DTO sống trong `core:network`, Local entity trong `core:local`, mapper trong `core:data`.
+- [ ] `feature/*` không phụ thuộc `core:data`, `core:network`, `core:local` hay `:impl` của feature khác; trong `:impl`, `api(...)` chỉ dành cho `:api` của chính feature đó.
+- [ ] `core:model` và `core:domain` là pure JVM (plugin `jvm.library`) — không có Android/Retrofit/Room/Hilt.
+- [ ] DTO sống trong `core:network`, Local entity trong `core:local`. Mapper DTO/entity → domain ở `core:data`; mapper `Throwable` → `AppError` ở module infra nơi lỗi phát sinh (xem [`clean-architecture.md`](clean-architecture.md)).
 - [ ] DI chỉ inject external dependency — không inject `MutableMap`, `ArrayList`, `AtomicInteger`.
 - [ ] Implementation class là `internal`, chỉ interface là `public`.
 - [ ] Mô tả PR chỉ gọi là "Clean Architecture" khi không vi phạm layer boundary nào (xem [`clean-architecture.md`](clean-architecture.md)). Nếu chưa tuân thủ đủ, dùng "MVVM with improved code organization" / "focus on maintainability".
