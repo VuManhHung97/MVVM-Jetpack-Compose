@@ -12,9 +12,9 @@ dependencies {
   implementation(projects.core.ui)
   implementation(projects.core.resource)
   implementation(projects.core.common)
-  api(projects.core.domain)
+  implementation(projects.core.domain)
 
   // Libraries
   implementation(libs.androidx.compose.material.iconsCore)
-  api(libs.kotlinx.collections.immutable)
+  implementation(libs.kotlinx.collections.immutable)
 }

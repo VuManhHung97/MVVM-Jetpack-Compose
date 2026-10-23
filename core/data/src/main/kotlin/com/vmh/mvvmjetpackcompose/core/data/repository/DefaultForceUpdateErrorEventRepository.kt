@@ -4,7 +4,7 @@ import com.vmh.mvvmjetpackcompose.core.domain.repository.ForceUpdateErrorEventRe
 import com.vmh.mvvmjetpackcompose.core.network.remote.datasource.ForceUpdateErrorEventDataSource
 import javax.inject.Inject
 
-internal class RealForceUpdateErrorEventRepository @Inject constructor(
+internal class DefaultForceUpdateErrorEventRepository @Inject constructor(
   forceUpdateErrorEventDataSource: ForceUpdateErrorEventDataSource,
 ) : ForceUpdateErrorEventRepository {
   override val events = forceUpdateErrorEventDataSource.events
