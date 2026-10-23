@@ -11,6 +11,7 @@ import com.vmh.mvvmjetpackcompose.lifecycle.HasEventFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,10 +32,18 @@ internal class LanguageViewModel @Inject constructor(
 
   val uiStateFlow: StateFlow<LanguageUiState> = _uiStateFlow.asStateFlow()
 
+  private var languageChangeJob: Job? = null
+
   private inline fun emitState(f: (LanguageUiState) -> LanguageUiState) = _uiStateFlow.update(f)
 
   init {
     getLanguages()
+  }
+
+  internal fun retry() {
+    if (_uiStateFlow.value is LanguageUiState.Error) {
+      getLanguages()
+    }
   }
 
   private fun getLanguages() {
@@ -84,12 +93,14 @@ internal class LanguageViewModel @Inject constructor(
   }
 
   internal fun languageChanges() {
+    if (languageChangeJob?.isActive == true) return
+
     val currentState = _uiStateFlow.value
     if (currentState !is LanguageUiState.Content) return
     val selectLanguageTag = currentState.languages.firstOrNull { it.isSelected }?.languageCode?.tag ?: return
     val locale = Locale.forLanguageTag(selectLanguageTag)
 
-    viewModelScope.launch {
+    languageChangeJob = viewModelScope.launch {
       languageRepository.setCurrentLocale(locale = locale)
         .fold(
           success = { eventChannel.send(LanguageSingleEvent.LanguageChangeSuccess) },

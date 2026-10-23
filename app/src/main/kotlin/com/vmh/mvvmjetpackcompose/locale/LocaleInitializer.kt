@@ -69,38 +69,40 @@ internal class LocaleInitializer @Inject constructor(
       return
     }
 
-    val appLocales = appContext.readSystemPerAppLocales()
-    val appLocale = appLocales[0]?.stripExtensions()
+    try {
+      val appLocales = appContext.readSystemPerAppLocales()
+      val appLocale = appLocales[0]?.stripExtensions()
 
-    val candidate = if (
-      appLocale != null &&
-      current.toLanguageTag() != appLocale.toLanguageTag()
-    ) {
-      appLocale
-    } else {
-      current
-    }
-
-    coroutineBinding {
-      val languages = languageRepository.getLanguages().bind()
-      val locale = findBestMatchingLocale(candidate, languages) ?: LanguageRepository.DEFAULT_LOCALE
-
-      if (BuildConfig.DEBUG) {
-        Timber.d(
-          "LocaleController.resyncFromSystemIfNeeded: " +
-            "appLocales=$appLocales, " +
-            "systemLocales=$appLocale, " +
-            "current=$current, " +
-            "candidate=$candidate, " +
-            "-> locale=$locale",
-        )
+      val candidate = if (
+        appLocale != null &&
+        current.toLanguageTag() != appLocale.toLanguageTag()
+      ) {
+        appLocale
+      } else {
+        current
       }
 
-      languageRepository.setCurrentLocale(locale).bind()
-    }.onFailure { Timber.e(it, "LocaleController.resyncFromSystemIfNeeded failed") }
-      .onSuccess { Timber.d("LocaleController.resyncFromSystemIfNeeded succeeded: $it") }
+      coroutineBinding {
+        val languages = languageRepository.getLanguages().bind()
+        val locale = findBestMatchingLocale(candidate, languages) ?: LanguageRepository.DEFAULT_LOCALE
 
-    isSyncing.store(false)
+        if (BuildConfig.DEBUG) {
+          Timber.d(
+            "LocaleController.resyncFromSystemIfNeeded: " +
+              "appLocales=$appLocales, " +
+              "systemLocales=$appLocale, " +
+              "current=$current, " +
+              "candidate=$candidate, " +
+              "-> locale=$locale",
+          )
+        }
+
+        languageRepository.setCurrentLocale(locale).bind()
+      }.onFailure { Timber.e(it, "LocaleController.resyncFromSystemIfNeeded failed") }
+        .onSuccess { Timber.d("LocaleController.resyncFromSystemIfNeeded succeeded: $it") }
+    } finally {
+      isSyncing.store(false)
+    }
   }
 
   /**

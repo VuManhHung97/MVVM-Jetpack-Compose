@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import com.vmh.mvvmjetpackcompose.core.model.error.AppError
 import com.vmh.mvvmjetpackcompose.core.model.language.Language
 import com.vmh.mvvmjetpackcompose.feature.language.presentation.language.LanguageUiState.Content.LanguageUiItem
+import kotlinx.collections.immutable.ImmutableList
 
 @Immutable
 sealed interface LanguageUiState {
@@ -15,7 +16,7 @@ sealed interface LanguageUiState {
   data object Loading : LanguageUiState
 
   @Immutable
-  data class Content(val languages: List<LanguageUiItem>, val isSaveButtonEnabled: Boolean) : LanguageUiState {
+  data class Content(val languages: ImmutableList<LanguageUiItem>, val isSaveButtonEnabled: Boolean) : LanguageUiState {
     @Immutable
     data class LanguageUiItem(
       val id: Long,
@@ -23,27 +24,6 @@ sealed interface LanguageUiState {
       val originalName: String,
       val isSelected: Boolean,
     )
-
-    companion object {
-      val initial
-        get() = Content(
-          languages = listOf(
-            LanguageUiItem(
-              id = 1,
-              languageCode = Language.LanguageCode.En,
-              originalName = "English",
-              isSelected = true,
-            ),
-            LanguageUiItem(
-              id = 2,
-              languageCode = Language.LanguageCode.Ja,
-              originalName = "Japanese",
-              isSelected = false,
-            ),
-          ),
-          isSaveButtonEnabled = false,
-        )
-    }
   }
 
   @Immutable
