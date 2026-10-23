@@ -10,8 +10,8 @@ disable-model-invocation: true
 Scaffold an empty feature module for `$ARGUMENTS` following the project conventions. Derive
 `<name>` (lowercase package, e.g. `language`) and `<Name>` (PascalCase, e.g. `Language`) from it.
 
-This creates a presentation skeleton only. For a feature with real data, use
-`/feature-vertical-slice` instead. To build out the UI afterwards, use `/create-screen-ui`.
+This creates a presentation skeleton only. For real data, follow `.claude/rules/data-layer.md`.
+To build out the UI afterwards, use `/create-screen-ui`.
 
 Follow `.claude/rules/clean-architecture.md`, `mvi-pattern.md`, `compose-rules.md` and `navigation.md`.
 

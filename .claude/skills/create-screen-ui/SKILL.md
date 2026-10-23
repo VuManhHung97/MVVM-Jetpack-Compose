@@ -11,8 +11,8 @@ Implement the UI layer for the existing feature module matching `$ARGUMENTS`
 (e.g. `Language` → `feature/language`). `<name>` is the lowercase package, `<Name>` PascalCase.
 
 Prerequisites: the module was scaffolded with `/new-feature-module`, and there is a design image or
-a description of the UI. If the screen needs real data, build the data layer with
-`/feature-vertical-slice` or `.claude/rules/data-layer.md`; don't put mock data in the ViewModel.
+a description of the UI. If the screen needs real data, build the data layer
+with `.claude/rules/data-layer.md`; don't put mock data in the ViewModel.
 
 Follow `.claude/rules/mvi-pattern.md`, `compose-rules.md`, `theming-strings-resources.md` and
 `detekt-hygiene.md`.

@@ -71,8 +71,6 @@ only when Claude reads or edits a matching file.
 
 - `/new-feature-module <name>`: scaffold an empty `api` + `impl` feature module.
 - `/create-screen-ui <Name>`: build the LCE UI layer for an existing feature module.
-- `/feature-vertical-slice <domain>`: full slice from domain model to UI, backed by dummy JSON.
-- `/implement-design-handoff <path>`: turn a Claude Design handoff bundle into feature modules.
 - `/pr-checklist`: review checklist before opening or reviewing a PR.
 - Agent `android-quality`: runs spotless + detekt + compile and fixes mechanical violations.
 - Agent `researcher`: compares libraries and approaches, ends with a recommendation.

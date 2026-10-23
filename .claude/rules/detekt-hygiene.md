@@ -39,8 +39,8 @@ instead of fixing lint in several rounds. Apply this before calling a task done.
 ### MagicNumber
 - `.dp` / `.sp` values are ignored by detekt. Only raw `Int` / `Long` / `Float` literals are flagged
   (alpha `0.4f`, fractions, amounts, offsets).
-- UI built from a design handoff with many design literals: `@file:Suppress("MagicNumber")` with a
-  comment such as `// Design-handoff pixel/opacity values`. Repeated values become `private const val`.
+- UI built from a design with many design literals: `@file:Suppress("MagicNumber")` with a
+  comment such as `// Design pixel/opacity values`. Repeated values become `private const val`.
 
 ### TooManyFunctions / LongMethod / CognitiveComplexMethod / LongParameterList
 - First try splitting into sub-composables or helper functions.
