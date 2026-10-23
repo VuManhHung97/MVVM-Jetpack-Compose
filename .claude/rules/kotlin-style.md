@@ -111,6 +111,26 @@ Log with `Timber.e()` in every failure branch, even when the error is also shown
 - Only import and inject what is used. No unused imports, annotations or parameters.
 - Extract repeated literals to `private const val` (top level) or a `companion object`.
 
+## Comments
+
+Clear code is the documentation. Do not add a comment that restates what the code already says.
+
+- Comment only logic that is complex, non-obvious or intentional: a workaround, an ordering
+  constraint, a deliberate deviation from the usual pattern. Say *why*, not *what*.
+- No comments that narrate a change ("now keeps the session", "moved from onStart").
+  That belongs in the commit message or PR description.
+- Required comments still apply: `@Suppress` reasons and design values (see `detekt-hygiene.md`).
+
+```kotlin
+// Wrong: repeats the code
+// Cancel the load-more job
+loadMoreJob?.cancel()
+
+// Right: explains a constraint the code cannot show
+// dataStore.data throws an IOException when reading fails
+.catch { if (it is IOException) emit(null) else throw it }
+```
+
 ## TODOs
 
 Say who and why, or when:
