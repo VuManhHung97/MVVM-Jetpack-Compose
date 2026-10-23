@@ -60,8 +60,6 @@ internal class MainViewModel @Inject constructor(
     )
 
   init {
-    // Refresh in the background: the start destination only needs the locally stored user,
-    // so the splash screen must not wait for the profile request.
     viewModelScope.launch {
       authRepository.refreshCurrentUser()
         .onFailure { error -> Timber.e(error, "MainViewModel refreshCurrentUser failure") }
