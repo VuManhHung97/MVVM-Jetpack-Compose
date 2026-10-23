@@ -3,6 +3,7 @@ package com.vmh.mvvmjetpackcompose.core.data.repository.fcm
 import com.vmh.mvvmjetpackcompose.core.data.di.DelegateFcmTokenManager
 import com.vmh.mvvmjetpackcompose.core.domain.repository.FcmTokenManager
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -13,6 +14,7 @@ import kotlinx.coroutines.sync.withLock
  *
  * Kept separate from [DefaultFcmTokenManager] so the sync logic stays free of locking concerns.
  */
+@Singleton
 internal class SynchronizedFcmTokenManager @Inject constructor(
   @param:DelegateFcmTokenManager private val delegate: FcmTokenManager,
 ) : FcmTokenManager {
