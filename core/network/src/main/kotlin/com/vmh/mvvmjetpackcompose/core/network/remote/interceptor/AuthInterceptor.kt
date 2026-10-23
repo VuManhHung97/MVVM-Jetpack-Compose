@@ -105,13 +105,12 @@ internal class AuthInterceptor @Inject internal constructor(
           }
 
           HTTP_UNAUTHORIZED, HTTP_FORBIDDEN -> {
-            // The refresh token was rejected: the session is over, clear user local
+            // clear user local
             authLocalDataSource.update { null }
             null
           }
 
           else -> {
-            // Transient failure (5xx, 429, ...): keep the session so a later request can refresh again
             Timber.w("Refresh token failed with code=${refreshTokenRes.code()}, keep current session")
             null
           }
