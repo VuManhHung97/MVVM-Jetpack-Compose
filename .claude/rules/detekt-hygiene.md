@@ -1,55 +1,67 @@
 ---
-description: Detekt/Spotless hygiene — preempt các lỗi lint hay gặp (ImmutableList trong state, unused import, dòng >120, @Suppress có lý do) để qua spotless+detekt ngay lần đầu.
-globs: **/*.kt
+paths:
+  - "**/*.kt"
 ---
 
-# Detekt / Spotless Hygiene — tránh vòng lặp sửa lint
+# Detekt / Spotless Hygiene
 
-Checklist để code Compose/Kotlin qua `spotlessCheck` + `detekt` (thường `warningsAsErrors = true`) ngay lần đầu, thay vì sửa nhiều vòng. Áp dụng **trước khi coi task là xong**.
+Write code that passes `spotlessCheck` and `detekt` (`warningsAsErrors = true`) on the first run
+instead of fixing lint in several rounds. Apply this before calling a task done.
 
-## Quy trình
-1. `./gradlew spotlessApply` (tự format) **rồi** `./gradlew detekt`.
-2. Lưu ý: một số setup ktlint **KHÔNG tự xoá unused import** → phải tự xoá tay, nếu không detekt `UnusedImports` sẽ fail.
-3. Khi grep kết quả gradle, **đừng** để `| grep` che exit code (`$?` sẽ là của grep). Kiểm tra `BUILD SUCCESSFUL/FAILED` trong log, không chỉ exit code lệnh cuối.
+## Workflow
 
-## Các lỗi hay gặp & cách preempt
+1. `./gradlew spotlessApply`, then `./gradlew detekt`.
+2. ktlint here does **not** remove unused imports. Remove them by hand, or `UnusedImports` fails.
+3. Check for `BUILD SUCCESSFUL` / `BUILD FAILED` in the log. When piped through `grep`, `$?` is grep's.
 
-### Compose stability (unstable collections)
-- `@Immutable` UiState / tham số Composable **không dùng `List<T>`** → dùng `ImmutableList<T>`/`PersistentList<T>` (kotlinx.collections.immutable).
-- Map ở ViewModel: `.mapToPersistentList { }` hoặc `.map { }.toPersistentList()`. Preview: `persistentListOf(...)`.
+## Common failures and how to avoid them
+
+### Unstable collections in Compose
+- `@Immutable` UiState classes and Composable parameters never use `List<T>`. Use
+  `ImmutableList<T>` / `PersistentList<T>` (kotlinx.collections.immutable).
+- Build them with `mapToPersistentList { }` and friends from `core.common.extension.ImmutableList`
+  (see `mvi-pattern.md`). In previews, use `persistentListOf(...)`.
 
 ### UnusedImports / UnusedParameter
-- Xoá import không dùng **thủ công** (đặc biệt sau khi refactor/đổi widget).
-- Composable nhận param mà không render (vd `onNavigateBack` khi UI không có nút back) → hoặc dùng, hoặc `@Suppress("UnusedParameter")` **kèm comment lý do**.
-- Reusable component: bỏ `modifier` nếu không dùng (đừng để `modifier: Modifier = Modifier` thừa).
+- Remove unused imports manually, especially after a refactor or a widget swap.
+- A Composable parameter that is not rendered (e.g. `onNavigateBack` with no back button): use it,
+  or `@Suppress("UnusedParameter")` with a comment saying why.
+- Reusable components: drop `modifier` if it is not applied anywhere.
 
-### MaxLineLength (≤ 120, ktlint)
-- Dòng dài (thường do tên object màu dài + biểu thức `if`): **tách local val**, hoặc xuống dòng.
+### MaxLineLength (120)
+- Extract a local `val` for long expressions, or break the arguments onto separate lines.
   ```kotlin
-  val statusColor = if (isDeposit) { Colors.Green } else { Colors.Red }
-  Text(..., color = statusColor)
+  val statusColor = if (isDeposit) Colors.Green else Colors.Red
+  Text(text = label, color = statusColor)
   ```
-- Import statement được ktlint/detekt bỏ qua độ dài — không cần sửa.
+- Import lines are exempt.
 
 ### MagicNumber
-- `.dp`/`.sp` là extension → detekt **bỏ qua** (không cần sửa). Chỉ **literal float/long/int thô** (alpha `0.4f`, fraction, số tiền, offset random…) mới bị bắt.
-- UI dựng-từ-design nhiều literal thiết kế → `@file:Suppress("MagicNumber")` **kèm comment** "Design-handoff pixel/opacity values…". Constant lặp lại thì tách `private const val`.
+- `.dp` / `.sp` values are ignored by detekt. Only raw `Int` / `Long` / `Float` literals are flagged
+  (alpha `0.4f`, fractions, amounts, offsets).
+- UI built from a design handoff with many design literals: `@file:Suppress("MagicNumber")` with a
+  comment such as `// Design-handoff pixel/opacity values`. Repeated values become `private const val`.
 
 ### TooManyFunctions / LongMethod / CognitiveComplexMethod / LongParameterList
-- MVI single-holder nhiều action, hoặc screen host lớn dựng-từ-design: `@Suppress(...)` **kèm comment giải thích** vì sao vượt ngưỡng là chủ đích (vd "single stateless host fan-out theo design prototype").
-- Nhưng ưu tiên **tách sub-composable** khi hợp lý trước khi suppress.
+- First try splitting into sub-composables or helper functions.
+- If exceeding the threshold is intentional (MVI ViewModel with many actions, large stateless
+  screen host from a design), `@Suppress(...)` with a comment explaining why.
 
-### StringLiteralDuplication / MaxLineLength ở seed/dummy
-- File dữ liệu dummy nhiều dòng dài/lặp: `@Suppress("StringLiteralDuplication", "MaxLineLength")` (và `@Suppress("ktlint:standard:max-line-length")` cho ktlint) trên object seed.
+### Seed / dummy data
+- Long or repetitive literal data: `@Suppress("StringLiteralDuplication", "MaxLineLength")` plus
+  `@Suppress("ktlint:standard:max-line-length")` on the seed object.
 
-## Nguyên tắc @Suppress
-- Chỉ suppress khi rule **thực sự không áp dụng được** cho ngữ cảnh (design token, MVI holder, generated-shape). **Luôn có comment** ngắn giải thích.
-- Ưu tiên đúng ngưỡng level nhỏ nhất (file / class / function) thay vì tắt global.
-- **Không** sửa `detekt.yml` để nới rule trừ khi được yêu cầu.
+## `@Suppress` policy
 
-## Checklist trước khi báo xong
-- [ ] `spotlessApply` pass; đã xoá unused import tay.
-- [ ] Không `List<>` trong `@Immutable` state/param.
-- [ ] Dòng ≤ 120 (đã tách local val cho biểu thức dài).
-- [ ] `@Suppress` đều có comment; không đụng `detekt.yml`.
-- [ ] `detekt` `BUILD SUCCESSFUL` (kiểm tra log, không chỉ exit code).
+- Only when the rule genuinely does not fit the context (design tokens, MVI holder, generated shapes).
+- Always with a short comment explaining why.
+- At the narrowest scope possible: expression, function, class, then file. Never globally.
+- Never loosen `detekt.yml` or ktlint config unless explicitly asked.
+
+## Done checklist
+
+- [ ] `spotlessApply` ran; unused imports removed by hand.
+- [ ] No `List<>` in `@Immutable` state or Composable params.
+- [ ] Lines ≤ 120.
+- [ ] Every `@Suppress` has a comment; `detekt.yml` untouched.
+- [ ] `detekt` shows `BUILD SUCCESSFUL` in the log.

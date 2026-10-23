@@ -1,5 +1,4 @@
 ---
-description: Clean Architecture layer boundaries and dependency rules. Applied to all Kotlin source files across the project.
 paths:
   - "**/*.kt"
   - "**/build.gradle.kts"
@@ -48,21 +47,22 @@ Presentation (feature/*) ──→ Domain (core:domain, core:model) ←── Da
 ```kotlin
 // core:domain — interface with domain types only
 interface AuthRepository {
-    suspend fun signIn(email: String, password: String): Result<Unit, AppError>
-    fun observeAuthenticationState(): Flow<Result<AuthenticationState, AppError.LocalStorageException>>
+  suspend fun signIn(email: String, password: String): Result<Unit, AppError>
+  fun observeAuthenticationState(): Flow<Result<AuthenticationState, AppError.LocalStorageException>>
 }
 
 // core:data — internal implementation, uses coroutineBinding to chain Results
 internal class DefaultAuthRepository @Inject constructor(
-    private val authRemoteDataSource: AuthRemoteDataSource,
-    private val authLocalDataSource: AuthLocalDataSource,
+  private val authRemoteDataSource: AuthRemoteDataSource,
+  private val authLocalDataSource: AuthLocalDataSource,
+  private val appCoroutineDispatchers: AppCoroutineDispatchers,
 ) : AuthRepository {
-    override suspend fun signIn(email: String, password: String) = withContext(io) {
-        coroutineBinding {
-            val response = authRemoteDataSource.signIn(email, password).bind()
-            authLocalDataSource.update { response.toLocalUser() }.bind()
-        }
+  override suspend fun signIn(email: String, password: String) = withContext(appCoroutineDispatchers.io) {
+    coroutineBinding {
+      val response = authRemoteDataSource.signIn(email, password).bind()
+      authLocalDataSource.update { response.toLocalUser() }.bind()
     }
+  }
 }
 ```
 
@@ -101,6 +101,13 @@ Within a branch, use the most specific subtype available; fall back to that bran
 - Chain multiple Results with `coroutineBinding { val x = call().bind() }` — never nest `.fold()`.
 - Map to the correct `AppError` subtype at the layer where the error originates (network → `ApiException`, local → `LocalStorageException`).
 - **Never wrap fatal throwables.** `CancellationException` (and other fatal errors) must be rethrown, not turned into `AppError` — otherwise coroutine cancellation breaks. Pass the caught throwable through `nonFatalOrThrow()` (`core:common`) before mapping, as `RemoteErrorMapper` and `LocalErrorMapper` do. Plain `runCatching { }` catches `CancellationException` — don't use it without this step.
+
+## Network Interceptors
+
+- `AuthInterceptor` refreshes the token under a `Mutex` so concurrent 401s trigger one refresh only:
+  `runBlocking(appCoroutineDispatchers.io) { mutex.withLock { executeRefreshTokenIfNeeded(localUser) } }`.
+- `RefreshTokenInterceptor` runs on a **separate** OkHttp client from `AuthInterceptor`
+  (see `DataRemoteModule`). Never make the two clients depend on each other.
 
 ## No UseCase Layer
 

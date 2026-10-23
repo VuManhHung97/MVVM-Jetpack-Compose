@@ -1,33 +1,38 @@
 ---
-description: Data layer cho tính năng/dữ liệu mới chưa có API thật — DTO + ApiService + Fake data source đọc dummy JSON + mapper + repository. Bổ sung cho clean-architecture (biến thể Fake trước khi có backend).
-globs: core/network/**/*.kt, core/data/**/*.kt, core/domain/**/*.kt, core/model/**/*.kt
+paths:
+  - "core/network/**"
+  - "core/data/**/*.kt"
+  - "core/domain/**/*.kt"
+  - "core/model/**/*.kt"
 ---
 
-# Data Layer — API contract + Fake data source + dummy JSON
+# Data Layer: new data without a backend yet
 
-Rule cho **tính năng/dữ liệu mới CHƯA có API thật**. Mục tiêu: dựng đủ tầng data thật (DTO → service → data source → mapper → repository) nhưng tạm chạy bằng **dummy JSON**, để khi có backend chỉ cần đổi 1 binding (Fake → Real), không đụng caller.
+For a **new feature or data set that has no real API yet**. Build the full real data stack
+(DTO → ApiService → DataSource → mapper → repository) but run it on **dummy JSON**, so that when
+the backend arrives you change one binding (Fake → Real) and no caller.
 
-> Nguyên tắc: **KHÔNG** để mock data nằm trong ViewModel hay repository. Dữ liệu giả phải đi qua đúng tầng như thật.
-
-## Sơ đồ
+> **Never** put mock data in a ViewModel or repository. Fake data goes through the same layers as
+> real data.
 
 ```
-UI/ViewModel → Repository (domain interface)
-                   ↓ (impl trong data layer)
-             RemoteDataSource (interface)
-                   ↓
-        FakeRemoteDataSourceImpl  ── đọc ──→  src/main/resources/dummy/<name>.json
-        (sau này: RealRemoteDataSourceImpl → ApiService/Retrofit)
+UI / ViewModel → Repository (domain interface)
+                     ↓ impl in core:data
+               RemoteDataSource (interface)
+                     ↓
+       FakeXxxRemoteDataSourceImpl ── reads ──→ core/network/src/main/resources/dummy/<name>.json
+       (later: RealXxxRemoteDataSourceImpl → XxxApiService / Retrofit)
 ```
 
-Vị trí (điều chỉnh theo cấu trúc module của project):
-- DTO + ApiService + DataSource + impl + DI → **network module**
-- Mapper DTO→domain + Repository impl → **data module**
-- Domain model + Repository interface → **domain/model module**
+| What | Module | Package |
+|---|---|---|
+| DTO, ApiService, DataSource + impls, DI | `core:network` | `remote/response/<domain>/`, `remote/service/`, `remote/datasource/`, `remote/datasourceimpl/`, `remote/di/` |
+| Mapper DTO → domain, repository impl | `core:data` | `mapper/<domain>/`, `repository/` |
+| Domain model, repository interface | `core:model`, `core:domain` | `<domain>/`, `repository/` |
 
-## 1. DTO (network module, package `response/<domain>/`)
+## 1. DTO
 
-Trường JSON dùng annotation JSON của thư viện parse (ví dụ Moshi). Dùng `@Keep` để R8 không xoá.
+Moshi annotations + `@Keep` so R8 keeps the fields.
 
 ```kotlin
 @Keep
@@ -35,18 +40,18 @@ data class XxxResponse(
   @param:Json(name = "id") val id: String,
   @param:Json(name = "display_name") val displayName: String,
   @param:Json(name = "amount") val amount: Long,
-  @param:Json(name = "status") val status: String, // map sang enum ở mapper
+  @param:Json(name = "status") val status: String, // mapped to an enum in the mapper
 )
 ```
 
-## 2. ApiService — định nghĩa contract API THẬT (dù đang fake)
+## 2. ApiService: write the real contract now
 
-Viết interface Retrofit đúng như backend sẽ có. Chưa gọi cũng viết, để đổi sang thật là bind lại impl.
+Define the Retrofit interface as the backend will expose it, even though nothing calls it yet.
 
 ```kotlin
 internal interface XxxApiService {
   @GET("v1/api/xxx")
-  suspend fun getXxx(): BaseResponse.Data<List<XxxResponse>> // hoặc List<XxxResponse> tuỳ envelope của project
+  suspend fun getXxx(): BaseResponse.Data<List<XxxResponse>>
 
   @POST("v1/api/xxx/{id}/action")
   suspend fun doAction(@Path("id") id: String, @Body body: XxxRequestBody)
@@ -57,32 +62,32 @@ internal interface XxxApiService {
 }
 ```
 
-## 3. RemoteDataSource interface (network module)
+## 3. RemoteDataSource interface
 
-Trả `Result<Dto, AppError.ApiException>` (hoặc kiểu Result/error mà project dùng). Interface `public`, impl `internal`.
+Returns `Result<Dto, AppError.ApiException>`. Interface `public`, impls `internal`.
 
 ```kotlin
 interface XxxRemoteDataSource {
   suspend fun getXxx(): Result<List<XxxResponse>, AppError.ApiException>
-  suspend fun doAction(id: String, /* params */): Result<Unit, AppError.ApiException>
+  suspend fun doAction(id: String): Result<Unit, AppError.ApiException>
 }
 ```
 
-## 4. FakeRemoteDataSourceImpl — đọc dummy JSON
+## 4. Fake impl reading dummy JSON
 
-Cơ chế (tường minh, không phụ thuộc file mẫu):
-- Đặt file JSON tĩnh ở **`<networkModule>/src/main/resources/dummy/<name>.json`**. `src/main/resources` được đóng gói vào APK và đọc được qua **classloader** — **không cần Android `Context`** (khác `assets/` cần Context).
-- Nội dung JSON đúng **shape của response API thật** (để khi đổi sang Real cùng adapter).
-- Parse bằng JSON adapter (ví dụ Moshi): với list cần `Types.newParameterizedType(List::class.java, Dto::class.java)`.
-- Write action (POST/PUT) khi chưa có backend: trả `Ok(Unit)` (repository sẽ cập nhật optimistic).
+- Put the JSON in **`core/network/src/main/resources/dummy/<name>.json`**. `src/main/resources` is
+  packaged into the APK and readable through the **classloader**, so no Android `Context` is needed
+  (unlike `assets/`).
+- The JSON has **the exact shape of the real API response**, so the same adapter works later.
+- Write actions (POST / PUT) return `Ok(Unit)`; the repository updates optimistically.
 
 ```kotlin
 internal class FakeXxxRemoteDataSourceImpl @Inject constructor(
   private val moshi: Moshi,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val appCoroutineDispatchers: AppCoroutineDispatchers,
 ) : XxxRemoteDataSource {
 
-  override suspend fun getXxx() = withContext(dispatchers.io) {
+  override suspend fun getXxx() = withContext(appCoroutineDispatchers.io) {
     Ok(readJsonList("dummy/xxx.json", XxxResponse::class.java))
   }
 
@@ -92,37 +97,49 @@ internal class FakeXxxRemoteDataSourceImpl @Inject constructor(
     val listType = Types.newParameterizedType(List::class.java, itemType)
     val adapter = moshi.adapter<List<T>>(listType)
     val json = requireNotNull(javaClass.classLoader?.getResourceAsStream(path))
-      .bufferedReader().use { it.readText() }
+      .bufferedReader()
+      .use { it.readText() }
     return adapter.fromJson(json).orEmpty()
   }
 }
 ```
 
-Ví dụ `resources/dummy/xxx.json`:
-```json
-[
-  { "id": "X1", "display_name": "Tên A", "amount": 1250000, "status": "active" }
-]
-```
-
-## 5. DI module (network module)
+Write the Real impl at the same time, wrapping errors with `catchingApiException(remoteErrorMapper)`:
 
 ```kotlin
-@Module @InstallIn(SingletonComponent::class)
+internal class RealXxxRemoteDataSourceImpl @Inject constructor(
+  private val xxxApiService: XxxApiService,
+  private val appCoroutineDispatchers: AppCoroutineDispatchers,
+  private val remoteErrorMapper: RemoteErrorMapper,
+) : XxxRemoteDataSource {
+  override suspend fun getXxx() = withContext(appCoroutineDispatchers.io) {
+    catchingApiException(remoteErrorMapper) { xxxApiService.getXxx().data }
+  }
+  // ...
+}
+```
+
+## 5. DI module
+
+```kotlin
+@Module
+@InstallIn(SingletonComponent::class)
 internal interface XxxRemoteModule {
-  @Binds fun xxxRemoteDataSource(impl: FakeXxxRemoteDataSourceImpl): XxxRemoteDataSource
-  // Khi có backend: đổi FakeXxx... → RealXxx... ở đúng dòng này.
+  // Fake (dummy JSON) for now. When the backend is ready, switch to RealXxxRemoteDataSourceImpl here.
+  @Binds
+  fun xxxRemoteDataSource(impl: FakeXxxRemoteDataSourceImpl): XxxRemoteDataSource
 
   companion object {
-    @Provides @Singleton
+    @Provides
+    @Singleton
     fun xxxApiService(@SharedRetrofit retrofit: Retrofit): XxxApiService = XxxApiService(retrofit)
   }
 }
 ```
 
-## 6. Mapper (data module, package `mapper/<domain>/`)
+## 6. Mapper
 
-`internal fun`, DTO → domain. Map string→enum ở đây.
+`internal fun`, DTO → domain. String → enum conversion happens here.
 
 ```kotlin
 internal fun XxxResponse.toXxx(): Xxx = Xxx(
@@ -133,52 +150,47 @@ internal fun XxxResponse.toXxx(): Xxx = Xxx(
 )
 ```
 
-## 7. Repository impl (data module)
+## 7. Repository impl
 
-Domain interface ở domain module; impl `internal`, `@Singleton` nếu cần giữ state chia sẻ (vd nhiều màn cùng đọc). Load lazy + optimistic write:
+Interface in `core:domain`, impl `internal` in `core:data`, bound in `DataModule`. Use `@Singleton`
+when several screens share the state. Lazy load + optimistic write:
 
 ```kotlin
 @Singleton
 internal class DefaultXxxRepository @Inject constructor(
-  private val remote: XxxRemoteDataSource,
-  private val dispatchers: AppCoroutineDispatchers,
+  private val xxxRemoteDataSource: XxxRemoteDataSource,
+  private val appCoroutineDispatchers: AppCoroutineDispatchers,
 ) : XxxRepository {
 
   private val itemsFlow = MutableStateFlow<List<Xxx>>(emptyList())
   private val loadMutex = Mutex()
-  private var loaded = false
+  private var isLoaded = false
 
   override fun observeItems(): Flow<List<Xxx>> = itemsFlow.onStart { ensureLoaded() }
 
-  override suspend fun doAction(id: String): Result<Unit, AppError> = withContext(dispatchers.io) {
-    // Chưa có backend: cập nhật optimistic ngay vào flow (mọi màn tự đồng bộ).
-    itemsFlow.update { list -> list.map { if (it.id == id) it.copy(/* ... */) else it } }
+  override suspend fun doAction(id: String): Result<Unit, AppError> = withContext(appCoroutineDispatchers.io) {
+    // No backend yet: update the flow optimistically so every screen stays in sync.
+    itemsFlow.update { items -> items.map { if (it.id == id) it.copy(/* ... */) else it } }
     Ok(Unit)
-    // Khi có backend: gọi remote.doAction(id) trước, thành công thì refresh itemsFlow từ remote.
+    // With a backend: call xxxRemoteDataSource.doAction(id) first, then refresh from remote.
   }
 
   private suspend fun ensureLoaded() = loadMutex.withLock {
-    if (loaded) return
-    itemsFlow.value = remote.getXxx().map { it.map(XxxResponse::toXxx) }.getOrElse { emptyList() }
-    loaded = true
+    if (isLoaded) return
+    itemsFlow.value = xxxRemoteDataSource.getXxx()
+      .map { items -> items.map(XxxResponse::toXxx) }
+      .getOrElse { emptyList() }
+    isLoaded = true
   }
 }
 ```
 
-Bind interface→impl trong DI của data module (`@Binds @Singleton`).
+## Switching to the real API
 
-## Chuyển sang API thật (sau này)
-1. Viết `RealXxxRemoteDataSourceImpl` gọi `XxxApiService` (bọc lỗi thành `AppError.ApiException`).
-2. Đổi `@Binds` trong `XxxRemoteModule`: `FakeXxx…` → `RealXxx…`.
-3. Repository: `doAction` gọi remote trước rồi refresh; bỏ optimistic nếu muốn nguồn-thật-là-chân-lý.
-4. Xoá file `resources/dummy/*.json`. Không đụng ViewModel/UI.
+1. Change the `@Binds` in `XxxRemoteModule`: `FakeXxx…` → `RealXxx…`.
+2. Repository: call remote first, then refresh; drop the optimistic update if the server is the
+   source of truth.
+3. Delete `resources/dummy/<name>.json`. ViewModels and UI stay untouched.
 
-## Checklist
-- [ ] Không còn mock/seed hardcode trong ViewModel/Repository.
-- [ ] DTO có annotation JSON + `@Keep`; JSON dummy đúng shape response.
-- [ ] DataSource trả `Result<Dto, ApiException>`; impl `internal`.
-- [ ] Repository interface ở domain, impl ở data (`internal`), bind qua Hilt.
-- [ ] Fake đọc JSON từ `resources/` qua classloader (không cần Context).
-
----
-*Ví dụ trong repo hiện tại (tham khảo — có thể không tồn tại ở project khác): fake data source + remote module của tính năng `language`; `Default*Repository` của `auth`/`search`; envelope `BaseResponse.Data`.*
+> Note: `FakeLanguageRemoteDataSourceImpl` predates this rule and still returns a hardcoded list.
+> New Fakes follow the dummy-JSON approach above.
