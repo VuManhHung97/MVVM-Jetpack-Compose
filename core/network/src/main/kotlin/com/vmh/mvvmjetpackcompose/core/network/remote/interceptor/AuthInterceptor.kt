@@ -7,6 +7,7 @@ import com.vmh.mvvmjetpackcompose.core.common.coroutine.AppCoroutineDispatchers
 import com.vmh.mvvmjetpackcompose.core.local.LocalUser
 import com.vmh.mvvmjetpackcompose.core.local.datasource.AuthLocalDataSource
 import com.vmh.mvvmjetpackcompose.core.local.extention.toProtoStringValue
+import com.vmh.mvvmjetpackcompose.core.local.extention.valueOrNull
 import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.ApiConstants.Headers.CHECK_ACCESS_TOKEN
 import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.ApiConstants.Headers.CUSTOM_HEADER
 import com.vmh.mvvmjetpackcompose.core.network.remote.interceptor.ApiConstants.Headers.NO_AUTH
@@ -45,12 +46,13 @@ internal class AuthInterceptor @Inject internal constructor(
     }
 
     val localUser = getCurrentLocalUser()
-    if (CHECK_ACCESS_TOKEN in customHeaderValue && localUser?.accessToken == null) {
+    val accessToken = localUser?.accessToken.valueOrNull()
+    if (CHECK_ACCESS_TOKEN in customHeaderValue && accessToken == null) {
       return unauthorizedResponse(request)
     }
 
-    val res = chain.proceedWithHeader(request, localUser?.accessToken?.value)
-    if (res.code != HTTP_UNAUTHORIZED || localUser?.accessToken == null) {
+    val res = chain.proceedWithHeader(request, accessToken)
+    if (res.code != HTTP_UNAUTHORIZED || localUser == null || accessToken == null) {
       // Forward HTTP_UNAUTHORIZED error
       return res
     }
@@ -78,7 +80,7 @@ internal class AuthInterceptor @Inject internal constructor(
   private suspend fun executeRefreshTokenIfNeeded(localUser: LocalUser): String? {
     val currentToken = getCurrentLocalUser()
       ?.accessToken
-      ?.value
+      .valueOrNull()
 
     return when {
       currentToken == null -> {

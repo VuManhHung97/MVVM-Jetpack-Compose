@@ -85,6 +85,8 @@ sealed class AppError :
         LoopDetected(508),
         NotExtended(510),
         NetworkAuthenticationRequired(511),
+
+        Unknown(-1),
       }
     }
 

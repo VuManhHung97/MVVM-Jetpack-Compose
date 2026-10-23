@@ -4,3 +4,5 @@ import com.google.protobuf.StringValue
 
 fun String?.toProtoStringValue(): StringValue =
   if (this != null) StringValue.of(this) else StringValue.getDefaultInstance()
+
+fun StringValue?.valueOrNull(): String? = this?.value?.takeIf { it.isNotEmpty() }

@@ -151,6 +151,7 @@ val DefaultGetAppErrorMessageForInline: GetAppErrorMessage = object : GetAppErro
       StatusCode.LoopDetected,
       StatusCode.NotExtended,
       StatusCode.NetworkAuthenticationRequired,
+      StatusCode.Unknown,
       ->
         AppErrorMessage.internalServerError()
 
@@ -215,6 +216,7 @@ val DefaultGetAppErrorMessageForDialog: GetAppErrorMessage = object : GetAppErro
       StatusCode.LoopDetected,
       StatusCode.NotExtended,
       StatusCode.NetworkAuthenticationRequired,
+      StatusCode.Unknown,
       ->
         AppErrorMessage.internalServerErrorDialog()
 
