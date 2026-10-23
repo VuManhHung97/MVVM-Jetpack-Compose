@@ -1,40 +1,48 @@
-# Navigation Rules — Jetpack Navigation 3
+---
+paths:
+  - "feature/**/*.kt"
+  - "feature/**/build.gradle.kts"
+  - "core/navigation/**/*.kt"
+  - "app/src/**/*.kt"
+---
 
-Dự án dùng **Navigation 3**. Back stack là `List` do code mình giữ, không nằm trong `NavController`.
-Navigate = `add()`. Back = `removeLastOrNull()`. Không có route string, không có nested graph.
+# Navigation Rules (Jetpack Navigation 3)
 
-## Mô hình hai lớp
+The project uses **Navigation 3**. The back stack is a `List` owned by our code, not a `NavController`.
+Navigate = `add()`. Back = `removeLastOrNull()`. No route strings, no nested graphs.
+
+## Two-layer model
 
 ```
-┌───────────────────────────────────────────────────────────┐
-│  LỚP NGOÀI — rootStack: NavBackStack<NavKey>              │
-│  [ Auth ] · [ Auth, SignIn ] · [ Auth, SignUp ] · [ Main ]│
-│  vào/ra bằng add / remove  →  ViewModel được clear         │
-├───────────────────────────────────────────────────────────┤
-│  LỚP TRONG — NavigationState (chỉ tồn tại dưới MainNavKey)│
-│  startRoute   = HomeNavKey        (tab thoát app)         │
-│  topLevelRoute: MutableState      = Home | Profile        │
-│  backStacks   = { Home: [...], Profile: [...] }           │
-└───────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│  OUTER — rootStack: NavBackStack<NavKey>                   │
+│  [ Auth ] · [ Auth, SignIn ] · [ Auth, SignUp ] · [ Main ] │
+│  entered / left with add / remove → ViewModel is cleared   │
+├────────────────────────────────────────────────────────────┤
+│  INNER — NavigationState (exists only under MainNavKey)    │
+│  startRoute    = HomeNavKey          (tab that exits app)  │
+│  topLevelRoute : MutableState        = Home | Profile      │
+│  backStacks    = { Home: [...], Profile: [...] }           │
+└────────────────────────────────────────────────────────────┘
 ```
 
-**`MainNavKey` là marker**, không bao giờ được render → không khai `entry<MainNavKey>`.
+**`MainNavKey` is a marker** and is never rendered, so there is no `entry<MainNavKey>`.
 
-Nguyên tắc bất di bất dịch: **`topLevelRoutes` chỉ chứa tab.** Màn hình ngoài hệ tab (luồng xác thực,
-onboarding…) thuộc `rootStack`. Nhét màn không-phải-tab vào `topLevelRoutes` sẽ khiến entry của nó
-không bao giờ rời back stack → ViewModel sống mãi.
+Invariant: **`topLevelRoutes` contains tabs only.** Screens outside the tab system (auth flow,
+onboarding, ...) belong in `rootStack`. Putting a non-tab screen in `topLevelRoutes` means its entry
+never leaves the back stack, so its ViewModel lives forever.
 
-## Module
+## Modules
 
-| Module | Chứa | Phụ thuộc |
+| Module | Contains | Depends on |
 |---|---|---|
-| `:core:navigation` | `NavigationState`, `AppNavigationState`, `Navigator`, `toEntries()` | chỉ `navigation3-runtime` — **không** biết key của feature nào |
+| `:core:navigation` | `NavigationState`, `AppNavigationState`, `Navigator`, `toEntries()` | `navigation3-runtime` only. Knows no feature keys |
 | `feature/x/api` | `@Serializable data object XNavKey : NavKey` + `fun Navigator.navigateToX()` | `:core:navigation` |
-| `feature/x/impl` | `xEntry()`, Screen, ViewModel, Contract | `x/api` + `api` của feature nó điều hướng tới |
+| `feature/x/impl` | `xEntry()`, Screen, ViewModel, Contract | `x/api` + the `api` of each feature it navigates to |
 
-Feature cần đi tới feature khác thì phụ thuộc `:api` của feature đó, **không bao giờ** `:impl`.
+A feature that navigates to another feature depends on that feature's `:api`, **never** `:impl`.
 
-## NavKey — đặt ở `:api`
+## NavKey (in `:api`)
 
 ```kotlin
 @Serializable
@@ -43,15 +51,16 @@ data object HomeNavKey : NavKey
 fun Navigator.navigateToHome() = navigate(HomeNavKey)
 ```
 
-- `data object` (không phải `object`) — `toString()` đọc được khi log back stack.
-- Key có tham số dùng `data class`; tham số **là** argument, không encode vào string.
-- **Không để text hiển thị trong key.** Key được serialize và lưu qua process death; chuỗi đã dịch
-  sẽ đóng băng, đổi ngôn ngữ không cập nhật. Giữ `@StringRes` hoặc enum, resolve ở màn hình.
-- `@Serializable` chỉ có tác dụng khi module apply plugin `kotlin.plugin.serialization` —
-  plugin `android.feature.api` đã lo. Đặt `NavKey` ở module khác thì phải tự kiểm bằng
-  `javap` xem có sinh `serializer()` không; thiếu thì crash lúc process death, không phải lúc compile.
+- `data object`, not `object`, so `toString()` is readable when logging the back stack.
+- Keys with arguments are `data class`; the arguments are properties, never encoded into a string.
+- **No display text in keys.** Keys are serialized and restored after process death, so a
+  translated string would freeze and ignore language changes. Store a `@StringRes` or an enum and
+  resolve it in the screen.
+- `@Serializable` only works when the module applies `kotlin.plugin.serialization`.
+  `android.feature.api` does this. If a `NavKey` lives anywhere else, check with `javap` that a
+  `serializer()` is generated: a missing one crashes at process death, not at compile time.
 
-## Entry provider — đặt ở `:impl`
+## Entry provider (in `:impl`)
 
 ```kotlin
 // feature/profile/impl/.../navigation/ProfileEntryProvider.kt
@@ -66,51 +75,47 @@ fun EntryProviderScope<NavKey>.profileEntry(navigator: Navigator) {
 }
 ```
 
-- Một file `<Feature>EntryProvider.kt` cho mỗi màn, hàm `fun EntryProviderScope<NavKey>.xEntry(navigator: Navigator)`.
-- `:app` gọi thẳng trong `entryProvider { }` — **không** dùng Hilt multibinding (theo nowinandroid).
-- **Không truyền lambda điều hướng xuyên module.** Entry builder có sẵn `navigator` trong scope.
-- Composable màn hình giữ nguyên chữ ký `onNavigateToX: () -> Unit` — chỉ chỗ nối dây đổi.
-- `entry<T>` nhận mọi `NavKey`, compiler **không** bắt được nếu khai nhầm key. Kiểm mắt một lượt:
-  mỗi key đúng một entry, không key nào thiếu.
+- One `<Feature>EntryProvider.kt` per screen, exposing `fun EntryProviderScope<NavKey>.xEntry(navigator: Navigator)`.
+- `:app` calls each one directly inside `entryProvider { }` in `MainActivity`. **No** Hilt
+  multibinding (nowinandroid style).
+- **Don't pass navigation lambdas across modules.** The entry builder already has `navigator`.
+- Screen Composables keep `onNavigateToX: () -> Unit` signatures; only the wiring changes.
+- `entry<T>` accepts any `NavKey` and the compiler won't catch a wrong key. Check by eye: each key
+  has exactly one entry and none is missing.
 
 ## `Navigator` API
 
-| Hàm | Dùng khi |
+| Function | Use when |
 |---|---|
-| `navigate(navKey)` | đi tới màn bất kỳ — tự phân nhánh theo vùng đang đứng |
-| `resetRootTo(navKey)` | đổi vùng: đăng nhập xong → `MainNavKey`, đăng xuất / 401 → `AuthenticationNavKey`. Reset luôn mọi `backStacks` |
-| `goBack(): Boolean` | `false` = hết stack, caller quyết định `finish()` |
-| `clearCurrentStack()` | bấm lại tab đang đứng |
+| `navigate(navKey)` | Go to any screen. Picks the right stack based on the current area |
+| `resetRootTo(navKey)` | Switch area: signed in → `MainNavKey`; sign out / 401 → `AuthenticationNavKey`. Also resets every tab stack |
+| `goBack(): Boolean` | `false` = stack exhausted, the caller decides whether to `finish()` |
+| `clearCurrentStack()` | User re-selected the current tab |
 
-`navigate()` không cần marker: đang ở vùng auth thì key vào `rootStack`, đang ở vùng app thì key vào
-sub-stack của tab hiện tại.
+`navigate()` needs no marker: in the auth area the key goes on `rootStack`, in the app area it goes
+on the current tab's stack.
 
-## Vòng đời ViewModel — quy tắc duy nhất
+## ViewModel lifetime
 
 > *"when an entry is removed from the back stack the `ViewModelStoreNavEntryDecorator`
-> clears its associated `ViewModelStore`"* — [tài liệu Nav3](https://developer.android.com/guide/navigation/navigation-3/naventrydecorators)
+> clears its associated `ViewModelStore`"*, [Nav3 docs](https://developer.android.com/guide/navigation/navigation-3/naventrydecorators)
 
-Hệ quả phải nhớ:
+Consequences:
 
-- **`clear()` rồi `add()` cùng một key trong cùng một frame KHÔNG tính là "rời stack".** Compose chỉ
-  thấy snapshot cuối. Muốn ViewModel bị clear thì entry phải thật sự biến mất khỏi danh sách.
-- **Entry của tab sống mãi** — đúng thiết kế, tab cần giữ state. Đừng trông chờ ViewModel của tab
-  được tạo lại khi chuyển tab.
-- **Nav2 huỷ destination khi `popUpTo(inclusive = true)`; Nav3 thì không.** Mọi chỗ code cũ ngầm dựa
-  vào *"quay lại màn X = X chạy lại từ đầu"* đều sai. Cần chạy lại thì dùng `LaunchedEffect` trong
-  Route, đừng đặt trong `init` của ViewModel.
+- **`clear()` then `add()` of the same key in one frame does not count as leaving the stack.**
+  Compose only sees the final snapshot. To clear a ViewModel, the entry must actually disappear.
+- **Tab entries live forever.** That is by design (tabs keep state). Don't expect a tab's ViewModel
+  to be recreated when switching tabs.
+- **Nav2 destroyed destinations on `popUpTo(inclusive = true)`; Nav3 does not.** Any old code
+  assuming "returning to X re-runs X from scratch" is wrong. Work that must re-run goes in a
+  `LaunchedEffect` in the Route, not in the ViewModel's `init`.
 
-## Điều hướng khởi phát từ đâu
+## Where navigation starts
 
-| Loại | Ví dụ | Cách làm |
+| Kind | Examples | How |
 |---|---|---|
-| Người dùng bấm | back, mở WebView, chọn ngôn ngữ | gọi thẳng `navigator` trong entry builder |
-| ViewModel, sau việc async | sign-in thành công, logout, deep link, 401 | `SingleEvent` qua `EventChannel` như cũ |
-
-`EventChannel` là `Channel.UNLIMITED` và chỉ đóng khi ViewModel bị clear. ViewModel sống lâu + màn
-không hiển thị = event xếp hàng, sẽ nổ hết khi màn quay lại. Nếu một `SingleEvent` chỉ có nghĩa lúc
-màn đang hiển thị, thu hẹp nguồn phát (ví dụ `.map { it is Authenticated }.distinctUntilChanged()`)
-thay vì trông vào việc ViewModel sẽ được tạo mới.
+| User action | back, open WebView, pick a language | Call `navigator` in the entry builder |
+| ViewModel, after async work | sign-in success, logout, deep link, 401 | `SingleEvent` via `EventChannel` (see `mvi-pattern.md` for the queued-event pitfall) |
 
 ## Bottom bar
 
@@ -120,26 +125,14 @@ val currentKey = if (navigationState.isInAppArea) navigationState.tabs.currentSt
 val isMainNavigationBarVisible = topLevelDestinations.any { it.navKey == currentKey }
 ```
 
-Bar chỉ hiện ở vùng app **và** khi đang đứng ở màn gốc của một tab. Chuyển tab và bấm lại tab là hai
-ý định khác nhau → hai callback riêng (`onDestinationSelect` / `onDestinationReselect`), không gộp.
+The bar shows only in the app area **and** on a tab's root screen. Switching tabs and re-selecting
+the current tab are different intents, so they get separate callbacks (`onDestinationSelect` /
+`onDestinationReselect`).
 
-## Bất biến phải giữ
+## Invariants
 
-- Sub-stack của mỗi tab **không bao giờ rỗng** — luôn còn ít nhất key gốc của tab.
-- `startRoute` phải nằm trong `topLevelRoutes`.
-- `resetRootTo` chỉ nhận key thuộc `rootStack` (Auth hoặc Main), không nhận key của tab.
-
-## Network Interceptors — AuthInterceptor
-
-Interceptor dùng `Mutex` để tránh race condition khi refresh token:
-
-```kotlin
-private val mutex = Mutex()
-
-val newAccessToken = runBlocking(io) {
-  mutex.withLock { executeRefreshTokenIfNeeded(localUser) }
-}
-```
-
-- `RefreshTokenInterceptor` chạy trên OkHttp client **riêng biệt** với `AuthInterceptor`.
-- Không tạo circular dependency giữa hai OkHttp client.
+- A tab's stack is **never empty**; it always keeps at least the tab's root key.
+- `startRoute` is in `topLevelRoutes`.
+- `resetRootTo` only accepts `rootStack` keys (Auth or Main), never a tab key.
+- A new tab needs its key in `topLevelRoutes` **and** in `MainTopScreenTopLevelDestination`.
+  A non-tab screen never touches `topLevelRoutes`.

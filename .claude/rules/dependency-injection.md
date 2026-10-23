@@ -1,117 +1,90 @@
 ---
-description: Dependency Injection rules với Hilt — những gì nên và không nên inject, module organization.
-globs: **/*.kt
+paths:
+  - "**/*.kt"
+  - "**/build.gradle.kts"
 ---
 
-# Dependency Injection Rules (Hilt)
+# Dependency Injection (Hilt)
 
-## Nguyên tắc cốt lõi: Chỉ inject thứ class không tự kiểm soát được
+## Inject only what a class cannot own itself
 
-### Nên inject (external dependencies)
+Inject external dependencies:
 
-- Repository, Service, DataSource
-- `AppConfig`, `AppCoroutineDispatchers`
-- Logger (Timber wrapper)
-- SharedPreferences / DataStore
-- `Context` (`@ApplicationContext`)
-- Database (Room), File access
-- Network client (OkHttp, Retrofit)
-- Third-party SDK clients (ví dụ: `PhoneNumberUtil`, RevenueCat)
+- Repositories, Managers, DataSources, API services
+- `AppCoroutineDispatchers`, app config
+- `DataStore`, Room database / DAOs, file access
+- `Context` (always `@ApplicationContext`)
+- Network clients (OkHttp, Retrofit, Moshi)
+- Third-party SDK clients (Firebase, analytics, ...)
 
-### Không inject (internal data structures)
+Never inject internal data structures. The class creates and owns them:
 
 ```kotlin
-// Sai — inject data structure nội bộ
+// Wrong
 @Inject lateinit var cache: MutableMap<String, Video>
 @Inject lateinit var counter: AtomicInteger
-@Inject lateinit var buffer: ArrayList<Event>
 
-// Đúng — class tự tạo và quản lý cấu trúc nội bộ
-class VideoRepository @Inject constructor(...) {
-    private val cache = mutableMapOf<String, Video>()
-    private val counter = AtomicInteger(0)
+// Right
+internal class DefaultVideoRepository @Inject constructor(/* external deps */) : VideoRepository {
+  private val cache = mutableMapOf<String, Video>()
+  private val counter = AtomicInteger(0)
 }
 ```
 
-Lý do: DI container không nên biết về implementation detail của class.
+The DI graph should not know a class's implementation details, and nothing goes into the graph
+"just because it's convenient".
 
-## Lifecycle Ownership
+## Events from non-UI layers
 
-- Class tự tạo và quản lý dữ liệu nội bộ của chính nó.
-- Không đưa mọi thứ vào DI container chỉ vì tiện.
-
-## Event Bus
-
-- Nếu event phát ra từ non-UI layer (repository, service), dùng singleton UI-independent event bus.
-- **Không inject** `AppEventViewModel` hay bất kỳ ViewModel nào vào observer/app-level class.
+When a repository or service needs to broadcast an event (401, force update, ...), expose it from a
+singleton, UI-independent source in `core:data` (e.g. `UnauthorizedErrorEventRepository`) and let
+ViewModels observe it. Never inject a ViewModel into a non-UI class.
 
 ```kotlin
-// Đúng — event bus independent với UI
-class AppEventBus @Inject constructor() {
-    private val _events = MutableSharedFlow<AppEvent>()
-    val events: SharedFlow<AppEvent> = _events.asSharedFlow()
-    suspend fun emit(event: AppEvent) { _events.emit(event) }
-}
-
-// Sai — inject ViewModel vào non-UI class
+// Wrong
 class SomeObserver @Inject constructor(
-    private val appEventViewModel: AppEventViewModel  // WRONG
+  private val appEventViewModel: AppEventViewModel,
 )
 ```
 
-## Module Organization
+## Module layout
 
-### Convention Plugin
-
-```kotlin
-// Áp dụng Hilt cho bất kỳ module nào cần DI
-plugins {
-    id("convention.android.hilt")  // tự động config Hilt + Kapt
-}
-```
-
-### Module Layering
-
-| Module | @InstallIn |
-|---|---|
-| `core:data` → `DataModule` | `SingletonComponent` |
-| `core:network` → `NetworkModule` | `SingletonComponent` |
-| `core:local` → `LocalModule` | `SingletonComponent` |
+Every DI module is `internal interface` + `@InstallIn(SingletonComponent::class)`, with `@Binds`
+for interface → implementation and a `companion object` for `@Provides`:
 
 ```kotlin
-// Bind interface → implementation trong DataModule
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class DataModule {
-    @Binds
-    @Singleton
-    abstract fun bindAuthRepository(impl: DefaultAuthRepository): AuthRepository
+internal interface DataModule {
+  @Binds
+  fun authRepository(impl: DefaultAuthRepository): AuthRepository
 }
 ```
 
-### Capability-Sliced Modules
-
-Ưu tiên tách module theo capability khi phù hợp:
-
-```
-:core:phoneNumbers:domain   (pure JVM nếu có thể)
-:core:phoneNumbers:data     (Android/lib-specific implementation)
-```
-
-- Domain module: pure JVM, không có Android dependencies.
-- Data module: chứa Android/library-specific code.
-
-## Convention Plugins Reference
-
-| Plugin | Áp dụng cho |
+| Module | Holds |
 |---|---|
-| `convention.android.feature` | Feature modules (tự động include Hilt + flavors) |
-| `convention.android.hilt` | Bất kỳ module nào cần Hilt |
-| `convention.android.library` | Core library modules |
-| `convention.jvm.library` | Pure JVM modules (không có Android, không có Hilt) |
+| `core:data` → `di/DataModule` | Repository / Manager bindings |
+| `core:network` → `remote/di/*` | Retrofit, OkHttp clients, API services, remote DataSource bindings |
+| `core:local` → `di/*` | DataStore, Room, local DataSource bindings |
 
-## Layering Rule (nhắc lại từ Clean Architecture)
+Put `@Singleton` on the implementation class only when it holds shared state (in-memory cache,
+`MutableStateFlow`, `Mutex`).
 
-- Data/Repository xử lý data source, mapping, lib integration.
-- UI nhận UiModel đã được map sẵn.
-- **Không gọi** library/data logic trực tiếp trong Composable hoặc ViewModel nếu logic đó nên nằm trong Repository.
+## Convention plugins
+
+Apply plugins by their version-catalog alias, e.g. `id(libs.plugins.android.hilt.get().pluginId)`.
+
+| Plugin id | Use for |
+|---|---|
+| `android.feature.api` | `feature/<x>/api`: library + parcelize + kotlinx-serialization, no Hilt, no Compose |
+| `android.feature.impl` | `feature/<x>/impl`: library + Compose + Hilt + flavors |
+| `android.library` | Android core modules with Compose |
+| `android.core` | Android core modules without Compose |
+| `android.hilt` | Any module that needs Hilt (Hilt + KAPT) |
+| `jvm.library` | Pure JVM modules (`core:model`, `core:domain`): no Android, no Hilt |
+
+## Layering reminder
+
+- Repositories handle data sources, mapping and library integration.
+- ViewModels receive domain models; UI receives UiModels already mapped by the ViewModel.
+- Don't call library or data logic from a Composable or ViewModel when it belongs in a repository.

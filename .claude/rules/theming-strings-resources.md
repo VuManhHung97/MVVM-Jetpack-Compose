@@ -1,81 +1,88 @@
 ---
-description: Theming, strings & resources — màu vào palette trung tâm (không tạo theme mới), mọi text qua stringResource + i18n, enum dùng @StringRes/@DrawableRes.
-globs: feature/**/*.kt, core/ui/**/*.kt, core/resource/**
+paths:
+  - "feature/**/*.kt"
+  - "core/ui/**/*.kt"
+  - "core/resource/**"
+  - "app/src/**"
 ---
 
 # Theming, Strings & Resources
 
-Rule cho màu, text và resource khi thêm màn/tính năng mới. Mục tiêu: dùng lại hệ theme + resource sẵn có, i18n từ đầu, enum không nhúng text/icon.
+Reuse the existing theme and resources, support i18n from day one, and keep text and icons out of
+enums.
 
-## 1. Màu — mở rộng theme cũ, KHÔNG tạo theme mới
+## 1. Colors: extend the existing theme, never create a new one
 
-- App có sẵn 1 **palette object trung tâm** (ví dụ `MVVMJetPackComposeColors` trong `core:ui/theme/Color.kt`) và/hoặc Material color scheme. Màu mới cho tính năng/app mới → **thêm token vào object trung tâm đó**, đặt tên rõ nghĩa (`PageTop`, `CardBg`, `Accent`, `GoldValue`…).
-- **Không** tạo object/file màu song song (kiểu `FooColors`) chỉ cho một feature. App cũ chỉ là nền — cập nhật/ bổ sung token vào theme hiện có.
-- Brush/gradient/font-family bổ trợ đặt trong **cùng package theme** (`core:ui/theme/`), không tạo "theme" riêng.
-- Composable tham chiếu token trực tiếp (`MVVMJetPackComposeColors.Accent`). Không hardcode `Color(0xFF...)` rải rác trong screen.
-- Chỉ đổi Material `lightScheme/darkScheme` khi thực sự cần đổi nền toàn app; nếu screen tự vẽ background bằng token thì không cần.
+Theme lives in `core:ui` `theme/`: Material token values (`primaryLight`, `surfaceDark`, ...) that
+build `lightScheme` / `darkScheme`, plus the central palette object `MVVMJetPackComposeColors`.
 
-### Màu tương ứng role Material → ánh xạ vào `ColorScheme`, đừng tạo token semantic song song
-- Rút tập màu **từ UI design** (nền, chữ, nút, viền, focus/lỗi…) rồi đối chiếu theme app. Màu nào ứng với **role Material** (primary/secondary/tertiary/error/surface/outline…): **cập nhật thẳng giá trị token của `ColorScheme` sẵn có** (`primaryLight`, `secondaryLight`, `surfaceLight`, … hoặc bản `*Dark`) và cho Composable đọc `MaterialTheme.colorScheme.*`. **KHÔNG** thêm một loạt token semantic mới (`XxxPrimary`/`XxxSurface`…) vào palette — trùng vai trò Material, sẽ phải refactor.
-- App đang cố định 1 theme (vd dark) mà một nhóm màn cần theme khác → dùng **scheme còn lại** (vd cập nhật `lightScheme` rồi render nhóm màn đó với `useDarkTheme = false`), không dựng `ColorScheme`/object màu riêng.
-- Chọn role đúng cho từng phần tử ở **call-site của màn** (vd nút chính `colorScheme.primary`; màn khác dùng `colorScheme.tertiary`) thay vì nhét logic chọn role vào trong component tái dùng.
+**Colors that match a Material role** (primary, secondary, tertiary, error, surface, outline, ...):
+- Update the existing scheme token values (`primaryLight`, `secondaryLight`, ... or `*Dark`) and
+  read them with `MaterialTheme.colorScheme.*`.
+- **Don't** add parallel semantic tokens (`XxxPrimary`, `XxxSurface`, ...) to the palette. They
+  duplicate Material roles and will need a refactor.
+- If the app renders one fixed theme (e.g. dark) and a group of screens needs the other, use the
+  other scheme (update `lightScheme`, render those screens with `useDarkTheme = false`). Don't build
+  a separate `ColorScheme` or color object.
+- Pick the role at the **screen's call site** (`colorScheme.primary` on one screen,
+  `colorScheme.tertiary` on another), not inside a reusable component.
 
-### Màu ngoài role Material & màu chỉ 1 màn dùng → đặt gần nơi dùng
-- Màu **không có slot Material** (minh hoạ: mascot, gradient nền, bóng nút 3D, brand mark Google/Facebook): không đưa vào palette trung tâm. Nếu **chỉ một màn dùng** → khai báo **ngay trong package/file của màn đó** (`private val …`). Dùng ở ≥ 2 màn mới đưa lên theme dùng chung (vd nhóm "extended colors" cạnh theme).
+**Colors with no Material role** (illustrations, mascots, background gradients, 3D button shadows,
+Google / Facebook brand marks):
+- Used by **one screen only** → declare `private val` in that screen's package or file.
+- Used by **two or more screens** → add to the shared theme (palette object or an extended-colors
+  group next to the theme).
 
-```kotlin
-// core:ui/theme/Color.kt — thêm vào object có sẵn
-object MVVMJetPackComposeColors {
-  // ... token cũ ...
-  // ---- <Tên app/feature> palette ----
-  val PageTop = Color(0xFFFAF4E6)
-  val Accent = Color(0xFFB4893C)
-  val Ink = Color(0xFF2E2618)
-}
-// Brush/serif để chung file theme, tham chiếu token trên.
-```
+Always:
+- Never create a parallel color object or file for one feature (`FooColors`).
+- Brushes, gradients and font families go in the same `core:ui` `theme/` package.
+- No scattered `Color(0xFF...)` literals in screens; reference tokens.
 
-## 2. Text — mọi chuỗi hiển thị qua `stringResource` NGAY TỪ ĐẦU
+## 2. Text: every visible string through resources from the start
 
-- **Không** hardcode chuỗi tiếng Việt/English trong Composable/ViewModel. Định nghĩa trong `core:resource` `res/values/strings.xml`, dùng `stringResource(R.string.x)`.
-- Chuỗi động: dùng placeholder positional và truyền tham số:
+- Never hardcode Vietnamese or English UI text in a Composable or ViewModel. Define it in
+  `core:resource` `res/values/strings.xml` and use `stringResource(R.string.x)`.
+- Dynamic strings use positional placeholders:
   ```xml
-  <string name="deposit_success">Đã nạp %1$s Xu cho %2$s</string>
+  <string name="deposit_success">Deposited %1$s coins to %2$s</string>
   ```
   ```kotlin
   stringResource(R.string.deposit_success, amountFormatted, username)
   ```
-- Trong coroutine/không có scope Composable (vd xử lý SingleEvent) → `context.getString(R.string.x, args)`.
-- **Đa ngôn ngữ**: cứ định nghĩa đủ key ở `values/` (ngôn ngữ mặc định của project); bản dịch bỏ vào `values-<locale>/` sau. Cơ chế `stringResource` đã sẵn sàng đa ngôn ngữ, không cần code thêm.
-- Ký tự `%` trong chuỗi **không dùng làm format** phải để đơn (`1,7% tổng số`), KHÔNG viết `%%` (getString không-arg sẽ in ra `%%`).
+- Outside composition (e.g. handling a SingleEvent in a coroutine): `context.getString(R.string.x, args)`.
+- Define every key in `values/` (default language). Translations go in `values-<locale>/` later;
+  nothing else is needed.
+- A literal `%` that is not a format specifier stays single (`1.7% of total`). Don't write `%%`:
+  `getString` without args prints it as `%%`.
 
-## 3. Enum / data hiển thị — dùng `@StringRes` / `@DrawableRes`, không nhúng trực tiếp
+## 3. Enums and display data: `@StringRes` / `@DrawableRes`
 
-- Enum không giữ text/glyph string hay icon char. Giữ **resId**:
-  ```kotlin
-  enum class StatusFilter(@param:StringRes val labelResId: Int, val status: Status?) {
-    All(R.string.filter_all, null),
-    Active(R.string.filter_active, Status.Active),
-  }
+Enums and display data classes hold resource ids, never text, glyphs or icon characters:
 
-  enum class Tab(@param:DrawableRes val iconResId: Int, @param:StringRes val titleResId: Int, val route: String) {
-    Home(R.drawable.ic_tab_home, R.string.tab_home, HomeGraphRoute),
-  }
-  ```
-- Screen render: `stringResource(item.labelResId)`, `Icon(ImageVector.vectorResource(item.iconResId), ...)`.
-- Data class hiển thị (stat card, row…) cũng giữ `@StringRes`/`@DrawableRes` thay vì String literal, để i18n.
-- Icon cần drawable → thêm vector `res/drawable/ic_*.xml` (fillColor `@android:color/white`, tint ở call-site). Không dùng ký tự unicode làm icon nếu enum yêu cầu `@DrawableRes`.
+```kotlin
+enum class StatusFilter(@param:StringRes val labelResId: Int, val status: Status?) {
+  All(R.string.filter_all, null),
+  Active(R.string.filter_active, Status.Active),
+}
+```
 
-## 4. Tách text khỏi mapper/domain
+- Render with `stringResource(item.labelResId)` and `Icon(ImageVector.vectorResource(item.iconResId), ...)`.
+- Icons: add a vector `res/drawable/ic_*.xml` (`fillColor="@android:color/white"`, tint at the call
+  site). Don't use unicode characters as icons.
+- Keep resource ids out of domain models (`core:model`); they belong on UiModels.
 
-- Chuỗi ghép có từ ngữ dịch được (vd "Nhân vật · Môn phái · Lv{n}") → **không** ghép sẵn trong mapper (presentation không có Context). Cho UiItem giữ field thô (character, clan, level), format ở Composable bằng resource `"%1$s · %2$s · Lv%3$d"`.
-- Dấu phân cách thuần (`·`, `+`, `−`) là ký tự, có thể để trong code hoặc trong resource template — ưu tiên template resource khi cả cụm là câu.
+## 4. Keep translatable text out of mappers
+
+- A composed phrase with translatable words (e.g. "Character · Clan · Lv{n}") is **not** built in
+  the mapper. The UiItem keeps the raw fields; the Composable formats them with a resource template
+  `"%1$s · %2$s · Lv%3$d"`.
+- Pure separators (`·`, `+`, `−`) may live in code, but prefer a resource template when the whole
+  thing reads as a sentence.
 
 ## Checklist
-- [ ] Không có `Color(0x...)` hay object màu mới ngoài palette trung tâm.
-- [ ] Không còn chuỗi hiển thị hardcode; tất cả qua `stringResource`/`getString`.
-- [ ] Enum/stat data dùng `@StringRes`/`@DrawableRes`.
-- [ ] `%` non-format để đơn; string động dùng `%1$s`.
 
----
-*Ví dụ trong repo hiện tại (tham khảo): palette `MVVMJetPackComposeColors`; `strings.xml` ở `core:resource`; enum tab `MainTopScreenTopLevelDestination` dùng `@DrawableRes`/`@StringRes`.*
+- [ ] No `Color(0x...)` literals in screens and no new color objects.
+- [ ] Material-role colors go through `MaterialTheme.colorScheme`.
+- [ ] No hardcoded display strings; everything via `stringResource` / `getString`.
+- [ ] Enums / display data use `@StringRes` / `@DrawableRes`.
+- [ ] Non-format `%` is single; dynamic strings use `%1$s`.

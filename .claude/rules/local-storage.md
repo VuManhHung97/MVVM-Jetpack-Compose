@@ -1,127 +1,98 @@
 ---
-description: Local storage rules — DataStore Proto, Room, mapper patterns và error handling.
-globs: core/local/**/*.kt, core/data/**/*.kt
+paths:
+  - "core/local/**"
+  - "core/data/**/*.kt"
 ---
 
 # Local Storage Rules
 
-## DataStore Proto
+## Error mapping
 
-### Error Handling khi đọc
+Every local failure becomes an `AppError.LocalStorageException` through the helpers in
+`core:local` `mapper/LocalErrorMapper.kt`. Don't hand-roll `runCatching` or `try/catch`.
+
+- `catchingLocalStorageException(localErrorMapper) { ... }` for one-shot reads and writes.
+- `Flow<T>.catchingLocalStorageException(localErrorMapper)` for observed data.
+- `LocalErrorMapperImpl` runs the throwable through `nonFatalOrThrow()` first, so
+  `CancellationException` is rethrown, then maps `IOException` / `SQLException` / others to
+  `FileException` / `DatabaseException` / `UnknownException`.
+
+## DataStore (Proto)
+
+### Reading: an `IOException` means "no data", not a crash
 
 ```kotlin
-// Đúng — IOException khi đọc → emit default instance thay vì crash
-val dataFlow: Flow<Result<UserProto, AppError.LocalStorageException>> = dataStore.data
-    .map { proto -> Result.success(proto) }
-    .catch { throwable ->
-        if (throwable is IOException) {
-            emit(Result.success(UserProto.getDefaultInstance()))
-        } else {
-            emit(Result.failure(AppError.LocalStorageException.FileException(throwable)))
-        }
+override fun observeLocalUser() = localUserDataStore
+  .data
+  .map { localUser -> localUser.takeIf { it.isNotDefault() } }
+  .catch {
+    // dataStore.data throws an IOException when reading fails
+    if (it is IOException) emit(null) else throw it
+  }
+  .catchingLocalStorageException(localErrorMapper)
+  .distinctUntilChanged()
+```
+
+### Writing: `update()` takes a transform, returns a Result
+
+```kotlin
+override suspend fun update(transform: (LocalUser?) -> LocalUser?) =
+  catchingLocalStorageException(localErrorMapper) {
+    localUserDataStore.updateData { current ->
+      transform(current.takeIf { it.isNotDefault() }) ?: LocalUser.getDefaultInstance()
     }
+    Unit
+  }
 ```
 
-### update() với Result
+### Tri-state values
 
-```kotlin
-// Đúng — wrap bằng Result khi project dùng kotlin-result
-suspend fun update(transform: (LocalUser?) -> LocalUser?): Result<Unit, AppError.LocalStorageException> =
-    catchingLocalStorageException {
-        dataStore.updateData { current ->
-            transform(current.toLocalUser())?.toProto() ?: UserProto.getDefaultInstance()
-        }
-    }
-```
+Use proto wrappers (`BoolValue`, ...) when "never set" must differ from "set to false". A missing
+wrapper means "not set, use the default".
 
-### Proto Wrapper cho Tri-state
+### Defaults belong in the mapper
 
-```kotlin
-// Dùng BoolValue khi cần phân biệt "chưa set" vs "set = false"
-// BoolValue.newBuilder().setValue(true).build()  → explicitly true
-// null → chưa từng set (default override behavior)
-```
+Default values live in the mapper or domain layer, not in the proto schema. If a default depends on
+context (e.g. autoplay differs by orientation), compute it in the mapper.
 
-### Default Constants — đặt đúng chỗ
-
-- Default values thuộc về mapper hoặc domain layer, không hard-code trong Proto schema.
-- Ví dụ: `autoPlayDefault` có thể khác nhau theo `horizontal`/`vertical`/`short` → đặt trong mapper.
-
-```kotlin
-// core/data/mapper/SettingsMapper.kt
-fun SettingsProto.toSettings(): Settings = Settings(
-    autoPlay = when (orientation) {
-        Orientation.HORIZONTAL -> hasAutoPlay && autoPlay.value
-        Orientation.VERTICAL -> true  // default khác nhau
-        Orientation.SHORT -> false
-    }
-)
-```
-
-## Mapper Pattern — Không ghi đè Token
-
-```kotlin
-// Khi map ProfileResponse → LocalUser: KHÔNG ghi đè accessToken/refreshToken
-// vì profile API response không có token fields
-
-// Sai
-fun ProfileResponse.toLocalUser(): LocalUser = LocalUser(
-    id = id,
-    email = email,
-    accessToken = null,     // XÓA MẤT TOKEN CŨ!
-    refreshToken = null,
-)
-
-// Đúng — update profile fields, giữ nguyên token
-fun LocalUser.updateProfile(profile: ProfileResponse): LocalUser = copy(
-    email = profile.email,
-    fullName = profile.fullName,
-    avatar = profile.avatar,
-    // accessToken và refreshToken không được touch
-)
-```
-
-## LocalDataSource Interface
+## LocalDataSource interfaces
 
 ```kotlin
 interface AuthLocalDataSource {
-    fun observeLocalUser(): Flow<Result<LocalUser?, AppError.LocalStorageException>>
-    
-    suspend fun readLocalUser(): Result<LocalUser?, AppError.LocalStorageException> =
-        observeLocalUser().first()  // default implementation
-    
-    suspend fun update(
-        transform: (LocalUser?) -> LocalUser?
-    ): Result<Unit, AppError.LocalStorageException>
+  fun observeLocalUser(): Flow<Result<LocalUser?, AppError.LocalStorageException>>
+
+  suspend fun readLocalUser(): Result<LocalUser?, AppError.LocalStorageException> = observeLocalUser().first()
+
+  suspend fun update(transform: (LocalUser?) -> LocalUser?): Result<Unit, AppError.LocalStorageException>
 }
 ```
 
-- Interface `public`, implementation `internal`.
-- `observeLocalUser()` là source of truth — `readLocalUser()` consume nó.
-- `update()` nhận transform function, không nhận value trực tiếp → đảm bảo atomic update.
+- Interface `public` (in `datasource/`), implementation `internal` (in `datasourceimpl/`).
+- `observeX()` is the source of truth; `readX()` consumes it.
+- `update()` takes a transform, never a value, so the read-modify-write is atomic.
 
-## Room DAO (nếu có)
+## Never overwrite tokens when mapping a profile
 
-- DAO `interface` trong `core:local`, implementation do Room generate.
-- Entity class: `@Entity`, `@PrimaryKey`, `@ColumnInfo` — chỉ nằm trong `core:local`.
-- Không expose Room entity ra ngoài `core:local`; chỉ expose `LocalUser` hoặc domain model sau khi map.
-
-## AppError Mapping cho Local Storage
+Profile responses carry no tokens. Building a fresh `LocalUser` from one would erase them.
+Start from the stored proto with `toBuilder()` and set only profile fields (see
+`core:data` `mapper/user/UserMapper.kt`):
 
 ```kotlin
-// Luôn wrap exception thành AppError.LocalStorageException
-private suspend fun <T> catchingLocalStorageException(
-    block: suspend () -> T
-): Result<T, AppError.LocalStorageException> = runCatching { block() }
-    .fold(
-        onSuccess = { Result.success(it) },
-        onFailure = { throwable ->
-            val error = when (throwable) {
-                is IOException -> AppError.LocalStorageException.FileException(throwable)
-                is SQLiteException -> AppError.LocalStorageException.DatabaseException(throwable)
-                else -> AppError.LocalStorageException.UnknownException(throwable)
-            }
-            Result.failure(error)
-        }
-    )
+// Wrong: a new builder drops the stored accessToken / refreshToken
+internal fun ProfileResponse.toLocalUser(): LocalUser = LocalUser.newBuilder()
+  .setId(UInt64Value.of(id))
+  .setEmail(StringValue.of(email))
+  .build()
+
+// Right: keep everything, overwrite profile fields only
+internal fun LocalUser.updateProfile(profile: ProfileResponse): LocalUser = toBuilder()
+  .setId(UInt64Value.of(profile.id))
+  .setEmail(StringValue.of(profile.email))
+  .setFullName(profile.fullName.toProtoStringValue())
+  .build()
 ```
+
+## Room (if used)
+
+- DAO interfaces and `@Entity` classes live only in `core:local`.
+- Never expose a Room entity outside `core:local`; expose a local model or map to a domain model.
