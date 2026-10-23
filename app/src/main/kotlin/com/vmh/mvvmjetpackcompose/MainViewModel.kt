@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.fold
+import com.github.michaelbull.result.onFailure
 import com.vmh.mvvmjetpackcompose.core.deeplink.DeepLinkDestination
 import com.vmh.mvvmjetpackcompose.core.domain.repository.AuthRepository
 import com.vmh.mvvmjetpackcompose.core.domain.repository.ForceUpdateErrorEventRepository
@@ -23,7 +24,6 @@ import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -59,10 +59,14 @@ internal class MainViewModel @Inject constructor(
       initialValue = StartDestinationState.Loading,
     )
 
-  private fun startDestinationStateFlow(): Flow<StartDestinationState> = authRepository.observeAuthenticationState()
-    .onStart {
+  init {
+    viewModelScope.launch {
       authRepository.refreshCurrentUser()
+        .onFailure { error -> Timber.e(error, "MainViewModel refreshCurrentUser failure") }
     }
+  }
+
+  private fun startDestinationStateFlow(): Flow<StartDestinationState> = authRepository.observeAuthenticationState()
     .map { result ->
       result.toStartDestinationState()
     }
