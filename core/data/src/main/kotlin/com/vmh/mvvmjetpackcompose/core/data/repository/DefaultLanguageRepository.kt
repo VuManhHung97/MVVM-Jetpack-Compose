@@ -1,11 +1,10 @@
 package com.vmh.mvvmjetpackcompose.core.data.repository
 
 import com.github.michaelbull.result.Ok
-import com.github.michaelbull.result.coroutines.runSuspendCatching
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.coroutines.coroutineBinding
 import com.github.michaelbull.result.fold
-import com.github.michaelbull.result.getOrThrow
 import com.github.michaelbull.result.map
-import com.github.michaelbull.result.mapError
 import com.vmh.mvvmjetpackcompose.core.common.coroutine.AppCoroutineDispatchers
 import com.vmh.mvvmjetpackcompose.core.data.mapper.language.toLanguage
 import com.vmh.mvvmjetpackcompose.core.domain.repository.LanguageRepository
@@ -14,6 +13,7 @@ import com.vmh.mvvmjetpackcompose.core.local.datasource.LocaleLocalDataSource
 import com.vmh.mvvmjetpackcompose.core.local.mapper.toLocalLocale
 import com.vmh.mvvmjetpackcompose.core.local.mapper.toLocale
 import com.vmh.mvvmjetpackcompose.core.model.error.AppError
+import com.vmh.mvvmjetpackcompose.core.model.language.Language
 import com.vmh.mvvmjetpackcompose.core.network.remote.datasource.LanguageRemoteDataSource
 import java.util.Locale
 import javax.inject.Inject
@@ -29,15 +29,14 @@ internal class DefaultLanguageRepository @Inject constructor(
   private val appCoroutineDispatchers: AppCoroutineDispatchers,
 ) : LanguageRepository {
 
-  override suspend fun getLanguages() = withContext(appCoroutineDispatchers.io) {
+  override suspend fun getLanguages(): Result<List<Language>, AppError> = withContext(appCoroutineDispatchers.io) {
     languageLocalDataSource.observe().first()?.let { return@withContext Ok(it) }
-    runSuspendCatching {
-      val languages = languageRemoteDataSource.getLanguages()
-        .getOrThrow()
+    coroutineBinding {
+      languageRemoteDataSource.getLanguages()
+        .bind()
         .map { it.toLanguage() }
-      languageLocalDataSource.update(languages)
-      languages
-    }.mapError { it as? AppError ?: AppError.UnknownException(it) }
+        .also(languageLocalDataSource::update)
+    }
   }
 
   override fun observeCurrentLocale() = localeLocalDataSource

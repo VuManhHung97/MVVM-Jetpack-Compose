@@ -32,6 +32,7 @@ import com.vmh.mvvmjetpackcompose.feature.language.ui.language.component.Languag
 import com.vmh.mvvmjetpackcompose.lifecycle.collectInLaunchedEffectWithLifecycle
 import com.vmh.mvvmjetpackcompose.ui.widget.common.BackIconButton
 import com.vmh.mvvmjetpackcompose.ui.widget.common.CommonAppErrorContent
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 internal fun LanguageRoute(
@@ -54,6 +55,7 @@ internal fun LanguageRoute(
     onNavigateBack = onNavigateBack,
     onLanguageItemSelect = viewModel::selectLanguage,
     onLanguageChange = viewModel::languageChanges,
+    onRetry = viewModel::retry,
   )
 }
 
@@ -64,6 +66,7 @@ private fun LanguageContent(
   onNavigateBack: () -> Unit,
   onLanguageItemSelect: (languageId: Long) -> Unit,
   onLanguageChange: () -> Unit,
+  onRetry: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Scaffold(
@@ -145,6 +148,7 @@ private fun LanguageContent(
               .consumeWindowInsets(paddingValues = innerPadding),
             appError = uiState.error,
             getAppErrorMessage = DefaultGetAppErrorMessageForInline,
+            onRetry = onRetry,
           )
         }
       }
@@ -158,10 +162,27 @@ private fun LanguageContent(
 private fun LanguageContentPreview() {
   MVVMJetpackComposeTheme {
     LanguageContent(
-      uiState = LanguageUiState.Content.initial,
+      uiState = LanguageUiState.Content(
+        languages = persistentListOf(
+          LanguageUiState.Content.LanguageUiItem(
+            id = 1,
+            languageCode = Language.LanguageCode.En,
+            originalName = "English",
+            isSelected = true,
+          ),
+          LanguageUiState.Content.LanguageUiItem(
+            id = 2,
+            languageCode = Language.LanguageCode.Ja,
+            originalName = "Japanese",
+            isSelected = false,
+          ),
+        ),
+        isSaveButtonEnabled = false,
+      ),
       onNavigateBack = {},
       onLanguageItemSelect = {},
       onLanguageChange = {},
+      onRetry = {},
     )
   }
 }
