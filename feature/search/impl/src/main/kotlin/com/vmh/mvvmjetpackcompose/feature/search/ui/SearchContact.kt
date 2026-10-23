@@ -95,10 +95,11 @@ sealed interface SearchSingleEvent {
   data class RemoveSearchHistoryFailure(val error: AppError) : SearchSingleEvent
 }
 
-internal fun SearchResult.toSearchResultContentUiItem(): SearchUiState.ResultContentUiItem = SearchUiState.ResultContentUiItem(
-  id = id,
-  title = title,
-)
+internal fun SearchResult.toSearchResultContentUiItem(): SearchUiState.ResultContentUiItem =
+  SearchUiState.ResultContentUiItem(
+    id = id,
+    title = title,
+  )
 
 internal fun String.toHistorySuggestionUiItem(): SearchUiState.SuggestionUiItem = SearchUiState.SuggestionUiItem(
   keyword = this,
