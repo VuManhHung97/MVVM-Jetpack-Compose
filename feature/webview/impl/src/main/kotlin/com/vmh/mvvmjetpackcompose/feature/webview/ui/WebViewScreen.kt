@@ -1,8 +1,11 @@
 package com.vmh.mvvmjetpackcompose.feature.webview.ui
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.graphics.Bitmap
 import android.view.ViewGroup
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.StringRes
@@ -89,6 +92,16 @@ internal fun WebViewRoute(
               override fun onPageFinished(view: WebView?, url: String?) {
                 isLoading = false
               }
+
+              override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                if (viewModel.isUrlTrusted(url = request.url.toString())) return false
+
+                try {
+                  view.context.startActivity(Intent(Intent.ACTION_VIEW, request.url))
+                } catch (ignored: ActivityNotFoundException) {
+                }
+                return true
+              }
             }
 
             webChromeClient = WebChromeClient()
@@ -100,6 +113,7 @@ internal fun WebViewRoute(
             }
           }
         },
+        onRelease = { webView -> webView.destroy() },
       )
 
       if (isLoading) {
