@@ -221,6 +221,13 @@ internal class SearchViewModel @Inject constructor(
     }
   }
 
+  internal fun onInitialKeyword(keyword: String) {
+    if (savedStateHandle.get<Boolean>(INITIAL_KEYWORD_HANDLED_KEY) == true) return
+
+    savedStateHandle[INITIAL_KEYWORD_HANDLED_KEY] = true
+    onSuggestionItemClicked(keyword)
+  }
+
   internal fun onSuggestionItemClicked(keyword: String) {
     setSuggestionVisible(isVisible = false)
     onKeywordChanged(keyword)
@@ -273,6 +280,7 @@ internal class SearchViewModel @Inject constructor(
 
   private companion object {
     const val KEYWORD_KEY = "SearchViewModel#keyword"
+    const val INITIAL_KEYWORD_HANDLED_KEY = "SearchViewModel#initialKeywordHandled"
     const val SEARCH_LIMIT = 12
     const val SEARCH_SEARCH_SUGGESTIONS_LIMIT = 10
     const val SEARCH_SEARCH_HISTORY_LIMIT = 10

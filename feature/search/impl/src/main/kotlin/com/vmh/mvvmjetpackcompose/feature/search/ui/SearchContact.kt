@@ -6,6 +6,7 @@ import com.vmh.mvvmjetpackcompose.core.model.search.SearchResult
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 
+@Immutable
 data class SearchUiState(val searchResultUiState: SearchResultUiState, val suggestionUiState: SuggestionUiState) {
   companion object {
     val Initial
@@ -15,6 +16,7 @@ data class SearchUiState(val searchResultUiState: SearchResultUiState, val sugge
       )
   }
 
+  @Immutable
   sealed interface SearchResultUiState {
     @Immutable
     data object Empty : SearchResultUiState
@@ -93,17 +95,17 @@ sealed interface SearchSingleEvent {
   data class RemoveSearchHistoryFailure(val error: AppError) : SearchSingleEvent
 }
 
-fun SearchResult.toSearchResultContentUiItem(): SearchUiState.ResultContentUiItem = SearchUiState.ResultContentUiItem(
+internal fun SearchResult.toSearchResultContentUiItem(): SearchUiState.ResultContentUiItem = SearchUiState.ResultContentUiItem(
   id = id,
   title = title,
 )
 
-fun String.toHistorySuggestionUiItem(): SearchUiState.SuggestionUiItem = SearchUiState.SuggestionUiItem(
+internal fun String.toHistorySuggestionUiItem(): SearchUiState.SuggestionUiItem = SearchUiState.SuggestionUiItem(
   keyword = this,
   type = SearchUiState.SuggestionUiType.History,
 )
 
-fun String.toAutocompleteSuggestionUiItem(): SearchUiState.SuggestionUiItem = SearchUiState.SuggestionUiItem(
+internal fun String.toAutocompleteSuggestionUiItem(): SearchUiState.SuggestionUiItem = SearchUiState.SuggestionUiItem(
   keyword = this,
   type = SearchUiState.SuggestionUiType.Autocomplete,
 )
